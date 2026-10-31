@@ -79,7 +79,25 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
   const [devicePaired, setDevicePaired] = useState(kioskDeviceManager.hasCredentials());
 
   // SDK Presence Check
-  const sdkAvailable = isBiometricSdkAvailable();
+  const [sdkAvailable, setSdkAvailable] = useState<boolean>(() => isBiometricSdkAvailable());
+  const [sdkLoading, setSdkLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (isBiometricSdkAvailable()) {
+        setSdkAvailable(true);
+        const sdk = (window as any).__FLOWPEOPLE_BIOMETRIC_SDK__;
+        if (sdk?.init && !sdk?.isLoaded?.()) {
+          setSdkLoading(true);
+          sdk.init()
+            .catch((e: any) => console.warn('Kiosk neural model load warning:', e))
+            .finally(() => setSdkLoading(false));
+        }
+      } else {
+        setSdkAvailable(false);
+      }
+    }
+  }, [isOpen]);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -618,17 +636,22 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
           )}
 
           {/* SDK Missing Advisory Banner */}
-          {!sdkAvailable && (
+          {!sdkAvailable ? (
             <div className="absolute inset-x-4 bottom-20 z-10 max-w-xl mx-auto p-3 rounded-xl bg-slate-900/90 border border-amber-500/40 text-amber-200 text-xs flex items-start gap-2.5 shadow-xl">
               <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold block text-white">Biometric Neural Extractor Unconfigured</span>
                 <span>
-                  Client-side face embedding generator (128-D/512-D) is not active in this frontend. Live biometric scanning is cleanly disabled to prevent mock attendance.
+                  Client-side face embedding generator (128-D) is not active in this frontend. Live biometric scanning is cleanly disabled to prevent mock attendance.
                 </span>
               </div>
             </div>
-          )}
+          ) : sdkLoading ? (
+            <div className="absolute inset-x-4 bottom-20 z-10 max-w-sm mx-auto p-2.5 rounded-xl bg-slate-900/90 border border-teal-500/40 text-teal-300 text-xs flex items-center justify-center gap-2 shadow-xl">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-400" />
+              <span>Initializing FaceNet 128-D neural models...</span>
+            </div>
+          ) : null}
         </div>
 
         {/* Bottom Control Bar */}
@@ -642,7 +665,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
             <button
               type="button"
               onClick={handleTriggerScan}
-              disabled={isScanning || isCooldown || !streamActive || !devicePaired || !sdkAvailable}
+              disabled={isScanning || isCooldown || !streamActive || !devicePaired || !sdkAvailable || sdkLoading}
               className={`px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                 isCooldown
                   ? 'bg-slate-800 text-slate-500 border border-slate-700'
@@ -653,6 +676,11 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
                   <span>Verifying with Edge Function...</span>
+                </>
+              ) : sdkLoading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                  <span>Loading Models...</span>
                 </>
               ) : (
                 <>

@@ -237,7 +237,25 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
     setStreamActive(false);
   };
 
-  const sdkAvailable = isBiometricSdkAvailable();
+  const [sdkAvailable, setSdkAvailable] = useState<boolean>(() => isBiometricSdkAvailable());
+  const [sdkLoading, setSdkLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (isBiometricSdkAvailable()) {
+        setSdkAvailable(true);
+        const sdk = (window as any).__FLOWPEOPLE_BIOMETRIC_SDK__;
+        if (sdk?.init && !sdk?.isLoaded?.()) {
+          setSdkLoading(true);
+          sdk.init()
+            .catch((e: any) => console.warn('Biometric model load warning:', e))
+            .finally(() => setSdkLoading(false));
+        }
+      } else {
+        setSdkAvailable(false);
+      }
+    }
+  }, [isOpen]);
 
   const handleCaptureAndExecute = async () => {
     if (!sdkAvailable) {
@@ -642,15 +660,25 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                 </div>
 
                 {/* SDK Advisory Banner when genuine extractor is unconfigured */}
-                {!sdkAvailable && (
+                {!sdkAvailable ? (
                   <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-1">
                     <span className="font-bold block text-white flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       <span>Biometric Neural Extractor SDK Required</span>
                     </span>
                     <p className="text-[11px] leading-relaxed text-slate-300">
-                      FlowPeople frontend does not bundle a client-side neural embedding extractor. Biometric vector simulation is disabled to prevent mock attendance.
+                      FlowPeople frontend requires the client-side neural embedding extractor. Biometric vector simulation is disabled to prevent mock attendance.
                     </p>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+                      <span>{APPROVED_BIOMETRIC_MODEL.name} ({APPROVED_BIOMETRIC_MODEL.dimensions}-D)</span>
+                    </span>
+                    <span className="font-mono text-[10px] bg-teal-500/20 px-2 py-0.5 rounded font-bold">
+                      {sdkLoading ? 'INITIALIZING...' : 'ENGINE READY'}
+                    </span>
                   </div>
                 )}
 
@@ -659,13 +687,18 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                   <button
                     type="button"
                     onClick={handleCaptureAndExecute}
-                    disabled={loading || !streamActive || !sdkAvailable}
+                    disabled={loading || !streamActive || !sdkAvailable || sdkLoading}
                     className="flex-1 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-bold py-3.5 px-5 rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm active:scale-[0.99] cursor-pointer"
                   >
                     {loading ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
                         <span>Verifying with Biometric Engine...</span>
+                      </>
+                    ) : sdkLoading ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                        <span>Loading FaceNet Neural Model...</span>
                       </>
                     ) : (
                       <>
