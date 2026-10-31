@@ -20,6 +20,11 @@ CONFIDENCE_THRESHOLD = 0.82
 LIVENESS_THRESHOLD = 0.75
 MAX_REPLAY_AGE_SECONDS = 60
 
+# Authoritative Company Biometric Model Architecture Specification
+APPROVED_MODEL_VERSION = "v2.0-facenet-norm"
+APPROVED_VECTOR_DIM = 128
+SUPPORTED_MODEL_VERSIONS = {"v2.0-facenet-norm", "facenet-v1-128"}
+
 def _normalize_vector(vec: List[float]) -> List[float]:
     magnitude = math.sqrt(sum(x * x for x in vec))
     if magnitude < 1e-9:
@@ -97,18 +102,36 @@ class BiometricService:
         raw_face_vector: str,
         consent_given: bool,
         quality_score: float = 0.95,
-        liveness_data: Optional[Dict[str, Any]] = None
+        liveness_data: Optional[Dict[str, Any]] = None,
+        model_version: Optional[str] = None
     ) -> FaceEnrollment:
         if not consent_given:
             raise ValueError("Explicit biometric consent is required for enrollment")
+
+        # 1. Enforce Model Architecture Version Compatibility
+        effective_version = (model_version or APPROVED_MODEL_VERSION).strip()
+        if effective_version not in SUPPORTED_MODEL_VERSIONS:
+            raise ValueError(
+                f"INCOMPATIBLE_MODEL_VERSION: Company biometric architecture is locked to '{APPROVED_MODEL_VERSION}' (128-D). "
+                f"Submitted version '{effective_version}' is rejected to prevent latent space corruption."
+            )
+        canonical_version = APPROVED_MODEL_VERSION
+
+        # 2. Vector Parsing and Strict Dimensionality Enforcement
+        vec = parse_template_to_vector(raw_face_vector)
+        if len(vec) != APPROVED_VECTOR_DIM:
+            raise ValueError(
+                f"INCOMPATIBLE_VECTOR_DIMENSION: Expected {APPROVED_VECTOR_DIM}-D embedding for model '{canonical_version}', "
+                f"but received {len(vec)}-D vector."
+            )
 
         liveness_ok, l_score, err = verify_liveness_challenge(liveness_data or {"timestamp": int(time.time()*1000), "motion_score": 0.9, "blink_detected": True, "frame_variance": 0.9})
         if not liveness_ok:
             raise ValueError(f"Biometric enrollment rejected: {err}")
 
-        # Normalize and serialize template
-        vec = parse_template_to_vector(raw_face_vector)
-        serialized_template = json.dumps(vec)
+        # L2-normalize and serialize template
+        normalized_vec = _normalize_vector(vec)
+        serialized_template = json.dumps(normalized_vec)
 
         enrollment = db.query(FaceEnrollment).filter(FaceEnrollment.user_id == user_id).first()
         now = datetime.now(timezone.utc)
@@ -118,7 +141,7 @@ class BiometricService:
                 consent_given=consent_given,
                 consent_timestamp=now,
                 face_template=serialized_template,
-                template_version="v2.0-facenet-norm",
+                template_version=canonical_version,
                 status=BiometricEnrollmentStatus.VERIFIED.value,
                 quality_score=quality_score,
                 liveness_verified=True,
@@ -128,6 +151,7 @@ class BiometricService:
             db.add(enrollment)
         else:
             enrollment.face_template = serialized_template
+            enrollment.template_version = canonical_version
             enrollment.status = BiometricEnrollmentStatus.VERIFIED.value
             enrollment.quality_score = quality_score
             enrollment.liveness_verified = True
@@ -135,15 +159,15 @@ class BiometricService:
             enrollment.revoked_at = None
             enrollment.revoked_by_id = None
 
-        # Log enrollment attempt
+        # Log enrollment attempt with lowercase database status
         log = FaceVerificationLog(
             user_id=user_id,
             attempt_type=BiometricAttemptType.ENROLLMENT.value,
-            status=BiometricVerificationStatus.SUCCESS.value,
+            status="success",
             confidence_score=1.0,
             liveness_score=l_score,
-            ip_address="127.0.0.1",
-            device_info="Browser WebRTC Secure Client"
+            ip_address=None,
+            device_info="Browser Biometric Enrollment Client"
         )
         db.add(log)
         db.commit()
@@ -158,15 +182,24 @@ class BiometricService:
         live_face_data: str,
         liveness_data: Dict[str, Any],
         ip_address: Optional[str] = None,
-        device_info: Optional[str] = None
+        device_info: Optional[str] = None,
+        model_version: Optional[str] = None
     ) -> Tuple[bool, float, float, Optional[str]]:
+        # 1. Model Version Verification
+        effective_version = (model_version or APPROVED_MODEL_VERSION).strip()
+        if effective_version not in SUPPORTED_MODEL_VERSIONS:
+            return False, 0.0, 0.0, (
+                f"INCOMPATIBLE_MODEL_VERSION: Probe model '{effective_version}' is incompatible with "
+                f"company standard '{APPROVED_MODEL_VERSION}'."
+            )
+
         enrollment = db.query(FaceEnrollment).filter(FaceEnrollment.user_id == user_id).first()
-        if not enrollment or enrollment.status != BiometricEnrollmentStatus.VERIFIED.value:
-            # Log failure
+        if not enrollment or enrollment.status not in [BiometricEnrollmentStatus.VERIFIED.value, "VERIFIED", "ENROLLED"]:
+            # Log failure with lowercase status
             log = FaceVerificationLog(
                 user_id=user_id,
                 attempt_type=attempt_type,
-                status=BiometricVerificationStatus.FAILED.value,
+                status="failed",
                 confidence_score=0.0,
                 liveness_score=0.0,
                 failure_reason="Face ID not registered or disabled",
@@ -177,13 +210,21 @@ class BiometricService:
             db.commit()
             return False, 0.0, 0.0, "Face ID is not registered or enrollment has been revoked"
 
-        # 1. Anti-spoofing and liveness check
+        # Check template model version compatibility
+        en_version = enrollment.template_version or APPROVED_MODEL_VERSION
+        if en_version not in SUPPORTED_MODEL_VERSIONS:
+            return False, 0.0, 0.0, (
+                f"REJECTED_MODEL_VERSION_INCOMPATIBLE: Enrolled template uses '{en_version}', "
+                f"which is incompatible with probe model '{effective_version}'."
+            )
+
+        # 2. Anti-spoofing and liveness check
         liveness_ok, liveness_score, liveness_err = verify_liveness_challenge(liveness_data)
         if not liveness_ok:
             log = FaceVerificationLog(
                 user_id=user_id,
                 attempt_type=attempt_type,
-                status=BiometricVerificationStatus.SPOOF_DETECTED.value,
+                status="spoof_detected",
                 confidence_score=0.0,
                 liveness_score=liveness_score,
                 failure_reason=liveness_err or "Liveness verification failed",
@@ -194,9 +235,16 @@ class BiometricService:
             db.commit()
             return False, 0.0, liveness_score, f"Anti-spoofing check failed: {liveness_err}"
 
-        # 2. Template comparison
+        # 3. Vector parsing & dimensionality check
         stored_vec = parse_template_to_vector(enrollment.face_template)
         live_vec = parse_template_to_vector(live_face_data)
+
+        if len(live_vec) != APPROVED_VECTOR_DIM or len(stored_vec) != APPROVED_VECTOR_DIM:
+            return False, 0.0, liveness_score, (
+                f"REJECTED_MODEL_DIMENSION_MISMATCH: Biometric vector length "
+                f"does not match expected {APPROVED_VECTOR_DIM}-D."
+            )
+
         confidence = _cosine_similarity(stored_vec, live_vec)
         confidence = round(confidence, 4)
 
@@ -204,7 +252,7 @@ class BiometricService:
             log = FaceVerificationLog(
                 user_id=user_id,
                 attempt_type=attempt_type,
-                status=BiometricVerificationStatus.FAILED.value,
+                status="failed",
                 confidence_score=confidence,
                 liveness_score=liveness_score,
                 failure_reason=f"Confidence {confidence:.2f} below required match threshold {CONFIDENCE_THRESHOLD}",
@@ -215,11 +263,11 @@ class BiometricService:
             db.commit()
             return False, confidence, liveness_score, "Face does not match registered employee template"
 
-        # 3. Successful match
+        # 4. Successful match
         log = FaceVerificationLog(
             user_id=user_id,
             attempt_type=attempt_type,
-            status=BiometricVerificationStatus.SUCCESS.value,
+            status="success",
             confidence_score=confidence,
             liveness_score=liveness_score,
             ip_address=ip_address,
@@ -236,13 +284,34 @@ class BiometricService:
         liveness_data: Optional[Dict[str, Any]] = None,
         ip_address: Optional[str] = None,
         device_info: Optional[str] = None,
-        target_user_id: Optional[int] = None
+        target_user_id: Optional[int] = None,
+        model_version: Optional[str] = None
     ) -> Tuple[Optional[User], float, float, Optional[str]]:
         """
         1:N Automatic Identification: Matches incoming camera face against all enrolled employees.
-        If target_user_id is provided, directly verifies that employee.
+        Enforces strict model version compatibility: only compares embeddings generated
+        by identical model architecture (v2.0-facenet-norm / 128-D).
         """
-        # Anti-spoofing heuristic check
+        # 1. Model Version Verification
+        effective_version = (model_version or APPROVED_MODEL_VERSION).strip()
+        if effective_version not in SUPPORTED_MODEL_VERSIONS:
+            return None, 0.0, 0.0, (
+                f"REJECTED_MODEL_VERSION_INCOMPATIBLE: Live vector model '{effective_version}' "
+                f"is incompatible with company standard '{APPROVED_MODEL_VERSION}'."
+            )
+
+        # 2. Live Vector Extraction & Dimensionality Verification
+        live_vec = parse_template_to_vector(live_face_data)
+        if len(live_vec) != APPROVED_VECTOR_DIM:
+            return None, 0.0, 0.0, (
+                f"REJECTED_MODEL_DIMENSION_MISMATCH: Live face vector dimension ({len(live_vec)}) "
+                f"does not match required {APPROVED_VECTOR_DIM}-D for model '{APPROVED_MODEL_VERSION}'."
+            )
+
+        # L2-normalize live vector
+        live_vec = _normalize_vector(live_vec)
+
+        # 3. Liveness Challenge
         if liveness_data:
             liveness_ok, liveness_score, liveness_err = verify_liveness_challenge(liveness_data)
             if not liveness_ok:
@@ -250,49 +319,46 @@ class BiometricService:
         else:
             liveness_score = 0.95
 
-        live_vec = parse_template_to_vector(live_face_data)
-
-        # 1. Target User Direct Match Override
+        # 4. Target User Direct Match (if specified)
         if target_user_id:
             user = db.query(User).filter(User.id == target_user_id, User.status == "ACTIVE").first()
-            if not user or not user.face_enrollment or user.face_enrollment.status != BiometricEnrollmentStatus.VERIFIED.value:
-                # If user doesn't have an enrollment yet, auto-enroll for seamless kiosk flow
-                if user:
-                    dummy_vec = [round(0.05 * ((i % 17) - 8), 4) for i in range(128)]
-                    en = FaceEnrollment(
-                        user_id=user.id,
-                        consent_given=True,
-                        face_template=json.dumps(dummy_vec),
-                        status=BiometricEnrollmentStatus.VERIFIED.value,
-                        quality_score=0.96
-                    )
-                    db.add(en)
-                    db.commit()
-                    db.refresh(user)
-                else:
-                    return None, 0.0, liveness_score, "Face Registration Pending."
+            if not user or not user.face_enrollment or user.face_enrollment.status not in [BiometricEnrollmentStatus.VERIFIED.value, "VERIFIED", "ENROLLED"]:
+                return None, 0.0, liveness_score, "Face Registration Pending for this employee."
             
+            en_version = user.face_enrollment.template_version or APPROVED_MODEL_VERSION
+            if en_version not in SUPPORTED_MODEL_VERSIONS:
+                return None, 0.0, liveness_score, (
+                    f"REJECTED_MODEL_VERSION_INCOMPATIBLE: Enrolled template uses '{en_version}', "
+                    f"incompatible with terminal model '{effective_version}'."
+                )
+
             stored_vec = parse_template_to_vector(user.face_enrollment.face_template)
+            if len(stored_vec) != len(live_vec):
+                return None, 0.0, liveness_score, "Vector dimensionality mismatch between template and live probe."
+
             confidence = round(_cosine_similarity(stored_vec, live_vec), 4)
             if confidence < CONFIDENCE_THRESHOLD:
-                # Direct target match from terminal: simulated optical variance matching enrolled biometric vector
-                confidence = round(0.96, 4)
+                return None, confidence, liveness_score, f"Face verification score ({confidence:.2f}) below threshold ({CONFIDENCE_THRESHOLD})"
             return user, confidence, liveness_score, None
 
-        # 2. 1:N Global Scan across all enrolled active employees
+        # 5. 1:N Global Scan across all enrolled active employees
+        # ONLY compare against candidate templates whose template_version matches the supported model versions!
         enrollments = db.query(FaceEnrollment).join(User, FaceEnrollment.user_id == User.id).filter(
-            FaceEnrollment.status == BiometricEnrollmentStatus.VERIFIED.value,
+            FaceEnrollment.status.in_([BiometricEnrollmentStatus.VERIFIED.value, "VERIFIED", "ENROLLED"]),
+            FaceEnrollment.template_version.in_(SUPPORTED_MODEL_VERSIONS),
             User.status == "ACTIVE"
         ).all()
 
         if not enrollments:
-            return None, 0.0, liveness_score, "No active employee Face ID enrollments found in database."
+            return None, 0.0, liveness_score, f"No active employee Face ID templates compatible with model '{APPROVED_MODEL_VERSION}' found in database."
 
         best_user = None
         best_confidence = 0.0
 
         for en in enrollments:
             stored_vec = parse_template_to_vector(en.face_template)
+            if len(stored_vec) != len(live_vec):
+                continue # Skip incompatible vectors safely
             conf = _cosine_similarity(stored_vec, live_vec)
             if conf > best_confidence:
                 best_confidence = conf
@@ -303,11 +369,11 @@ class BiometricService:
         if best_confidence < CONFIDENCE_THRESHOLD or not best_user:
             return None, best_confidence, liveness_score, "Face Not Recognized. Please Contact HR."
 
-        # Log Kiosk recognition event
+        # Log Kiosk recognition event with lowercase status
         log = FaceVerificationLog(
             user_id=best_user.id,
             attempt_type="KIOSK_RECOGNITION",
-            status=BiometricVerificationStatus.SUCCESS.value,
+            status="success",
             confidence_score=best_confidence,
             liveness_score=liveness_score,
             ip_address=ip_address,

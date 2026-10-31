@@ -194,10 +194,12 @@ export interface Announcement {
 
 export interface BiometricStatus {
   enrolled: boolean;
-  status: 'NOT_REGISTERED' | 'PENDING' | 'VERIFIED' | 'DISABLED';
+  status: 'not_registered' | 'pending' | 'verified' | 'disabled' | 'NOT_REGISTERED' | 'PENDING' | 'VERIFIED' | 'DISABLED';
   quality_score: number;
   liveness_verified: boolean;
   enrolled_at?: string;
+  template_version?: string;
+  is_model_compatible?: boolean;
 }
 
 export interface BiometricLog {
@@ -631,18 +633,18 @@ export const api = {
 
   // Biometric Face ID
   getBiometricStatus: () => fetchJson<BiometricStatus>(`${API_BASE}/biometrics/status`),
-  enrollFace: (data: { face_vector: string; consent_given: boolean; quality_score?: number; liveness_data?: any; target_user_id?: number }) =>
+  enrollFace: (data: { face_vector: string; consent_given: boolean; quality_score?: number; liveness_data?: any; target_user_id?: number; model_version?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/enroll`, { method: 'POST', body: JSON.stringify(data) }),
-  testFaceVerification: (data: { face_data: string; liveness_data: any; target_user_id?: number; device?: string }) =>
+  testFaceVerification: (data: { face_data: string; liveness_data: any; target_user_id?: number; device?: string; model_version?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/verify-test`, { method: 'POST', body: JSON.stringify(data) }),
-  verifyFacePunch: (data: { punch_type: 'IN' | 'OUT'; face_data: string; liveness_data: any; latitude?: number; longitude?: number; location_note?: string; device?: string }) =>
+  verifyFacePunch: (data: { punch_type: 'IN' | 'OUT'; face_data: string; liveness_data: any; latitude?: number; longitude?: number; location_note?: string; device?: string; model_version?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/verify-punch`, { method: 'POST', body: JSON.stringify(data) }),
   fallbackPunch: (data: { punch_type: 'IN' | 'OUT'; reason: string; latitude?: number; longitude?: number; device?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/fallback-punch`, { method: 'POST', body: JSON.stringify(data) }),
   getBiometricLogs: () => fetchJson<BiometricLog[]>(`${API_BASE}/biometrics/logs`),
   getVerificationFailures: () => fetchJson<VerificationFailureLog[]>(`${API_BASE}/biometrics/verification-failures`),
   resetFaceId: (userId: number) => fetchJson<any>(`${API_BASE}/biometrics/admin/reset/${userId}`, { method: 'POST' }),
-  kioskScanFacePunch: (data: { face_data: string; liveness_data?: any; target_user_id?: number; device?: string; latitude?: number; longitude?: number }) =>
+  kioskScanFacePunch: (data: { face_data: string; liveness_data?: any; target_user_id?: number; device?: string; latitude?: number; longitude?: number; model_version?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/kiosk-scan-punch`, { method: 'POST', body: JSON.stringify(data) }),
 
   // Fingerprint Attendance

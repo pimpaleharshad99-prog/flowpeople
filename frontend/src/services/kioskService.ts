@@ -20,21 +20,19 @@ import { supabase } from '../lib/supabase';
 export const EDGE_FUNCTION_URL = 'https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan';
 export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_bEuL6GdEhvU5XlukkZpwng_LUNq3Nrp';
 
-// Supported biometric model architectures (Enrollment and Kiosk must share identical version)
-export const SUPPORTED_MODEL_ARCHITECTURES = {
-  FACENET_128: {
-    id: 'facenet-v1-128',
-    dimensions: 128,
-    name: 'FaceNet Mobile 128-D Embedding Model'
-  },
-  ARCFACE_512: {
-    id: 'arcface-v1-512',
-    dimensions: 512,
-    name: 'ArcFace ResNet 512-D Embedding Model'
-  }
+// Authoritative Company Biometric Model Architecture Specification
+export const APPROVED_BIOMETRIC_MODEL = {
+  id: 'v2.0-facenet-norm',
+  name: 'FaceNet Mobile 128-D L2-Normalized Embedding Model',
+  dimensions: 128,
+  normalization: 'L2_UNIT',
+  inputDimensions: [160, 160, 3],
+  preprocessing: 'Standardized zero-mean unit-variance [-1.0, 1.0]',
+  similarityThreshold: 0.82
 } as const;
 
-export const DEFAULT_MODEL_VERSION = SUPPORTED_MODEL_ARCHITECTURES.FACENET_128.id;
+export const ACTIVE_MODEL_VERSION = APPROVED_BIOMETRIC_MODEL.id;
+export const SUPPORTED_MODEL_VERSIONS = ['v2.0-facenet-norm', 'facenet-v1-128'] as const;
 
 export type KioskOutcome =
   | 'CHECK_IN'
@@ -49,16 +47,18 @@ export type KioskOutcome =
   | 'REJECTED_AMBIGUOUS'
   | 'REJECTED_MULTIPLE_FACES'
   | 'REJECTED_INACTIVE'
-  | 'REJECTED_MANUAL_MODE';
+  | 'REJECTED_MANUAL_MODE'
+  | 'REJECTED_MODEL_VERSION_INCOMPATIBLE';
 
 export interface KioskFaceScanPayload {
   device_id: string; // Valid UUID
   device_secret: string; // Authorized kiosk secret
-  embedding: number[]; // Exactly 128 or 512 finite numbers
+  embedding: number[]; // Exactly 128 finite numbers
   face_count: number;
   liveness: boolean | null;
   quality: number | null;
   idempotency_key: string;
+  model_version?: string; // Must be 'v2.0-facenet-norm'
 }
 
 export interface KioskEmployee {
@@ -162,11 +162,11 @@ export function generateIdempotencyKey(): string {
 }
 
 /**
- * Validate embedding numbers: must be exactly 128 or 512 finite floats
+ * Validate embedding numbers: must be exactly 128 finite floats (matching approved FaceNet model)
  */
 export function isValidEmbedding(vec: unknown): vec is number[] {
   if (!Array.isArray(vec)) return false;
-  if (vec.length !== 128 && vec.length !== 512) return false;
+  if (vec.length !== APPROVED_BIOMETRIC_MODEL.dimensions) return false;
   return vec.every((n) => typeof n === 'number' && Number.isFinite(n));
 }
 
@@ -255,6 +255,12 @@ export function mapOutcomeFeedback(outcome: string | undefined, detail?: string)
         title: 'Biometric Kiosk Disabled',
         message: detail || 'Biometric check-in is temporarily suspended. Please use web portal punch.'
       };
+    case 'REJECTED_MODEL_VERSION_INCOMPATIBLE':
+      return {
+        outcome: 'REJECTED_MODEL_VERSION_INCOMPATIBLE',
+        title: 'Incompatible Biometric Model',
+        message: detail || `Facial scan was produced using an incompatible model version. Company standard is ${APPROVED_BIOMETRIC_MODEL.id} (${APPROVED_BIOMETRIC_MODEL.dimensions}-D).`
+      };
     default:
       return {
         outcome: 'REJECTED_NOT_RECOGNIZED',
@@ -334,23 +340,27 @@ export async function enrollFaceBiometrics(params: FaceEnrollmentParams): Promis
   }
 
   const sampleDim = params.samples[0].length;
-  if (sampleDim !== 128 && sampleDim !== 512) {
-    throw new Error(`Invalid embedding dimensionality: ${sampleDim}. Must be 128-D or 512-D.`);
+  if (sampleDim !== APPROVED_BIOMETRIC_MODEL.dimensions) {
+    throw new Error(
+      `Invalid embedding dimensionality: ${sampleDim}. Must match company standard ${APPROVED_BIOMETRIC_MODEL.id} (${APPROVED_BIOMETRIC_MODEL.dimensions}-D).`
+    );
   }
 
   const hasInconsistentDims = params.samples.some((s) => s.length !== sampleDim || !isValidEmbedding(s));
   if (hasInconsistentDims) {
-    throw new Error('All face samples must have identical dimensionality and contain only finite numerical values.');
+    throw new Error('All face samples must have identical dimensionality (128-D) and contain only finite numerical values.');
   }
 
-  if (!params.modelVersion || params.modelVersion.trim().length === 0) {
-    throw new Error('Model version must be specified for template compatibility.');
+  if (!params.modelVersion || !(SUPPORTED_MODEL_VERSIONS as readonly string[]).includes(params.modelVersion.trim())) {
+    throw new Error(
+      `Incompatible model version '${params.modelVersion}'. Company standard requires '${ACTIVE_MODEL_VERSION}' (${APPROVED_BIOMETRIC_MODEL.dimensions}-D).`
+    );
   }
 
   const { data, error } = await supabase.rpc('enroll_face', {
     p_employee_id: params.employeeId,
     p_samples: params.samples,
-    p_model_version: params.modelVersion,
+    p_model_version: params.modelVersion.trim(),
     p_consent: true
   });
 
@@ -420,18 +430,33 @@ export async function submitKioskFaceScan(payload: KioskFaceScanPayload): Promis
       success: false,
       outcome: 'INVALID_PAYLOAD',
       title: 'Invalid Biometric Vector',
-      message: 'Biometric embedding must contain exactly 128 or 512 finite floating-point values.'
+      message: `Biometric embedding must contain exactly ${APPROVED_BIOMETRIC_MODEL.dimensions} finite floating-point values.`
+    };
+  }
+
+  const modelVersion = (payload.model_version || ACTIVE_MODEL_VERSION).trim();
+  if (!(SUPPORTED_MODEL_VERSIONS as readonly string[]).includes(modelVersion)) {
+    return {
+      success: false,
+      outcome: 'REJECTED_MODEL_VERSION_INCOMPATIBLE',
+      title: 'Incompatible Model Version',
+      message: `Biometric model version '${modelVersion}' is not compatible. Required company standard is '${ACTIVE_MODEL_VERSION}' (${APPROVED_BIOMETRIC_MODEL.dimensions}-D).`
     };
   }
 
   try {
+    const finalPayload = {
+      ...payload,
+      model_version: modelVersion
+    };
+
     const response = await fetch(EDGE_FUNCTION_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_ANON_KEY
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(finalPayload)
     });
 
     const data = await response.json().catch(() => ({}));
@@ -447,6 +472,8 @@ export async function submitKioskFaceScan(payload: KioskFaceScanPayload): Promis
         } else if (data.error && typeof data.error === 'string') {
           if (data.error.includes('device') || data.error.includes('secret') || data.error.includes('unauthorized')) {
             outcomeCode = 'REJECTED_DEVICE';
+          } else if (data.error.includes('model') || data.error.includes('dimension') || data.error.includes('incompatible')) {
+            outcomeCode = 'REJECTED_MODEL_VERSION_INCOMPATIBLE';
           } else if (data.error.includes('liveness')) {
             outcomeCode = 'REJECTED_LIVENESS';
           } else if (data.error.includes('quality')) {

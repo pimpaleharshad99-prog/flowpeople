@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
@@ -9,7 +10,7 @@ from app.models.biometrics import FaceEnrollment, FaceVerificationLog, Biometric
 from app.models.attendance import AttendanceRecord, AttendancePunch, AttendanceStatus
 from app.models.user import User
 from app.api.deps import get_current_user, require_admin
-from app.services.biometric_service import BiometricService
+from app.services.biometric_service import BiometricService, APPROVED_MODEL_VERSION
 from app.services.shift_service import get_employee_shift_for_date
 from app.services.attendance_calculator import recalculate_attendance_record
 from app.schemas.attendance import AttendanceRecordOut, AttendancePunchOut
@@ -22,12 +23,14 @@ class FaceEnrollRequest(BaseModel):
     quality_score: Optional[float] = 0.95
     liveness_data: Optional[Dict[str, Any]] = None
     target_user_id: Optional[int] = None
+    model_version: Optional[str] = APPROVED_MODEL_VERSION
 
 class FaceTestRequest(BaseModel):
     face_data: str
     liveness_data: Dict[str, Any]
     target_user_id: Optional[int] = None
     device: Optional[str] = "Face ID Camera Diagnostics"
+    model_version: Optional[str] = APPROVED_MODEL_VERSION
 
 class FacePunchRequest(BaseModel):
     punch_type: str # "IN" or "OUT"
@@ -37,6 +40,7 @@ class FacePunchRequest(BaseModel):
     longitude: Optional[float] = None
     location_note: Optional[str] = None
     device: Optional[str] = "Face ID Camera Terminal"
+    model_version: Optional[str] = APPROVED_MODEL_VERSION
 
 class FallbackPunchRequest(BaseModel):
     punch_type: str # "IN" or "OUT"
@@ -52,6 +56,7 @@ class KioskScanPunchRequest(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     device: Optional[str] = "Entrance Face Recognition Kiosk"
+    model_version: Optional[str] = APPROVED_MODEL_VERSION
 
 def serialize_record(r: AttendanceRecord) -> AttendanceRecordOut:
     return AttendanceRecordOut(
@@ -81,14 +86,19 @@ def get_face_enrollment_status(
     if not enrollment:
         return {
             "enrolled": False,
-            "status": BiometricEnrollmentStatus.NOT_REGISTERED.value,
+            "status": "not_registered",
+            "template_version": APPROVED_MODEL_VERSION,
+            "is_model_compatible": True,
             "quality_score": 0.0,
             "liveness_verified": False,
             "enrolled_at": None
         }
+    is_compatible = (enrollment.template_version in ["v2.0-facenet-norm", "facenet-v1-128"])
     return {
-        "enrolled": enrollment.status == BiometricEnrollmentStatus.VERIFIED.value,
-        "status": enrollment.status,
+        "enrolled": enrollment.status in [BiometricEnrollmentStatus.VERIFIED.value, "VERIFIED", "ENROLLED"],
+        "status": enrollment.status.lower() if enrollment.status else "not_registered",
+        "template_version": enrollment.template_version or APPROVED_MODEL_VERSION,
+        "is_model_compatible": is_compatible,
         "quality_score": enrollment.quality_score,
         "liveness_verified": enrollment.liveness_verified,
         "enrolled_at": enrollment.enrolled_at.isoformat() if enrollment.enrolled_at else None
@@ -119,12 +129,14 @@ def enroll_face(
             raw_face_vector=req.face_vector,
             consent_given=req.consent_given,
             quality_score=req.quality_score or 0.95,
-            liveness_data=req.liveness_data
+            liveness_data=req.liveness_data,
+            model_version=req.model_version
         )
         return {
             "success": True,
-            "message": "Face ID successfully enrolled and verified",
-            "status": enrollment.status,
+            "message": f"Face ID successfully enrolled and verified with model '{enrollment.template_version}'",
+            "status": "verified",
+            "template_version": enrollment.template_version,
             "enrolled_at": enrollment.enrolled_at.isoformat() if enrollment.enrolled_at else None
         }
     except ValueError as e:
@@ -164,8 +176,15 @@ def test_face_verification(
         live_face_data=req.face_data,
         liveness_data=req.liveness_data,
         ip_address=client_ip,
-        device_info=req.device or "Face ID Camera Diagnostics"
+        device_info=req.device or "Face ID Camera Diagnostics",
+        model_version=req.model_version
     )
+
+    if err and "INCOMPATIBLE_MODEL_VERSION" in err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=err
+        )
 
     return {
         "success": matched,
@@ -231,7 +250,7 @@ def verify_face_and_punch(
                 detail="Cannot check out without an active check-in session."
             )
 
-    client_ip = request.client.host if request.client else "127.0.0.1"
+    client_ip = request.client.host if request.client else None
     matched, confidence, liveness, err = BiometricService.verify_and_match(
         db=db,
         user_id=current_user.id,
@@ -239,7 +258,8 @@ def verify_face_and_punch(
         live_face_data=punch_req.face_data,
         liveness_data=punch_req.liveness_data,
         ip_address=client_ip,
-        device_info=punch_req.device
+        device_info=punch_req.device,
+        model_version=punch_req.model_version
     )
 
     if not matched:
@@ -370,14 +390,15 @@ def kiosk_scan_face_punch(
     4. Saves real attendance record & logs to database immediately.
     5. Returns recognized employee details, role, department, action, and timestamp.
     """
-    client_ip = request.client.host if request.client else "127.0.0.1"
+    client_ip = request.client.host if request.client else None
     matched_user, confidence, liveness, err = BiometricService.identify_1_to_n(
         db=db,
         live_face_data=req.face_data,
         liveness_data=req.liveness_data,
         ip_address=client_ip,
         device_info=req.device or "Office Entrance Face Kiosk",
-        target_user_id=req.target_user_id
+        target_user_id=req.target_user_id,
+        model_version=req.model_version
     )
 
     if not matched_user:
@@ -560,7 +581,7 @@ def get_biometric_logs(
             "user_id": l.user_id,
             "user_name": l.user.full_name if l.user else "Unknown",
             "attempt_type": l.attempt_type,
-            "status": l.status,
+            "status": l.status.lower() if l.status else "unknown",
             "confidence_score": l.confidence_score,
             "liveness_score": l.liveness_score,
             "failure_reason": l.failure_reason,
@@ -599,7 +620,7 @@ def get_verification_failures(
     logs = db.query(FaceVerificationLog).join(User, FaceVerificationLog.user_id == User.id)\
         .filter(
             User.company_id == current_user.company_id,
-            FaceVerificationLog.status != "SUCCESS"
+            func.lower(FaceVerificationLog.status).not_in(["success", "verified"])
         )\
         .order_by(FaceVerificationLog.timestamp.desc())\
         .limit(50)\
@@ -612,7 +633,7 @@ def get_verification_failures(
             "user_name": l.user.full_name if l.user else "Unknown",
             "employee_code": l.user.employee_code if l.user else "—",
             "attempt_type": l.attempt_type,
-            "status": l.status,
+            "status": l.status.lower() if l.status else "unknown",
             "confidence_score": l.confidence_score,
             "liveness_score": l.liveness_score,
             "failure_reason": l.failure_reason,

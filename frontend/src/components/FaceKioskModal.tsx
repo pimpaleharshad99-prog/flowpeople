@@ -30,7 +30,9 @@ import {
   RegisteredKioskDevice,
   KioskScanSuccess,
   KioskScanFailure,
-  isValidUuid
+  isValidUuid,
+  APPROVED_BIOMETRIC_MODEL,
+  ACTIVE_MODEL_VERSION
 } from '../services/kioskService';
 
 interface FaceKioskModalProps {
@@ -271,7 +273,8 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
         face_count: extraction.face_count || 1,
         liveness: extraction.liveness ?? null,
         quality: extraction.quality ?? null,
-        idempotency_key: keyToUse
+        idempotency_key: keyToUse,
+        model_version: ACTIVE_MODEL_VERSION
       });
 
       if (result.success) {
@@ -389,12 +392,15 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
           <div className="flex items-center gap-3">
             <Logo size={28} showTagline={false} />
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-bold text-sm sm:text-base tracking-tight text-white">
                   FlowPeople Face Attendance Kiosk
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
                   SUPABASE EDGE TERMINAL
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-700/60 text-slate-300 border border-slate-600/50" title={APPROVED_BIOMETRIC_MODEL.name}>
+                  MODEL: {APPROVED_BIOMETRIC_MODEL.id} ({APPROVED_BIOMETRIC_MODEL.dimensions}-D)
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">

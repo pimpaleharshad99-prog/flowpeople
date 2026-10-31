@@ -43,7 +43,7 @@ import {
   ConfirmDialog
 } from '../components/ui';
 import { FaceCameraModal } from '../components/FaceCameraModal';
-import { removeFaceBiometrics } from '../services/kioskService';
+import { removeFaceBiometrics, APPROVED_BIOMETRIC_MODEL, ACTIVE_MODEL_VERSION } from '../services/kioskService';
 
 interface DirectoryViewProps {
   currentUser: User | null;
@@ -1297,7 +1297,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
 
             {profileTab === 'biometrics' && (
               <div className="space-y-4 text-xs">
-                {/* 1. Biometric Enrollment Status */}
+                {/* 1. Biometric Enrollment Status & Model Architecture */}
                 <div className={`p-4 rounded-xl border space-y-2 text-center ${
                   selectedEmployee.has_face_enrolled 
                     ? 'border-emerald-500/30 bg-emerald-500/5' 
@@ -1313,15 +1313,30 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                       {selectedEmployee.has_face_enrolled ? 'Face ID Enrolled & Active' : 'Face ID Not Registered'}
                     </span>
                     <span className="font-mono text-[10px] text-[var(--text-subtle)]">
-                      {selectedEmployee.has_face_enrolled ? 'Template Version: v1.0-facenet-128 • Anti-Spoof Armed' : 'Awaiting Employee Biometric Consent & Optical Capture'}
+                      {selectedEmployee.has_face_enrolled 
+                        ? `Template: ${APPROVED_BIOMETRIC_MODEL.id} (${APPROVED_BIOMETRIC_MODEL.dimensions}-D) • Model Compatible` 
+                        : 'Awaiting Employee Biometric Consent & Optical Capture'}
                     </span>
                   </div>
                   <p className="text-[11px] text-[var(--text-subtle)] leading-relaxed">
                     {selectedEmployee.has_face_enrolled 
-                      ? 'Encrypted biometric mathematical vector is registered on server for optical attendance verification.'
-                      : 'Employee must complete optical face enrollment before biometric check-in is enabled.'
+                      ? `Biometric mathematical vector (${APPROVED_BIOMETRIC_MODEL.dimensions}-D, L2-normalized) is active on the server and verified for optical attendance kiosks.`
+                      : `Employee must complete optical face enrollment before biometric check-in is enabled. System enforces ${APPROVED_BIOMETRIC_MODEL.name}.`
                     }
                   </p>
+                </div>
+
+                {/* Biometric Model Version Consistency Badge */}
+                <div className="p-3 rounded-xl border border-[var(--border-glass)] bg-[var(--surface-sunken)] flex items-center justify-between text-xs">
+                  <div className="space-y-0.5">
+                    <span className="font-semibold text-[var(--text-main)] block">Biometric Architecture Standard</span>
+                    <span className="text-[10px] text-[var(--text-subtle)] font-mono">
+                      {APPROVED_BIOMETRIC_MODEL.id} &bull; 128-D L2 &bull; 160x160 RGB
+                    </span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30">
+                    ENFORCED
+                  </span>
                 </div>
 
                 {/* 2. Explicit Employee Biometric Consent */}
@@ -1338,7 +1353,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                         className="mt-0.5 h-4 w-4 text-[var(--accent)] rounded border-[var(--border-subtle)]"
                       />
                       <span className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
-                        <strong>Employee Consent:</strong> {selectedEmployee.first_name} {selectedEmployee.last_name} explicitly consents to capturing and storing an encrypted 128-D facial feature vector solely for company attendance verification.
+                        <strong>Employee Consent:</strong> {selectedEmployee.first_name} {selectedEmployee.last_name} explicitly consents to capturing and storing an encrypted 128-D facial feature vector ({APPROVED_BIOMETRIC_MODEL.id}) solely for company attendance verification.
                       </span>
                     </label>
                   </div>

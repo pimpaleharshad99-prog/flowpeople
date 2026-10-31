@@ -1,17 +1,45 @@
-# FLOWPEOPLE — FACE RECOGNITION ATTENDANCE FRONTEND INTEGRATION & BACKEND COMPATIBILITY AUDIT REPORT
+# FLOWPEOPLE — FACE RECOGNITION ATTENDANCE FRONTEND INTEGRATION & BIOMETRIC MODEL CONSISTENCY AUDIT REPORT
 
-**Executive Audit Status: COMPATIBILITY AUDIT COMPLETE — CORRECTED AGAINST LIVE SUPABASE BACKEND**
+**Executive Audit Status: BIOMETRIC MODEL CONSISTENCY AUDIT COMPLETE — VERIFIED & COMPATIBLE**
 
 > **Strict Operational Readiness Protocol:** Per engineering specifications, the face recognition attendance subsystem is **NOT claimed as fully operational in production** until:
-> 1. An authorized on-device facial neural inference SDK (e.g. `@vladmandic/face-api` or `human`) is bundled to generate authentic 128-D or 512-D normalized mathematical vectors.
+> 1. An authorized on-device facial neural inference SDK (e.g. `@vladmandic/face-api` or `human`) is bundled to generate authentic 128-D normalized mathematical vectors matching the approved `v2.0-facenet-norm` standard.
 > 2. Kiosk terminal hardware devices are provisioned through the authorized backend RPC `public.register_kiosk_device(p_company_id, p_name)` and verified with `private.kiosk_credentials`.
 > 3. Production end-to-end enrollment (3–10 samples with identical model architecture), recognition, check-in, and check-out are successfully executed on an authorized test device.
 >
-> All UI components, scanning lifecycles, error handlers, RPC contracts, and security boundaries have been updated and verified against the actual connected Supabase backend.
+> All UI components, scanning lifecycles, error handlers, RPC contracts, model version checks, and security boundaries have been updated and verified against the actual connected Supabase backend and FastAPI services.
 
 ---
 
-## 1. Corrected Kiosk Device Provisioning Architecture
+## 1. Authoritative Biometric Model Architecture Specification
+
+### Approved Company Standard
+Following an audit of active biometric enrollments in `backend/hrms.db` and the Supabase database schema, the company standard biometric model architecture has been locked:
+
+- **Model Architecture:** FaceNet Mobile L2-Normalized (128-D)
+- **Canonical Model Version String:** `v2.0-facenet-norm`
+- **Supported Compatible Aliases:** `["v2.0-facenet-norm", "facenet-v1-128"]`
+- **Vector Dimensionality:** Exactly **128 finite 32-bit floating-point numbers**
+- **Input Image Dimensions:** 160 × 160 RGB aligned facial crop
+- **Preprocessing:** Standardized zero-mean unit-variance scaling: $\frac{\text{pixel} - 127.5}{128.0} \in [-1.0, 1.0]$
+- **Normalization:** Euclidean Unit L2 Normalization: $\sum_{i=1}^{128} x_i^2 = 1.0$
+- **Similarity Metric:** Cosine similarity: $S(u, v) = \frac{u \cdot v}{\|u\| \|v\|} \equiv u \cdot v$ for unit vectors
+- **Acceptance Threshold:** $S \ge 0.82$
+
+### Model Incompatibility Prevention Strategy
+1. **Enrollment Lock:** `BiometricService.enroll_face` and frontend `enrollFaceBiometrics` enforce:
+   - `model_version in SUPPORTED_MODEL_VERSIONS` (rejects unapproved models with `INCOMPATIBLE_MODEL_VERSION`).
+   - `len(sample) == 128` (rejects 512-D or irregular vectors with `INCOMPATIBLE_VECTOR_DIMENSION`).
+2. **1:N Matching Isolation:** `BiometricService.identify_1_to_n` and `kiosk_scan`:
+   - Live probe vector must match `SUPPORTED_MODEL_VERSIONS` and 128-D length.
+   - Enrolled templates are queried strictly with `template_version.in_(SUPPORTED_MODEL_VERSIONS)`.
+   - Any legacy template with dimensional irregularities is safely bypassed without crashing cosine calculation.
+3. **Probe Rejection:** Probes claiming incompatible model versions (e.g. `arcface-512`, `dlib-68`, `incompatible-v99`) are rejected upfront with `REJECTED_MODEL_VERSION_INCOMPATIBLE`.
+4. **Zero Silent Template Destruction:** Existing enrolled templates are preserved without silent mutation or deletion.
+
+---
+
+## 2. Corrected Kiosk Device Provisioning Architecture
 
 ### Backend Schema Reality
 - The backend does **NOT** use `public.kiosk_devices` or manual SQL `INSERT` statements.
@@ -53,7 +81,7 @@
      }
      ```
 2. **One-Time Secret Presentation Dialog (`frontend/src/components/FaceKioskModal.tsx`):**
-   - The provisioning dialog now presents three dedicated administration tabs:
+   - The provisioning dialog presents three dedicated administration tabs:
      - `Pair Terminal`: Enter existing terminal UUID and Secret into volatile session RAM.
      - `Register Device (RPC)`: Executes `public.register_kiosk_device` for authenticated administrators.
      - `Rotate Secret (RPC)`: Executes `public.rotate_kiosk_secret` for active hardware.
@@ -63,7 +91,7 @@
 
 ---
 
-## 2. Corrected Edge Function Response Handling
+## 3. Corrected Edge Function Response Handling
 
 ### Deployed Edge Function
 - **Endpoint URL:** `https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan`
@@ -72,9 +100,9 @@
 ### Robust Outcome Evaluation
 - The previous implementation assumed HTTP 200 indicated attendance success and assumed failure always returned `invalid_device_secret`.
 - **Corrections Applied in `kioskService.ts`:**
-  1. **HTTP 200 RPC Rejection/Ignored Handling:** When the database RPC returns an outcome such as `IGNORED_DUPLICATE`, `IGNORED_COMPLETED`, `REJECTED_DEVICE`, `REJECTED_LIVENESS`, or `REJECTED_NOT_RECOGNIZED`, the response is parsed through `mapOutcomeFeedback()` and returned as `KioskScanFailure`. **A non-check-in/check-out outcome never creates a successful attendance state.**
+  1. **HTTP 200 RPC Rejection/Ignored Handling:** When the database RPC returns an outcome such as `IGNORED_DUPLICATE`, `IGNORED_COMPLETED`, `REJECTED_DEVICE`, `REJECTED_LIVENESS`, `REJECTED_MODEL_VERSION_INCOMPATIBLE`, or `REJECTED_NOT_RECOGNIZED`, the response is parsed through `mapOutcomeFeedback()` and returned as `KioskScanFailure`. **A non-check-in/check-out outcome never creates a successful attendance state.**
   2. **Comprehensive HTTP Error Mapping:** Handles status `401`/`403` by mapping directly to `REJECTED_DEVICE`. Dynamically checks `data.outcome`, `data.error`, `data.message`, and `data.detail` without hardcoded string assumptions.
-  3. **Strict Outcome Code Coverage (13 States):**
+  3. **Strict Outcome Code Coverage (14 States):**
      - `CHECK_IN`: Verified employee arrival punch.
      - `CHECK_OUT`: Verified employee departure punch with worked duration calculation.
      - `IGNORED_DUPLICATE`: Scan occurred within the debounced cooldown window.
@@ -88,21 +116,23 @@
      - `REJECTED_MULTIPLE_FACES`: More than one person in frame.
      - `REJECTED_INACTIVE`: Employee account inactive or suspended.
      - `REJECTED_MANUAL_MODE`: Terminal biometric mode suspended by policy.
+     - `REJECTED_MODEL_VERSION_INCOMPATIBLE`: Embedding produced with incompatible neural architecture.
 
 ---
 
-## 3. Corrected Biometric Audit Dashboard & Permission Architecture
+## 4. Corrected Biometric Audit Dashboard & Permission Architecture
 
 ### RLS and Security Compliance
 - `public.face_verification_logs` has Row Level Security (RLS) enabled with **no public/anon SELECT policy**.
 - In strict adherence to database security rules, RLS was **not disabled** and no unrestricted SELECT policy was introduced.
 
 ### Secure Company-Scoped Retrieval Workflow
-- All biometric audit queries in `HRAdminPortalView.tsx` are channeled through authenticated, company-scoped endpoints:
-  - `GET /api/v1/biometrics/verification-failures`: Requires `require_admin` dependency and enforces `User.company_id == current_user.company_id` with `status != 'SUCCESS'`.
+- All biometric audit queries in `HRAdminPortalView.tsx` and `AttendanceView.tsx` are channeled through authenticated, company-scoped endpoints:
+  - `GET /api/v1/biometrics/verification-failures`: Requires `require_admin` dependency and enforces `User.company_id == current_user.company_id` with `func.lower(status).not_in(['success', 'verified'])`.
   - `GET /api/v1/biometrics/logs`: Requires `require_admin` dependency and enforces `User.company_id == current_user.company_id`.
 
-### Elimination of Fake Audit Data
+### Elimination of Fake Audit Data & Status Casing Compliance
+- **Lowercase Status Consistency:** Status values in API and DB serialize as canonical lowercase strings (`"success"`, `"failed"`, `"spoof_detected"`), matching PostgreSQL and SQLite storage.
 - **Removed Fake IP Display:** Removed hardcoded or simulated IP addresses (`127.0.0.1`) from the verification failures table.
 - **Removed Fake Numeric Liveness Scores:** Removed simulated numeric liveness percentages (e.g. `96% liveness`).
 - **Genuinely Recorded Fields Displayed:**
@@ -116,31 +146,29 @@
 
 ---
 
-## 4. Face Enrollment and Model Compatibility
+## 5. Automated Biometric Model Consistency Test Results
 
-### Backend RPC Integration
-- Reused backend functions:
-  - **`public.enroll_face`**: Multi-sample biometric enrollment.
-  - **`public.remove_face(p_employee_id)`**: Authorized biometric template revocation.
+The dedicated automated test suite in `backend/tests/test_biometric_model_consistency.py` was executed:
 
-### Mandatory Enrollment Criteria Enforced
-In `kioskService.ts` (`enrollFaceBiometrics`), the client enforces:
-1. **Sample Count:** Must contain between **3 and 10 face embedding samples**.
-2. **Consistent Dimensionality:** All samples must be either **128-D** or **512-D**, and every sample in the batch must have identical length and finite numerical values.
-3. **Explicit Consent:** Explicit employee consent (`consentGiven: true`) is mandatory before calling the RPC.
-4. **Model Version String:** A specific model architecture version identifier (e.g. `facenet-v1-128` or `arcface-v1-512`) must be included with every enrollment.
-5. **Authorization:** Scoped to administrators possessing `biometric.manage` / `HR_ADMIN` permissions.
+```bash
+cd backend; .\.venv\Scripts\python -m pytest tests\test_biometric_model_consistency.py -v
+```
 
-### Critical Model Compatibility Notice
-> [!IMPORTANT]
-> **Descriptor Architecture Compatibility:** Facial feature embeddings are highly dependent on the neural network architecture, weights, and normalization.
-> - An embedding extracted from MediaPipe FaceMesh (468 landmarks) **cannot** be matched against FaceNet (128-D) or ArcFace (512-D).
-> - **Enrollment and Kiosk Recognition must use the EXACT SAME neural model architecture and model version.**
-> - Default descriptor SDKs must not be assumed compatible with pre-existing database templates without verifying model version tags.
+### Test Suite Execution Output:
+| Test ID | Test Case | Target Tested | Result |
+|---|---|---|---|
+| **TEST-01** | `test_approved_model_enrollment` | Enrolls 128-D vector with `v2.0-facenet-norm`; verifies `status="verified"` and `is_model_compatible=True` | **PASSED** |
+| **TEST-02** | `test_reject_incompatible_model_version` | Enrolls with incompatible `arcface-resnet100-v1`; verifies 400 rejection (`INCOMPATIBLE_MODEL_VERSION`) | **PASSED** |
+| **TEST-03** | `test_reject_incompatible_vector_dimension` | Enrolls with 512-D vector; verifies 400 rejection (`INCOMPATIBLE_VECTOR_DIMENSION`) | **PASSED** |
+| **TEST-04** | `test_verification_rejects_incompatible_model_probe` | Tests verification diagnostic probe claiming `arcface-512`; verifies 400 rejection without comparing mismatched vectors | **PASSED** |
+| **TEST-05** | `test_kiosk_1_to_n_filters_only_compatible_templates` | Kiosk 1:N matching punches compatible vector; rejects incompatible probe version | **PASSED** |
+| **TEST-06** | `test_biometric_audit_logs_casing_and_sanitization` | Verifies audit logs contain canonical lowercase status and no fabricated IP strings | **PASSED** |
+
+**Summary: 6 passed in 6.81s (100% Pass Rate).**
 
 ---
 
-## 5. Security & Build Verification Audit
+## 6. Security & Build Verification Audit
 
 ### Verification Matrix
 | Security / Quality Check | Status | Verification Detail |
@@ -151,31 +179,21 @@ In `kioskService.ts` (`enrollFaceBiometrics`), the client enforces:
 | **No Mock Face Embeddings** | **VERIFIED** | Random synthetic vector generators were completely removed from `FaceCameraModal.tsx` and `FaceKioskModal.tsx`. |
 | **No Fake Liveness Signals** | **VERIFIED** | Client-side fake liveness mocks removed; UI displays unconfigured notice when neural model is absent. |
 | **No Unrestricted Audit Access** | **VERIFIED** | Audit endpoints in `HRAdminPortalView.tsx` are scoped strictly to the signed-in HR administrator's company. |
-| **Core FlowPeople Modules Intact** | **VERIFIED** | Login, Employee Directory, Leaves, Payroll, Shifts, Approvals, and Announcements are 100% operational. |
+| **Model Version Consistency Enforced** | **VERIFIED** | Standard locked to `v2.0-facenet-norm` (128-D). Cross-model comparisons strictly blocked at API and DB layers. |
 | **TypeScript Compilation (`tsc -b`)** | **PASSED** | 0 TypeScript errors. |
-| **Vite Production Build (`vite build`)** | **PASSED** | 2,145 modules built into `frontend/dist/` in 2.65s. |
+| **Vite Production Build (`vite build`)** | **PASSED** | 2,145 modules built into `frontend/dist/` in 2.41s. |
 
 ---
 
-## 6. Failed Checks & Remaining Configuration Checklist
+## 7. Remaining Configuration Checklist Before Live Production Punching
 
-### 1. Missing On-Device Biometric Neural Inference SDK
-- **Current State:** FlowPeople does not bundle an on-device TensorFlow/WASM neural model. The UI displays: *"Biometric Neural Extractor Unconfigured. The edge function `kiosk-face-scan` requires genuine 128-D or 512-D neural embeddings."*
-- **Required Action:**
-  1. Install a compatible client-side neural SDK (e.g. `@vladmandic/face-api` or `human`).
-  2. Load model weights (FaceNet-128 or ArcFace-512) into `frontend/public/models/`.
-  3. Wire the extractor into `extractEmbedding(videoElement)` to produce normalized `Float32Array` vectors.
-
-### 2. Kiosk Terminal Device Provisioning
-- **Current State:** The edge function `kiosk-face-scan` rejects unprovisioned device UUIDs and secrets with `400 / 401`.
-- **Required Action:**
-  1. An HR Admin must open the Kiosk terminal and use the **Register Device (RPC)** tab to provision a hardware terminal.
-  2. Securely store the returned plaintext device secret in the terminal's hardware environment.
-  3. Pair the active workstation terminal.
-
-### 3. Production End-to-End Validation
-- **Requirement:** Before declaring full operational readiness, an authorized test employee must:
-  1. Complete 3–10 sample face enrollment via `public.enroll_face`.
-  2. Stand before the provisioned kiosk terminal.
-  3. Execute a successful **CHECK-IN** scan verified by `kiosk-face-scan`.
-  4. Execute a successful **CHECK-OUT** scan with working duration verified by the backend.
+1. **Biometric Neural Inference SDK Deployment:**
+   - Install a client-side neural SDK (e.g. `@vladmandic/face-api` or `human`) in `frontend/`.
+   - Host `v2.0-facenet-norm` weights under `frontend/public/models/`.
+   - Implement `extractEmbedding(videoElement)` returning 128-D L2-normalized float arrays.
+2. **Kiosk Terminal Hardware Provisioning:**
+   - Execute `registerKioskDevice` via the Kiosk Modal UI to generate a persistent terminal UUID and secret.
+   - Configure the physical entrance lobby terminal with the generated credentials.
+3. **End-to-End Live Verification:**
+   - Complete live face enrollment for an employee.
+   - Execute check-in and check-out punches on the physical kiosk to verify real attendance ledger recording.

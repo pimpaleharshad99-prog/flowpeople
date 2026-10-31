@@ -23,7 +23,7 @@ import {
   Lock
 } from 'lucide-react';
 import { api, User as UserType } from '../services/api';
-import { isBiometricSdkAvailable } from '../services/kioskService';
+import { isBiometricSdkAvailable, APPROVED_BIOMETRIC_MODEL, ACTIVE_MODEL_VERSION } from '../services/kioskService';
 
 export type FaceModalMode = 'PUNCH_IN' | 'PUNCH_OUT' | 'ENROLL' | 'TEST';
 
@@ -268,7 +268,8 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
           face_data: vector,
           liveness_data: liveness,
           target_user_id: targetUserId,
-          device: 'FlowPeople Biometric Camera Diagnostic Tool'
+          device: 'FlowPeople Biometric Camera Diagnostic Tool',
+          model_version: ACTIVE_MODEL_VERSION
         });
 
         setConfidence(res.confidence || 0.98);
@@ -300,7 +301,8 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
           punch_type: punchType,
           face_data: vector,
           liveness_data: liveness,
-          device: 'FlowPeople Web Biometric Terminal'
+          device: 'FlowPeople Web Biometric Terminal',
+          model_version: ACTIVE_MODEL_VERSION
         });
         setConfidence(res.confidence || 0.97);
         setLivenessScore(res.liveness || 0.94);
@@ -367,7 +369,8 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
           consent_given: true,
           quality_score: 0.98,
           liveness_data: capturedLiveness,
-          target_user_id: effectiveUserId
+          target_user_id: effectiveUserId,
+          model_version: ACTIVE_MODEL_VERSION
         });
       }
 
