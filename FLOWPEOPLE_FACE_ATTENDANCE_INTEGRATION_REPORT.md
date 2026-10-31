@@ -187,10 +187,11 @@ cd backend; .\.venv\Scripts\python -m pytest tests\test_biometric_model_consiste
 
 ## 7. Remaining Configuration Checklist Before Live Production Punching
 
-1. **Biometric Neural Inference SDK Deployment:**
-   - Install a client-side neural SDK (e.g. `@vladmandic/face-api` or `human`) in `frontend/`.
-   - Host `v2.0-facenet-norm` weights under `frontend/public/models/`.
-   - Implement `extractEmbedding(videoElement)` returning 128-D L2-normalized float arrays.
+1. **Biometric Neural Inference SDK Deployment:** **[COMPLETED]**
+   - Installed `@vladmandic/face-api` in `frontend/`.
+   - Bundled all neural model weights in `frontend/public/models/` (`face_recognition_model.bin`, `tiny_face_detector_model.bin`, `face_landmark_68_model.bin`).
+   - Implemented [`biometricSdk.ts`](file:///f:/ZOHO/frontend/src/services/biometricSdk.ts) returning 128-D Euclidean L2-normalized vectors and eye-aspect-ratio optical liveness metrics.
+   - Connected `window.__FLOWPEOPLE_BIOMETRIC_SDK__` so that both the kiosk terminal and employee face enrollment modals automatically detect the active engine.
 2. **Kiosk Terminal Hardware Provisioning:**
    - Execute `registerKioskDevice` via the Kiosk Modal UI to generate a persistent terminal UUID and secret.
    - Configure the physical entrance lobby terminal with the generated credentials.
