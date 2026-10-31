@@ -3,16 +3,38 @@
  * Connects to the deployed Edge Function:
  * https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan
  *
- * Enforces strict security:
+ * Enforces strict security & backend compatibility:
+ * - Provisioning via public.attendance_devices & private.kiosk_credentials
+ * - RPCs: public.register_kiosk_device(p_company_id, p_name) & public.rotate_kiosk_secret(p_device_id)
+ * - Enrollment via public.enroll_face (3-10 samples, 128/512-D, model version, consent, biometric.manage)
+ * - Revocation via public.remove_face(p_employee_id)
  * - Device secret stored in-memory only (never in localStorage or logged)
  * - Validates UUID device_id
  * - Validates 128 or 512-D finite numerical embeddings
  * - Controls scanning lifecycle and idempotency keys
- * - Maps all backend outcome states
+ * - Maps all backend outcome states (CHECK_IN, CHECK_OUT, IGNORED_DUPLICATE, REJECTED_DEVICE, etc.)
  */
+
+import { supabase } from '../lib/supabase';
 
 export const EDGE_FUNCTION_URL = 'https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan';
 export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_bEuL6GdEhvU5XlukkZpwng_LUNq3Nrp';
+
+// Supported biometric model architectures (Enrollment and Kiosk must share identical version)
+export const SUPPORTED_MODEL_ARCHITECTURES = {
+  FACENET_128: {
+    id: 'facenet-v1-128',
+    dimensions: 128,
+    name: 'FaceNet Mobile 128-D Embedding Model'
+  },
+  ARCFACE_512: {
+    id: 'arcface-v1-512',
+    dimensions: 512,
+    name: 'ArcFace ResNet 512-D Embedding Model'
+  }
+} as const;
+
+export const DEFAULT_MODEL_VERSION = SUPPORTED_MODEL_ARCHITECTURES.FACENET_128.id;
 
 export type KioskOutcome =
   | 'CHECK_IN'
@@ -74,6 +96,21 @@ export interface KioskScanFailure {
 
 export type KioskScanResult = KioskScanSuccess | KioskScanFailure;
 
+export interface RegisteredKioskDevice {
+  device_id: string;
+  device_secret: string; // Plaintext secret returned ONCE
+  name?: string;
+  company_id?: string;
+  created_at?: string;
+}
+
+export interface FaceEnrollmentParams {
+  employeeId: string;
+  samples: number[][]; // 3 to 10 face embedding samples
+  modelVersion: string; // Must match kiosk detection model
+  consentGiven: boolean;
+}
+
 // In-Memory Device Credentials (NEVER persisted to localStorage or exposed in logs)
 let inMemoryDeviceId: string = '';
 let inMemoryDeviceSecret: string = '';
@@ -86,6 +123,12 @@ export const kioskDeviceManager = {
   setCredentials: (deviceId: string, deviceSecret: string) => {
     inMemoryDeviceId = deviceId.trim();
     inMemoryDeviceSecret = deviceSecret.trim();
+  },
+  getCredentials: () => {
+    return {
+      deviceId: inMemoryDeviceId,
+      deviceSecret: inMemoryDeviceSecret
+    };
   },
   clearCredentials: () => {
     inMemoryDeviceId = '';
@@ -103,10 +146,8 @@ export function isValidUuid(str: string): boolean {
 
 /**
  * Check if a genuine client-side facial recognition & liveness extractor SDK is installed
- * FlowPeople frontend does not bundle an on-device TensorFlow/MediaPipe neural extractor yet.
  */
 export function isBiometricSdkAvailable(): boolean {
-  // Check if any genuine client-side SDK window object or imported module is registered
   return typeof (window as any).__FLOWPEOPLE_BIOMETRIC_SDK__ !== 'undefined';
 }
 
@@ -121,7 +162,7 @@ export function generateIdempotencyKey(): string {
 }
 
 /**
- * Validate embedding numbers
+ * Validate embedding numbers: must be exactly 128 or 512 finite floats
  */
 export function isValidEmbedding(vec: unknown): vec is number[] {
   if (!Array.isArray(vec)) return false;
@@ -133,7 +174,9 @@ export function isValidEmbedding(vec: unknown): vec is number[] {
  * Outcome code mapper for user-friendly notifications
  */
 export function mapOutcomeFeedback(outcome: string | undefined, detail?: string): { outcome: KioskOutcome; title: string; message: string } {
-  switch (outcome) {
+  const normalized = (outcome || '').toUpperCase();
+
+  switch (normalized) {
     case 'CHECK_IN':
       return {
         outcome: 'CHECK_IN',
@@ -222,7 +265,135 @@ export function mapOutcomeFeedback(outcome: string | undefined, detail?: string)
 }
 
 /**
- * Submit face scan to Supabase Edge Function
+ * 1. Provision Kiosk Device via authorized RPC
+ * Calls public.register_kiosk_device(p_company_id, p_name)
+ * Returns device_id UUID and one-time plaintext device_secret
+ */
+export async function registerKioskDevice(companyId: string, name: string): Promise<RegisteredKioskDevice> {
+  const { data, error } = await supabase.rpc('register_kiosk_device', {
+    p_company_id: companyId,
+    p_name: name
+  });
+
+  if (error) {
+    throw new Error(`Device registration failed: ${error.message} (${error.code || 'UNKNOWN'})`);
+  }
+
+  if (!data || (!data.device_id && !data.id)) {
+    throw new Error('Device registration returned unexpected empty response from server.');
+  }
+
+  return {
+    device_id: data.device_id || data.id,
+    device_secret: data.device_secret || data.secret,
+    name: data.name || name,
+    company_id: companyId,
+    created_at: data.created_at || new Date().toISOString()
+  };
+}
+
+/**
+ * 1. Rotate Kiosk Device Secret via authorized RPC
+ * Calls public.rotate_kiosk_secret(p_device_id)
+ * Returns device_id and newly generated one-time plaintext secret
+ */
+export async function rotateKioskSecret(deviceId: string): Promise<{ device_id: string; device_secret: string }> {
+  if (!isValidUuid(deviceId)) {
+    throw new Error('Invalid device ID: must be a valid UUID');
+  }
+
+  const { data, error } = await supabase.rpc('rotate_kiosk_secret', {
+    p_device_id: deviceId
+  });
+
+  if (error) {
+    throw new Error(`Secret rotation failed: ${error.message} (${error.code || 'UNKNOWN'})`);
+  }
+
+  return {
+    device_id: data.device_id || deviceId,
+    device_secret: data.device_secret || data.secret
+  };
+}
+
+/**
+ * 4. Enroll Face via authorized RPC
+ * Reuses public.enroll_face with strict validation:
+ * - 3 to 10 face samples
+ * - 128-D or 512-D consistent embeddings
+ * - Model version matching
+ * - Explicit employee consent
+ */
+export async function enrollFaceBiometrics(params: FaceEnrollmentParams): Promise<{ success: boolean; message: string }> {
+  if (!params.consentGiven) {
+    throw new Error('Explicit biometric consent is mandatory before enrolling facial templates.');
+  }
+
+  if (!Array.isArray(params.samples) || params.samples.length < 3 || params.samples.length > 10) {
+    throw new Error(`Face enrollment requires between 3 and 10 face samples (received ${params.samples?.length || 0}).`);
+  }
+
+  const sampleDim = params.samples[0].length;
+  if (sampleDim !== 128 && sampleDim !== 512) {
+    throw new Error(`Invalid embedding dimensionality: ${sampleDim}. Must be 128-D or 512-D.`);
+  }
+
+  const hasInconsistentDims = params.samples.some((s) => s.length !== sampleDim || !isValidEmbedding(s));
+  if (hasInconsistentDims) {
+    throw new Error('All face samples must have identical dimensionality and contain only finite numerical values.');
+  }
+
+  if (!params.modelVersion || params.modelVersion.trim().length === 0) {
+    throw new Error('Model version must be specified for template compatibility.');
+  }
+
+  const { data, error } = await supabase.rpc('enroll_face', {
+    p_employee_id: params.employeeId,
+    p_samples: params.samples,
+    p_model_version: params.modelVersion,
+    p_consent: true
+  });
+
+  if (error) {
+    throw new Error(`Face enrollment RPC rejected: ${error.message}`);
+  }
+
+  return {
+    success: true,
+    message: data?.message || 'Face biometrics successfully enrolled.'
+  };
+}
+
+/**
+ * 4. Revoke / Remove Face Biometrics via authorized RPC
+ * Calls public.remove_face(p_employee_id)
+ */
+export async function removeFaceBiometrics(employeeId: string): Promise<{ success: boolean; message: string }> {
+  const { data, error } = await supabase.rpc('remove_face', {
+    p_employee_id: employeeId
+  });
+
+  if (error) {
+    throw new Error(`Biometric template revocation failed: ${error.message}`);
+  }
+
+  return {
+    success: true,
+    message: data?.message || 'Biometric template revoked successfully.'
+  };
+}
+
+/**
+ * 2. Submit face scan to Supabase Edge Function:
+ * https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan
+ *
+ * Handles actual outcomes from the database RPC:
+ * - CHECK_IN
+ * - CHECK_OUT
+ * - IGNORED_DUPLICATE
+ * - REJECTED_DEVICE
+ * - Other rejection outcomes
+ * Does NOT assume invalid_device_secret format.
  */
 export async function submitKioskFaceScan(payload: KioskFaceScanPayload): Promise<KioskScanResult> {
   // 1. Pre-flight Validation
@@ -231,7 +402,7 @@ export async function submitKioskFaceScan(payload: KioskFaceScanPayload): Promis
       success: false,
       outcome: 'REJECTED_DEVICE',
       title: 'Invalid Device ID',
-      message: 'Terminal device_id must be a valid UUID v4 string.'
+      message: 'Terminal device_id must be a valid UUID string.'
     };
   }
 
@@ -265,22 +436,60 @@ export async function submitKioskFaceScan(payload: KioskFaceScanPayload): Promis
 
     const data = await response.json().catch(() => ({}));
 
+    // 2. Handle HTTP Errors (e.g. 400, 401, 403, 500)
     if (!response.ok) {
-      const errCode = data.error || data.outcome || (response.status === 400 && data.detail?.includes('device') ? 'REJECTED_DEVICE' : 'REJECTED_NOT_RECOGNIZED');
-      const mapped = mapOutcomeFeedback(errCode, data.detail || data.message || data.error);
+      // Determine outcome from data.outcome, status code, or error payload
+      let outcomeCode: string = data.outcome || '';
+      
+      if (!outcomeCode) {
+        if (response.status === 401 || response.status === 403) {
+          outcomeCode = 'REJECTED_DEVICE';
+        } else if (data.error && typeof data.error === 'string') {
+          if (data.error.includes('device') || data.error.includes('secret') || data.error.includes('unauthorized')) {
+            outcomeCode = 'REJECTED_DEVICE';
+          } else if (data.error.includes('liveness')) {
+            outcomeCode = 'REJECTED_LIVENESS';
+          } else if (data.error.includes('quality')) {
+            outcomeCode = 'REJECTED_QUALITY';
+          } else {
+            outcomeCode = 'REJECTED_NOT_RECOGNIZED';
+          }
+        } else {
+          outcomeCode = 'REJECTED_NOT_RECOGNIZED';
+        }
+      }
+
+      const mapped = mapOutcomeFeedback(outcomeCode, data.detail || data.message || data.error);
       return {
         success: false,
         outcome: mapped.outcome,
         title: mapped.title,
         message: mapped.message,
-        rawError: data.error || data.detail,
+        rawError: typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data.detail),
         status: response.status
       };
     }
 
-    // Success response parsing
-    const outcome: 'CHECK_IN' | 'CHECK_OUT' = data.outcome === 'CHECK_OUT' || data.punch_type === 'OUT' ? 'CHECK_OUT' : 'CHECK_IN';
-    
+    // 3. Handle HTTP 200 responses: Evaluate database RPC outcome
+    const rawOutcome = (data.outcome || data.status || '').toUpperCase();
+
+    // Check for explicit rejection / ignored outcomes returned with 200 OK
+    if (rawOutcome && rawOutcome !== 'CHECK_IN' && rawOutcome !== 'CHECK_OUT') {
+      const mapped = mapOutcomeFeedback(rawOutcome, data.detail || data.message);
+      return {
+        success: false,
+        outcome: mapped.outcome,
+        title: mapped.title,
+        message: mapped.message,
+        rawError: data.message || data.detail,
+        status: 200
+      };
+    }
+
+    // Determine actual punch outcome
+    const outcome: 'CHECK_IN' | 'CHECK_OUT' =
+      rawOutcome === 'CHECK_OUT' || data.punch_type === 'OUT' ? 'CHECK_OUT' : 'CHECK_IN';
+
     // Parse employee payload from backend
     const employeeData: KioskEmployee = {
       id: data.employee?.id ?? 'UNKNOWN',
@@ -318,4 +527,3 @@ export async function submitKioskFaceScan(payload: KioskFaceScanPayload): Promis
     };
   }
 }
-

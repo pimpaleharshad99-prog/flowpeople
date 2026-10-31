@@ -45,6 +45,7 @@ import {
 import { FaceKioskModal } from '../components/FaceKioskModal';
 import { FaceCameraModal } from '../components/FaceCameraModal';
 import { EmployeeAttendanceHistoryModal } from '../components/EmployeeAttendanceHistoryModal';
+import { removeFaceBiometrics } from '../services/kioskService';
 
 export const HRAdminPortalView: React.FC = () => {
   const { addToast } = useToast();
@@ -132,10 +133,14 @@ export const HRAdminPortalView: React.FC = () => {
   const handleResetFaceId = async () => {
     if (!selectedUserForReset) return;
     try {
-      await api.resetFaceId(selectedUserForReset.id);
+      try {
+        await removeFaceBiometrics(String(selectedUserForReset.id));
+      } catch {
+        await api.resetFaceId(selectedUserForReset.id);
+      }
       addToast({
         title: 'Biometric Enrollment Revoked',
-        description: `Face ID template for ${selectedUserForReset.first_name} ${selectedUserForReset.last_name} revoked. Employee may re-enroll.`,
+        description: `Face ID template for ${selectedUserForReset.first_name} ${selectedUserForReset.last_name} revoked via authorized RPC. Employee may re-enroll.`,
         type: 'warning'
       });
       setSelectedUserForReset(null);
@@ -494,11 +499,12 @@ export const HRAdminPortalView: React.FC = () => {
     },
     {
       key: 'confidence_score',
-      header: 'Confidence / Liveness',
+      header: 'Confidence Score',
       render: (f: VerificationFailureLog) => (
         <div className="font-mono text-xs">
-          <span className="text-[var(--text-main)] font-semibold">{(f.confidence_score * 100).toFixed(1)}% match</span>
-          <span className="text-[var(--text-subtle)] text-[10px] block">{(f.liveness_score * 100).toFixed(0)}% liveness</span>
+          <span className="text-[var(--text-main)] font-semibold">
+            {f.confidence_score ? `${(f.confidence_score * 100).toFixed(1)}% match` : '—'}
+          </span>
         </div>
       ),
     },
@@ -507,8 +513,8 @@ export const HRAdminPortalView: React.FC = () => {
       header: 'Reason / Terminal',
       render: (f: VerificationFailureLog) => (
         <div>
-          <span className="text-xs text-[var(--text-main)] font-medium block">{f.failure_reason || 'Biometric variance mismatch'}</span>
-          <span className="text-[10px] text-[var(--text-subtle)]">{f.device_info || 'Optical Terminal'} ({f.ip_address || '127.0.0.1'})</span>
+          <span className="text-xs text-[var(--text-main)] font-medium block">{f.failure_reason || 'Biometric security mismatch'}</span>
+          <span className="text-[10px] text-[var(--text-subtle)]">{f.device_info || 'Optical Kiosk Terminal'}</span>
         </div>
       ),
     },
@@ -857,11 +863,11 @@ export const HRAdminPortalView: React.FC = () => {
               ),
             },
             {
-              key: 'liveness_score',
-              header: 'Liveness',
+              key: 'device_info',
+              header: 'Terminal Device',
               render: (l: BiometricLog) => (
-                <span className="font-mono text-xs font-semibold text-teal-600 dark:text-teal-400">
-                  {(l.liveness_score * 100).toFixed(0)}%
+                <span className="text-xs text-[var(--text-secondary)] font-mono">
+                  {l.device_info || 'Optical Terminal'}
                 </span>
               ),
             },

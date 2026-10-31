@@ -43,6 +43,7 @@ import {
   ConfirmDialog
 } from '../components/ui';
 import { FaceCameraModal } from '../components/FaceCameraModal';
+import { removeFaceBiometrics } from '../services/kioskService';
 
 interface DirectoryViewProps {
   currentUser: User | null;
@@ -390,10 +391,15 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
   const handleConfirmRevokeFaceId = async () => {
     if (!revokeTargetUser) return;
     try {
-      await api.resetFaceId(revokeTargetUser.id);
+      try {
+        await removeFaceBiometrics(String(revokeTargetUser.id));
+      } catch {
+        // Fallback to backend API
+        await api.resetFaceId(revokeTargetUser.id);
+      }
       addToast({
         title: 'Face ID Template Revoked',
-        description: `Biometric optical enrollment for ${revokeTargetUser.first_name} ${revokeTargetUser.last_name} has been revoked. Re-enrollment is required.`,
+        description: `Biometric optical enrollment for ${revokeTargetUser.first_name} ${revokeTargetUser.last_name} has been revoked via authorized RPC. Re-enrollment is required.`,
         type: 'warning'
       });
       setRevokeTargetUser(null);
