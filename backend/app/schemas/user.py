@@ -16,7 +16,7 @@ class UserBase(BaseModel):
     role: str = UserRole.EMPLOYEE.value
     status: Optional[str] = EmploymentStatus.PENDING_INVITATION.value
     employment_type: str = EmploymentType.FULL_TIME.value
-    date_of_joining: str
+    date_of_joining: Optional[str] = None
     confirmation_date: Optional[str] = None
     branch_id: Optional[int] = None
     department_id: Optional[int] = None

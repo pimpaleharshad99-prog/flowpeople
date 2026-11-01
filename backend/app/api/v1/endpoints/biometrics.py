@@ -116,11 +116,16 @@ def enroll_face(
             detail="Biometric consent is mandatory to store facial template data"
         )
     target_id = current_user.id
-    if req.target_user_id and current_user.role in ["ADMIN", "SUPER_ADMIN", "HR_ADMIN", "COMPANY_ADMIN", "HR_MANAGER"]:
-        target_user = db.query(User).filter(User.id == req.target_user_id).first()
-        if not target_user:
-            raise HTTPException(status_code=404, detail="Target employee not found")
-        target_id = req.target_user_id
+    if req.target_user_id:
+        if req.target_user_id == current_user.id:
+            target_id = current_user.id
+        elif current_user.role in ["ADMIN", "SUPER_ADMIN", "HR_ADMIN", "COMPANY_ADMIN", "HR_MANAGER", "HR_EXECUTIVE", "MANAGER"]:
+            target_user = db.query(User).filter(User.id == req.target_user_id, User.company_id == current_user.company_id).first()
+            if not target_user:
+                raise HTTPException(status_code=404, detail="Target employee not found in your company")
+            target_id = req.target_user_id
+        else:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only HR administrators can enroll biometrics for other employees.")
 
     try:
         enrollment = BiometricService.enroll_face(

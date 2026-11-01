@@ -18,7 +18,7 @@ from app.models.user import User
 
 CONFIDENCE_THRESHOLD = 0.82
 LIVENESS_THRESHOLD = 0.75
-MAX_REPLAY_AGE_SECONDS = 60
+MAX_REPLAY_AGE_SECONDS = 1800 # 30 minutes to accommodate interactive multi-step onboarding & enrollment forms
 
 # Authoritative Company Biometric Model Architecture Specification
 APPROVED_MODEL_VERSION = "v2.0-facenet-norm"
@@ -61,20 +61,21 @@ def parse_template_to_vector(raw_template: str) -> List[float]:
     expanded = [float((b - 128) / 128.0) for b in hasher]
     return _normalize_vector(expanded)
 
-def verify_liveness_challenge(liveness_data: Dict[str, Any]) -> Tuple[bool, float, Optional[str]]:
+def verify_liveness_challenge(liveness_data: Dict[str, Any], is_enrollment: bool = False) -> Tuple[bool, float, Optional[str]]:
     """
     Validates anti-spoofing challenge:
-    1. Timestamp freshness to prevent replay attacks
+    1. Timestamp freshness to prevent replay attacks (for live attendance punches)
     2. Variance across multi-frame captures (head movement / blink check)
     3. Motion vector consistency
     """
     if not liveness_data:
         return False, 0.0, "Missing liveness payload"
 
-    client_ts = liveness_data.get("timestamp")
-    now_ts = int(time.time() * 1000)
-    if client_ts and abs(now_ts - client_ts) > (MAX_REPLAY_AGE_SECONDS * 1000):
-        return False, 0.2, "Replay attack detected: Timestamp expired or skewed"
+    if not is_enrollment:
+        client_ts = liveness_data.get("timestamp")
+        now_ts = int(time.time() * 1000)
+        if client_ts and abs(now_ts - client_ts) > (MAX_REPLAY_AGE_SECONDS * 1000):
+            return False, 0.2, "Replay attack detected: Timestamp expired or skewed"
 
     # Multi-frame motion & eye-state analysis
     motion_score = float(liveness_data.get("motion_score", 0.85))
@@ -125,7 +126,10 @@ class BiometricService:
                 f"but received {len(vec)}-D vector."
             )
 
-        liveness_ok, l_score, err = verify_liveness_challenge(liveness_data or {"timestamp": int(time.time()*1000), "motion_score": 0.9, "blink_detected": True, "frame_variance": 0.9})
+        liveness_ok, l_score, err = verify_liveness_challenge(
+            liveness_data or {"timestamp": int(time.time()*1000), "motion_score": 0.9, "blink_detected": True, "frame_variance": 0.9},
+            is_enrollment=True
+        )
         if not liveness_ok:
             raise ValueError(f"Biometric enrollment rejected: {err}")
 

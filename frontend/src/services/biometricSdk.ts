@@ -190,3 +190,4 @@ if (typeof window !== 'undefined') {
     console.warn('Background biometric neural model pre-warming deferred:', err);
   });
 }
+

@@ -466,7 +466,17 @@ async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> 
       window.dispatchEvent(new Event('auth:unauthorized'));
     }
     const errorData = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(errorData.detail || 'API request failed');
+    let msg = 'API request failed';
+    if (typeof errorData.detail === 'string') {
+      msg = errorData.detail;
+    } else if (Array.isArray(errorData.detail)) {
+      msg = errorData.detail.map((e: any) => e.msg || e.message || JSON.stringify(e)).join(', ');
+    } else if (errorData.message) {
+      msg = errorData.message;
+    } else if (errorData.error) {
+      msg = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
+    }
+    throw new Error(msg);
   }
   return res.json();
 }
