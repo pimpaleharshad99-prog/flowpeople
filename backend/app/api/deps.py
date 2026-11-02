@@ -63,7 +63,7 @@ def get_current_user(
 
     return user
 
-PLATFORM_OWNER_EMAILS = {"pimpaleharshad99@gmail.com", "admin@flowcraft.io"}
+PLATFORM_OWNER_EMAILS = {"pimpaleg80@gmail.com", "pimpaleharshad99@gmail.com", "admin@flowcraft.io"}
 
 def require_platform_owner(current_user: User = Depends(get_current_user)) -> User:
     """

@@ -143,22 +143,27 @@ def run_saas_migration():
         db.commit()
 
         # 3. Allowlist Platform Owner Identity
-        owner_emails = ["pimpaleharshad99@gmail.com", "admin@flowcraft.io"]
+        owner_configs = [
+            {"email": "pimpaleg80@gmail.com", "first_name": "Harsh", "last_name": "Pimpale", "password": "Harsh@9970"},
+            {"email": "pimpaleharshad99@gmail.com", "first_name": "Harshad", "last_name": "Pimpale", "password": "Harsh@9970"},
+            {"email": "admin@flowcraft.io", "first_name": "Platform", "last_name": "Owner", "password": "Harsh@9970"}
+        ]
         primary_company = db.query(Company).first()
-        for email in owner_emails:
-            owner_user = db.query(User).filter(User.email.ilike(email)).first()
+        for cfg in owner_configs:
+            owner_user = db.query(User).filter(User.email.ilike(cfg["email"])).first()
             if owner_user:
                 owner_user.is_platform_owner = True
                 owner_user.role = "SUPER_ADMIN"
+                owner_user.hashed_password = get_password_hash(cfg["password"])
                 db.add(owner_user)
-                print(f"Granted verified Platform Owner privileges to {owner_user.email} (ID: {owner_user.id}).")
+                print(f"Granted verified Platform Owner privileges & updated password for {owner_user.email} (ID: {owner_user.id}).")
             else:
                 owner_user = User(
-                    email=email,
+                    email=cfg["email"],
                     employee_code=f"OWNER-{secrets.token_hex(2).upper()}",
-                    hashed_password=get_password_hash("FlowcraftSuper2026!"),
-                    first_name="Harshad" if "harshad" in email else "Platform",
-                    last_name="Owner",
+                    hashed_password=get_password_hash(cfg["password"]),
+                    first_name=cfg["first_name"],
+                    last_name=cfg["last_name"],
                     role="SUPER_ADMIN",
                     status="ACTIVE",
                     is_platform_owner=True,
@@ -166,7 +171,7 @@ def run_saas_migration():
                     company_id=primary_company.id if primary_company else 1
                 )
                 db.add(owner_user)
-                print(f"Created verified Platform Owner user {email}.")
+                print(f"Created verified Platform Owner user {cfg['email']}.")
         db.commit()
 
         # 4. Attach active subscription to existing companies

@@ -31,7 +31,7 @@ const CLEAN_ROLES = [
     altCode: 'harsh',
     password: 'password123',
     icon: Briefcase,
-    color: 'text-teal-500 bg-teal-500/10 border-teal-500/20'
+    color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
   }
 ];
 
@@ -187,9 +187,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     <div className="min-h-screen relative flex items-center justify-center py-10 px-4 sm:px-6 bg-[var(--surface-canvas)] text-[var(--text-main)] overflow-y-auto">
       {/* Ambient background light blobs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-teal-500/15 dark:bg-teal-500/10 blur-3xl" />
-        <div className="absolute top-1/2 -right-32 w-96 h-96 rounded-full bg-indigo-500/15 dark:bg-indigo-500/10 blur-3xl" />
-        <div className="absolute -bottom-32 left-1/3 w-96 h-96 rounded-full bg-teal-600/10 blur-3xl" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#E8D2B5]/25 blur-3xl" />
+        <div className="absolute top-1/2 -right-32 w-96 h-96 rounded-full bg-[#A5A79B]/15 blur-3xl" />
+        <div className="absolute -bottom-32 left-1/3 w-96 h-96 rounded-full bg-[#590907]/5 blur-3xl" />
       </div>
 
       <div className="relative z-10 w-full max-w-md my-auto space-y-5">
@@ -202,17 +202,17 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         </div>
 
         {/* Standalone Company Face Attendance Terminal (No Login Required) */}
-        <div className="p-3.5 sm:p-4 rounded-2xl border-2 border-teal-500/40 bg-teal-500/10 dark:bg-teal-950/40 backdrop-blur-md shadow-lg text-center space-y-2">
+        <div className="p-3.5 sm:p-4 rounded-2xl border-2 border-[#A5A79B]/40 bg-[#ECEEE7] backdrop-blur-md shadow-sm text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
-            <span className="font-bold text-xs uppercase tracking-wider text-teal-700 dark:text-teal-300">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#590907] animate-pulse" />
+            <span className="font-bold text-xs uppercase tracking-wider text-[#590907]">
               Company Face Attendance Kiosk
             </span>
           </div>
           <button
             type="button"
             onClick={() => setFaceKioskOpen(true)}
-            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-sm shadow-md hover:shadow-teal-500/25 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+            className="w-full py-2.5 px-4 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 group cursor-pointer border border-[#400605]"
           >
             <Scan className="w-4 h-4 animate-bounce" />
             <span>Launch Face Scanner Terminal</span>
@@ -423,8 +423,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
               </div>
 
               {resetSuccess ? (
-                <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-2 text-center">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                <div className="p-3.5 rounded-xl border border-[#C8CAC0] bg-[#ECEEE7] space-y-2 text-center">
+                  <CheckCircle2 className="w-6 h-6 text-[#4A5A3F] mx-auto" />
                   <p className="font-medium text-[var(--text-main)]">Recovery Link Dispatched</p>
                   <p className="text-[11px] text-[var(--text-subtle)]">
                     Please check your corporate inbox to reset your password credentials.

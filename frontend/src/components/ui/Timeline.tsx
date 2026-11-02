@@ -28,7 +28,7 @@ export const Timeline: React.FC<TimelineProps> = ({ items, className = '' }) => 
             <div
               className={`absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-[var(--surface-canvas)] ${
                 item.isCurrent 
-                  ? 'bg-[var(--accent)] ring-4 ring-teal-500/20' 
+                  ? 'bg-[var(--accent)] ring-4 ring-[var(--accent)]/20' 
                   : 'bg-[var(--border-glass)]'
               }`}
             />

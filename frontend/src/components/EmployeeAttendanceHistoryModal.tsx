@@ -162,7 +162,7 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--surface-glass)] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400">
+            <div className="p-2.5 rounded-xl bg-[#ECEEE7] border border-[#DFE1D8] text-[#590907]">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
@@ -182,7 +182,7 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
             <button
               onClick={exportPDF}
               disabled={records.length === 0}
-              className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition inline-flex items-center gap-1.5 disabled:opacity-50 shadow-xs cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] text-xs font-bold transition inline-flex items-center gap-1.5 disabled:opacity-50 shadow-xs cursor-pointer"
               title="Generate printable PDF timesheet report"
             >
               <FileDown className="w-3.5 h-3.5" />
@@ -235,7 +235,7 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
             <div className="p-3 rounded-xl bg-[var(--surface-primary)] border border-[var(--border-subtle)]">
               <span className="text-[11px] font-semibold text-[var(--text-subtle)] block uppercase tracking-wider">Incomplete Days</span>
               <div className="mt-1 flex items-baseline gap-1.5">
-                <span className={`text-xl font-bold font-mono ${incompleteRecords.length > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                <span className={`text-xl font-bold font-mono ${incompleteRecords.length > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-[#4A5A3F]'}`}>
                   {incompleteRecords.length}
                 </span>
                 <span className="text-xs text-[var(--text-subtle)]">missing out</span>
@@ -253,7 +253,7 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
             <div className="p-3 rounded-xl bg-[var(--surface-primary)] border border-[var(--border-subtle)]">
               <span className="text-[11px] font-semibold text-[var(--text-subtle)] block uppercase tracking-wider">Average Daily Hours</span>
               <div className="mt-1 flex items-baseline gap-1.5">
-                <span className="text-xl font-bold font-mono text-teal-600 dark:text-teal-400">{avgHoursStr}</span>
+                <span className="text-xl font-bold font-mono text-[#590907]">{avgHoursStr}</span>
               </div>
             </div>
           </div>
@@ -263,7 +263,7 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="py-16 text-center space-y-3">
-              <div className="w-8 h-8 mx-auto border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 mx-auto border-2 border-[#590907] border-t-transparent rounded-full animate-spin" />
               <p className="text-xs text-[var(--text-subtle)] font-medium">Loading attendance ledger from database...</p>
             </div>
           ) : error ? (
@@ -317,8 +317,8 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
                                 <span>Incomplete Attendance</span>
                               </span>
                             ) : isCurrentlyActiveToday ? (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]">
+                                <span className="w-2 h-2 rounded-full bg-[#4A5A3F] animate-pulse" />
                                 <span>Checked In</span>
                               </span>
                             ) : (
@@ -344,7 +344,7 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
                                 <AlertTriangle className="w-3 h-3" /> Missing
                               </span>
                             ) : isCurrentlyActiveToday ? (
-                              <span className="text-teal-600 dark:text-teal-400 font-medium text-[11px]">In progress</span>
+                              <span className="text-[#590907] font-medium text-[11px]">In progress</span>
                             ) : (
                               <span className="text-[var(--text-subtle)]">—</span>
                             )}
@@ -398,8 +398,8 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
                                         key={p.id || idx}
                                         className={`px-2.5 py-1 rounded-md text-[11px] font-mono flex items-center gap-1.5 border ${
                                           isPunchIn
-                                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                            : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'
+                                            ? 'bg-[#ECEEE7] text-[#4A5A3F] border-[#C8CAC0]'
+                                            : 'bg-[#ECEEE7] text-[#590907] border-[#DFE1D8]'
                                         }`}
                                       >
                                         <span className="font-bold">{p.punch_type}</span>

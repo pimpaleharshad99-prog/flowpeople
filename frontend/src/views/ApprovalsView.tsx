@@ -158,7 +158,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({ currentUser, onRef
         <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => handleOpenReview(req.id, 'leave', `Leave: ${req.user_name}`, 'APPROVED')}
-            className="px-2.5 py-1 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium inline-flex items-center gap-1 transition"
+            className="px-2.5 py-1 rounded-md bg-[#4A5A3F] hover:bg-[#3D4B34] text-[#FAF6F0] text-xs font-medium inline-flex items-center gap-1 transition"
           >
             <Check className="w-3 h-3" />
             <span>Approve</span>
@@ -219,7 +219,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({ currentUser, onRef
         <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => handleOpenReview(reg.id, 'attendance', `Regularization: ${reg.user_name}`, 'APPROVED')}
-            className="px-2.5 py-1 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium inline-flex items-center gap-1 transition"
+            className="px-2.5 py-1 rounded-md bg-[#4A5A3F] hover:bg-[#3D4B34] text-[#FAF6F0] text-xs font-medium inline-flex items-center gap-1 transition"
           >
             <Check className="w-3 h-3" />
             <span>Approve</span>
@@ -334,7 +334,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({ currentUser, onRef
               disabled={submitting}
               className={`px-4 py-1.5 rounded-lg text-white font-medium shadow-sm transition disabled:opacity-50 ${
                 actionType === 'APPROVED'
-                  ? 'bg-emerald-700 hover:bg-emerald-800'
+                  ? 'bg-[#4A5A3F] hover:bg-[#3D4B34]'
                   : 'bg-rose-700 hover:bg-rose-800'
               }`}
             >

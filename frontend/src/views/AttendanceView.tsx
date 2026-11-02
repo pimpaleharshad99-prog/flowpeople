@@ -303,7 +303,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleGeneratePdf}
-              className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              className="px-3 py-2 rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] transition text-xs font-bold flex items-center gap-1.5 shadow-sm"
               title="Generate and Download Official Attendance Timesheet PDF"
             >
               <FileDown className="w-3.5 h-3.5" />
@@ -311,7 +311,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             </button>
             <button
               onClick={() => setFaceKioskOpen(true)}
-              className="px-3 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              className="px-3 py-2 rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] transition text-xs font-bold flex items-center gap-1.5 shadow-sm"
               title="Launch Continuous Multi-Employee Face Attendance Kiosk"
             >
               <Scan className="w-3.5 h-3.5" />
@@ -345,7 +345,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         {/* Status Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[var(--surface-glass)]/70 border border-[var(--border-subtle)]">
           <div className="flex items-center gap-3">
-            <div className={`w-3.5 h-3.5 rounded-full ${attendanceStatus?.is_checked_in ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-600'}`} />
+            <div className={`w-3.5 h-3.5 rounded-full ${attendanceStatus?.is_checked_in ? 'bg-[#4A5A3F] animate-pulse' : 'bg-slate-400 dark:bg-slate-600'}`} />
             <div>
               <span className="text-[11px] uppercase tracking-wider font-bold text-[var(--text-muted)] block">
                 Today's Presence Status
@@ -354,7 +354,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 <span>{attendanceStatus?.is_checked_in ? 'Currently Clocked In' : 'Currently Clocked Out'}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                   attendanceStatus?.is_checked_in 
-                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
+                    ? 'bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]' 
                     : 'bg-slate-500/15 text-slate-600 dark:text-slate-400 border border-slate-500/30'
                 }`}>
                   {attendanceStatus?.status || (attendanceStatus?.is_checked_in ? 'PRESENT' : 'OFFLINE')}
@@ -452,7 +452,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <button
                 type="button"
                 onClick={() => setFaceKioskOpen(true)}
-                className="w-full sm:w-auto px-4 py-3.5 rounded-xl border border-teal-500/40 bg-teal-500/10 hover:bg-teal-500/20 text-xs font-bold text-teal-600 dark:text-teal-400 transition flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-4 py-3.5 rounded-xl border border-[#DFE1D8] bg-[#ECEEE7] hover:bg-[#DFE1D8] text-xs font-bold text-[#590907] dark:text-[#590907] transition flex items-center justify-center gap-2"
               >
                 <Scan className="w-3.5 h-3.5" />
                 <span>Launch Face Kiosk Terminal</span>
@@ -615,7 +615,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <button
                 type="button"
                 onClick={handleGeneratePdf}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-teal-500/20 active:scale-95 transition"
+                className="px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] font-bold text-xs flex items-center gap-2 shadow-sm active:scale-95 transition"
               >
                 <FileDown className="w-4 h-4" />
                 <span>Generate PDF Report</span>
@@ -631,13 +631,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 {isManagerOrAdmin ? (hrData?.total_employees || employees.length) : 1}
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+            <div className="p-3 rounded-xl bg-[#ECEEE7] border border-[#C8CAC0] text-[#4A5A3F]">
               <span className="text-[10px] font-semibold uppercase tracking-wider block">Completed Today</span>
               <span className="text-lg font-bold font-mono">
                 {isManagerOrAdmin ? (hrData?.present_today || 0) : (records.filter(r => r.last_check_out).length)}
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400">
+            <div className="p-3 rounded-xl bg-[#ECEEE7] border border-[#DFE1D8] text-[#590907]">
               <span className="text-[10px] font-semibold uppercase tracking-wider block">Currently Checked In</span>
               <span className="text-lg font-bold font-mono">
                 {isManagerOrAdmin ? (hrData?.currently_checked_in || 0) : (attendanceStatus?.is_checked_in ? 1 : 0)}
@@ -697,8 +697,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   header: 'When In (Clock In)',
                   render: (emp: HRDashboardEmployee) => (
                     <div className="flex items-center gap-1.5">
-                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <LogIn className="w-3.5 h-3.5 text-[#4A5A3F] shrink-0" />
+                      <span className="font-mono text-xs font-bold text-[#4A5A3F]">
                         {emp.first_check_in ? new Date(emp.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                       </span>
                     </div>
@@ -715,7 +715,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           {new Date(emp.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       ) : emp.status === 'CHECKED_IN' ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500 animate-pulse">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#4A5A3F] animate-pulse">
                           <span>Active / On Duty</span>
                         </span>
                       ) : (
@@ -767,8 +767,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   header: 'When In (Clock In)',
                   render: (r: AttendanceRecord) => (
                     <div className="flex items-center gap-1.5">
-                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <LogIn className="w-3.5 h-3.5 text-[#4A5A3F] shrink-0" />
+                      <span className="font-mono text-xs font-bold text-[#4A5A3F]">
                         {r.first_check_in ? new Date(r.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                       </span>
                     </div>
@@ -798,7 +798,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             key={i}
                             className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
                               p.punch_type === 'IN' 
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                                ? 'bg-[#ECEEE7] text-[#4A5A3F] border-[#C8CAC0]' 
                                 : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'
                             }`}
                           >
@@ -1002,7 +1002,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <button
                 type="button"
                 onClick={handleGeneratePdf}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-teal-500/20 active:scale-95 transition"
+                className="px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] font-bold text-xs flex items-center gap-2 shadow-sm active:scale-95 transition"
               >
                 <FileDown className="w-4 h-4" />
                 <span>Generate PDF Report</span>
@@ -1018,13 +1018,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 {isManagerOrAdmin ? (hrData?.total_employees || employees.length) : 1}
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+            <div className="p-3 rounded-xl bg-[#ECEEE7] border border-[#C8CAC0] text-[#4A5A3F]">
               <span className="text-[10px] font-semibold uppercase tracking-wider block">Completed Today</span>
               <span className="text-lg font-bold font-mono">
                 {isManagerOrAdmin ? (hrData?.present_today || 0) : (records.filter(r => r.last_check_out).length)}
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400">
+            <div className="p-3 rounded-xl bg-[#ECEEE7] border border-[#DFE1D8] text-[#590907]">
               <span className="text-[10px] font-semibold uppercase tracking-wider block">Currently Checked In</span>
               <span className="text-lg font-bold font-mono">
                 {isManagerOrAdmin ? (hrData?.currently_checked_in || 0) : (attendanceStatus?.is_checked_in ? 1 : 0)}
@@ -1084,8 +1084,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   header: 'When In (Clock In)',
                   render: (emp: HRDashboardEmployee) => (
                     <div className="flex items-center gap-1.5">
-                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <LogIn className="w-3.5 h-3.5 text-[#4A5A3F] shrink-0" />
+                      <span className="font-mono text-xs font-bold text-[#4A5A3F]">
                         {emp.first_check_in ? new Date(emp.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                       </span>
                     </div>
@@ -1102,7 +1102,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           {new Date(emp.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       ) : emp.status === 'CHECKED_IN' ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500 animate-pulse">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#4A5A3F] animate-pulse">
                           <span>Active / On Duty</span>
                         </span>
                       ) : (
@@ -1154,8 +1154,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   header: 'When In (Clock In)',
                   render: (r: AttendanceRecord) => (
                     <div className="flex items-center gap-1.5">
-                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <LogIn className="w-3.5 h-3.5 text-[#4A5A3F] shrink-0" />
+                      <span className="font-mono text-xs font-bold text-[#4A5A3F]">
                         {r.first_check_in ? new Date(r.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                       </span>
                     </div>
@@ -1185,7 +1185,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             key={i}
                             className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
                               p.punch_type === 'IN' 
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                                ? 'bg-[#ECEEE7] text-[#4A5A3F] border-[#C8CAC0]' 
                                 : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'
                             }`}
                           >
@@ -1224,13 +1224,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             title="Multi-Employee Face Attendance Kiosk Terminal"
             subtitle="Continuous 1:N camera recognition terminal for office entrance lobby or reception"
           >
-            <div className="p-4 rounded-xl border border-teal-500/30 bg-teal-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-4 rounded-xl border border-[#DFE1D8] bg-[#ECEEE7] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <h4 className="font-bold text-sm text-[var(--text-primary)]">
                     Continuous Face Attendance Kiosk (1:N Matching)
                   </h4>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/20 text-teal-600 dark:text-teal-400">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECEEE7] text-[#590907] dark:text-[#590907]">
                     RECOMMENDED
                   </span>
                 </div>
@@ -1241,7 +1241,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <button
                 type="button"
                 onClick={() => setFaceKioskOpen(true)}
-                className="py-3 px-5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm shrink-0"
+                className="py-3 px-5 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm shrink-0"
               >
                 <Scan className="w-4 h-4" />
                 <span>Launch Face Kiosk Terminal</span>

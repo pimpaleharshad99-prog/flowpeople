@@ -236,16 +236,16 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
       colorClasses = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
       label = roleTitle || 'Company Admin';
     } else if (norm.includes('HR_ADMIN') || norm === 'ADMIN') {
-      colorClasses = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+      colorClasses = 'bg-[#ECEEE7] text-[#4A5A3F] border-[#C8CAC0]';
       label = roleTitle || 'HR Administrator';
     } else if (norm.includes('HR')) {
-      colorClasses = 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20';
+      colorClasses = 'bg-[#ECEEE7] text-[#590907] border-[#DFE1D8]';
       label = roleTitle || 'HR Executive';
     } else if (norm.includes('MANAGER')) {
-      colorClasses = 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20';
+      colorClasses = 'bg-[#ECEEE7] text-[#590907] border-[#DFE1D8]';
       label = roleTitle || 'Team Manager';
     } else if (norm.includes('PAYROLL')) {
-      colorClasses = 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
+      colorClasses = 'bg-[#FAF2EB] text-[#8C4820] border-[#ECCDB6]';
       label = roleTitle || 'Payroll Admin';
     } else if (norm.includes('AUDITOR')) {
       colorClasses = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
@@ -299,15 +299,15 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
       render: (emp: HRDashboardEmployee) => {
         if (emp.status === 'CHECKED_IN') {
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]">
+              <span className="w-2 h-2 rounded-full bg-[#4A5A3F] animate-pulse" />
               <span>Checked In</span>
             </span>
           );
         }
         if (emp.status === 'PRESENT') {
           return (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]">
               <Check className="w-3 h-3" />
               <span>Completed</span>
             </span>
@@ -380,7 +380,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
       render: (emp: HRDashboardEmployee) => (
         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
           emp.has_face_enrolled
-            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+            ? 'bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]'
             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
         }`}>
           <Camera className="w-3 h-3" />
@@ -402,7 +402,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
           className="px-2.5 py-1 text-xs font-medium rounded-md border border-[var(--border-subtle)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-main)] transition inline-flex items-center gap-1.5 shadow-2xs"
           title="View Employee Daily Attendance Ledger"
         >
-          <Calendar className="w-3 h-3 text-teal-500" />
+          <Calendar className="w-3 h-3 text-[#590907]" />
           <span>History</span>
         </button>
       ),
@@ -461,7 +461,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
       render: (emp: User) => (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
           emp.has_face_enrolled 
-            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+            ? 'bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]' 
             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
         }`}>
           <Camera className="w-3 h-3" />
@@ -478,7 +478,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
           {!emp.has_face_enrolled ? (
             <button
               onClick={() => setSelectedUserForEnroll(emp)}
-              className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
               title="Add Employee Face ID into Company Database"
             >
               <Camera className="w-3.5 h-3.5" />
@@ -488,7 +488,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setSelectedUserForEnroll(emp)}
-                className="px-2.5 py-1 text-xs font-semibold rounded-md border border-teal-500/30 hover:bg-teal-500/10 text-teal-600 dark:text-teal-400 transition inline-flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 text-xs font-semibold rounded-md border border-[#DFE1D8] hover:bg-[#ECEEE7] text-[#590907] transition inline-flex items-center gap-1 cursor-pointer"
                 title="Update Employee Face Biometric Vector"
               >
                 <RefreshCw className="w-3 h-3" />
@@ -582,21 +582,21 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-start sm:justify-end">
             <button
               onClick={() => setRegisterNewFaceOpen(true)}
-              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-xs font-bold text-white transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
+              className="px-3.5 py-1.5 rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
             >
               <Camera className="w-3.5 h-3.5" />
               <span>+ Register New Face ID</span>
             </button>
             <button
               onClick={() => setFaceKioskOpen(true)}
-              className="px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-xs font-bold text-white transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
+              className="px-3.5 py-1.5 rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
             >
               <Scan className="w-3.5 h-3.5" />
               <span>Face Kiosk Terminal</span>
             </button>
             <button
               onClick={handleGeneratePdf}
-              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-xs font-bold text-white transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
+              className="px-3.5 py-1.5 rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
               title="Generate official PDF attendance roster"
             >
               <FileDown className="w-3.5 h-3.5" />
@@ -735,7 +735,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4A5A3F] animate-pulse" />
                   <span className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">
                     Live Attendance Activity Feed
                   </span>
@@ -781,8 +781,8 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 border ${
                               isPunchIn
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'
+                                ? 'bg-[#ECEEE7] text-[#4A5A3F] border-[#C8CAC0]'
+                                : 'bg-[#ECEEE7] text-[#590907] border-[#DFE1D8]'
                             }`}
                           >
                             {isPunchIn ? 'Check-In' : 'Check-Out'}
@@ -810,7 +810,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <h4 className="font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <Camera className="w-4 h-4 text-[#4A5A3F] shrink-0" />
                   <span>Company Face Biometric Enrollment Portal</span>
                 </h4>
                 <p className="text-xs text-[var(--text-subtle)] mt-1 max-w-2xl">
@@ -820,13 +820,13 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
               <div className="flex items-center gap-3 shrink-0 flex-wrap">
                 <button
                   onClick={() => setRegisterNewFaceOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-bold text-xs shadow-md shadow-teal-500/20 flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap"
+                  className="px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] font-bold text-xs shadow-sm flex items-center gap-1.5 transition cursor-pointer whitespace-nowrap"
                 >
-                  <Camera className="w-4 h-4 text-slate-950" />
+                  <Camera className="w-4 h-4 text-[#E8D2B5]" />
                   <span>+ Register New Employee Face ID</span>
                 </button>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 whitespace-nowrap">
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-[#ECEEE7] text-[#4A5A3F] font-semibold border border-[#C8CAC0] whitespace-nowrap">
                     {employees.filter(e => e.has_face_enrolled).length} Enrolled
                   </span>
                   <span className="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold border border-amber-500/20 whitespace-nowrap">
@@ -840,14 +840,14 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
           {employees.length === 0 ? (
             <GlassCard>
               <div className="py-12 text-center text-xs text-[var(--text-subtle)] space-y-3">
-                <Camera className="w-10 h-10 mx-auto text-teal-500 opacity-80" />
+                <Camera className="w-10 h-10 mx-auto text-[#590907] opacity-80" />
                 <div className="space-y-1">
                   <p className="font-semibold text-sm text-[var(--text-main)]">No Employees in Registry</p>
                   <p>Register your first employee with live facial recognition scan and personal profile details.</p>
                 </div>
                 <button
                   onClick={() => setRegisterNewFaceOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-2"
+                  className="px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold border border-[#400605] text-xs shadow transition cursor-pointer inline-flex items-center gap-2"
                 >
                   <Camera className="w-4 h-4" />
                   <span>+ Register New Employee Face ID</span>
@@ -871,7 +871,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
           {verificationFailures.length === 0 ? (
             <GlassCard>
               <div className="py-12 text-center text-xs text-[var(--text-subtle)] space-y-1">
-                <ShieldCheck className="w-8 h-8 mx-auto text-emerald-500 opacity-80" />
+                <ShieldCheck className="w-8 h-8 mx-auto text-[#4A5A3F] opacity-80" />
                 <p className="font-semibold text-sm text-[var(--text-main)]">Zero Verification Failures</p>
                 <p>All biometric optical punches match encrypted employee facial templates with high confidence.</p>
               </div>

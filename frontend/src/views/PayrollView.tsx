@@ -272,7 +272,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
       key: 'net_salary',
       header: 'Net Take-Home',
       render: (p: Payslip) => (
-        <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+        <span className="font-mono text-xs font-bold text-[#4A5A3F]">
           ${p.net_salary.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </span>
       )
@@ -343,7 +343,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
       key: 'total_net',
       header: 'Net Disbursable',
       render: (p: PayrollPeriod) => (
-        <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+        <span className="font-mono text-xs font-bold text-[#4A5A3F]">
           ${p.total_net.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </span>
       )
@@ -372,7 +372,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
           {p.status === 'PROCESSED' && (
             <button
               onClick={() => handleApprovePeriod(p.id)}
-              className="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium inline-flex items-center gap-1"
+              className="px-2 py-1 rounded bg-[#ECEEE7] hover:bg-[#DFE1D8] text-[#590907] border border-[#C8CAC0] text-xs font-medium inline-flex items-center gap-1"
               title="Approve Cycle"
             >
               <Check className="w-3.5 h-3.5" />
@@ -383,7 +383,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
           {p.status === 'APPROVED' && (
             <button
               onClick={() => handleMarkPaid(p.id)}
-              className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium inline-flex items-center gap-1"
+              className="px-2 py-1 rounded bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] text-xs font-medium inline-flex items-center gap-1"
               title="Mark Disbursed"
             >
               <DollarSign className="w-3.5 h-3.5" />
@@ -450,7 +450,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
       key: 'net_monthly_base',
       header: 'Net Base Monthly',
       render: (s: SalaryStructure) => (
-        <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+        <span className="font-mono text-xs font-bold text-[#4A5A3F]">
           ${s.net_monthly_base.toLocaleString()}
         </span>
       )
@@ -756,9 +756,9 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
             </div>
           </div>
 
-          <div className="p-3 rounded-lg border border-[var(--border-glass)] bg-emerald-500/5 text-xs flex justify-between items-center">
+          <div className="p-3 rounded-lg border border-[var(--border-glass)] bg-[#ECEEE7] text-xs flex justify-between items-center">
             <span className="font-medium text-[var(--text-secondary)]">Calculated Base Net Take-Home:</span>
-            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+            <span className="font-mono font-bold text-[#4A5A3F] text-sm">
               ${(
                 structureForm.basic_monthly +
                 structureForm.hra_monthly +
@@ -807,7 +807,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
             </div>
             <div>
               <span className="text-[11px] text-[var(--text-subtle)] block">Total Net Payroll</span>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="font-mono font-bold text-[#4A5A3F]">
                 ${selectedPeriodDetail?.period.total_net.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
             </div>
@@ -830,7 +830,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
 
                   <div className="flex items-center gap-4">
                     <div className="text-right font-mono">
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">
+                      <span className="text-xs font-bold text-[#4A5A3F] block">
                         ${ps.net_salary.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </span>
                       <span className="text-[10px] text-[var(--text-subtle)]">
@@ -856,7 +856,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
               {selectedPeriodDetail?.period.status === 'PROCESSED' && (
                 <button
                   onClick={() => handleApprovePeriod(selectedPeriodDetail.period.id)}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium inline-flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg bg-[#ECEEE7] hover:bg-[#DFE1D8] text-[#590907] border border-[#C8CAC0] text-xs font-medium inline-flex items-center gap-1.5"
                 >
                   <Check className="w-3.5 h-3.5" />
                   <span>Approve Entire Cycle</span>
@@ -865,7 +865,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
               {selectedPeriodDetail?.period.status === 'APPROVED' && (
                 <button
                   onClick={() => handleMarkPaid(selectedPeriodDetail.period.id)}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium inline-flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] text-xs font-medium inline-flex items-center gap-1.5"
                 >
                   <DollarSign className="w-3.5 h-3.5" />
                   <span>Mark All As Paid</span>
@@ -903,7 +903,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                    <div className="w-7 h-7 rounded-lg bg-[#590907] flex items-center justify-center text-white font-bold text-xs">
                       {(currentUser?.brand_name || currentUser?.company_name || 'FP').slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -956,11 +956,11 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
               </div>
               <div>
                 <span className="text-[10px] text-[var(--text-subtle)] block">Days Present</span>
-                <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">{selectedPayslip.days_present}</span>
+                <span className="font-mono font-semibold text-[#4A5A3F]">{selectedPayslip.days_present}</span>
               </div>
               <div>
                 <span className="text-[10px] text-[var(--text-subtle)] block">Paid Leaves</span>
-                <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">{selectedPayslip.paid_leaves}</span>
+                <span className="font-mono font-semibold text-[#590907]">{selectedPayslip.paid_leaves}</span>
               </div>
               <div>
                 <span className="text-[10px] text-[var(--text-subtle)] block">Payable Days</span>
@@ -989,7 +989,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
                     <span className="text-[var(--text-main)]">${selectedPayslip.allowances.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                   {selectedPayslip.overtime_pay > 0 && (
-                    <div className="flex justify-between text-blue-600 dark:text-blue-400">
+                    <div className="flex justify-between text-[#590907]">
                       <span>Overtime Pay ({selectedPayslip.overtime_hours} hrs)</span>
                       <span>+${selectedPayslip.overtime_pay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                     </div>
@@ -1030,9 +1030,9 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
             </div>
 
             {/* Net Take-Home Highlight Banner */}
-            <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between">
+            <div className="p-4 rounded-xl border border-[#C8CAC0] bg-[#ECEEE7] flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
+                <span className="text-[11px] font-semibold text-[#4A5A3F] uppercase tracking-wider block">
                   Net Salary Payable
                 </span>
                 <span className="text-[11px] text-[var(--text-subtle)]">
@@ -1040,7 +1040,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
                 </span>
               </div>
               <div className="text-right">
-                <span className="font-mono text-xl font-bold text-emerald-700 dark:text-emerald-400">
+                <span className="font-mono text-xl font-bold text-[#4A5A3F]">
                   ${selectedPayslip.net_salary.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -1048,7 +1048,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
 
             {/* Verification Sign-Off Footer */}
             <div className="pt-4 border-t border-[var(--border-glass)] flex items-center justify-between text-[10px] text-[var(--text-subtle)]">
-              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-1.5 text-[#4A5A3F]">
                 <ShieldCheck className="w-4 h-4" />
                 <span>Digitally Authenticated by FlowPeople Core Engine</span>
               </div>

@@ -158,7 +158,7 @@ export const AnnouncementsView: React.FC<AnnouncementsViewProps> = ({ currentUse
                         ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20'
                         : ann.priority === 'IMPORTANT'
                         ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
-                        : 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20'
+                        : 'bg-[#ECEEE7] text-[#590907] border border-[#DFE1D8]'
                     }`}>
                       {ann.priority}
                     </span>
@@ -181,7 +181,7 @@ export const AnnouncementsView: React.FC<AnnouncementsViewProps> = ({ currentUse
                     <Avatar name={ann.author_name || 'HR Team'} size="sm" />
                     <span>Posted by <strong className="text-[var(--text-main)]">{ann.author_name || 'HR Management'}</strong></span>
                   </div>
-                  <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                  <div className="flex items-center gap-1 text-[#4A5A3F] font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Broadcast Active</span>
                   </div>

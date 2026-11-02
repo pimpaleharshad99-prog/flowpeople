@@ -267,12 +267,12 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 {/* QR Aiming Reticle Overlay */}
                 {streamActive && (
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                    <div className="w-48 h-48 border-2 border-teal-400/80 rounded-2xl relative shadow-[0_0_20px_rgba(20,184,166,0.3)]">
-                      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-teal-300" />
-                      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-teal-300" />
-                      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-teal-300" />
-                      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-teal-300" />
-                      <div className="absolute inset-x-0 h-0.5 bg-teal-400/80 top-1/2 -translate-y-1/2 animate-bounce" />
+                    <div className="w-48 h-48 border-2 border-[#A5A79B] rounded-2xl relative shadow-[0_0_20px_rgba(89,9,7,0.2)]">
+                      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#E8D2B5]" />
+                      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#E8D2B5]" />
+                      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#E8D2B5]" />
+                      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#E8D2B5]" />
+                      <div className="absolute inset-x-0 h-0.5 bg-[#590907] top-1/2 -translate-y-1/2 animate-bounce" />
                     </div>
                   </div>
                 )}
@@ -282,7 +282,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               <div
                 className={`p-3.5 rounded-xl border text-sm transition-all ${
                   scanSuccess
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                    ? 'bg-[#ECEEE7] border-[#C8CAC0] text-[#4A5A3F]'
                     : scanError
                     ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
                     : 'bg-[var(--surface-glass)] border-[var(--border-subtle)] text-[var(--text-primary)]'
@@ -290,7 +290,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               >
                 <div className="flex items-start gap-3">
                   {scanSuccess ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-[#4A5A3F] shrink-0 mt-0.5" />
                   ) : scanError ? (
                     <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                   ) : (

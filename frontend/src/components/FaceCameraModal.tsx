@@ -440,32 +440,32 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-3 sm:p-5 animate-in fade-in duration-150">
-      <div className={`bg-slate-900 text-slate-100 rounded-2xl shadow-2xl w-full border border-slate-700 transition-all duration-300 max-h-[95vh] flex flex-col overflow-hidden ${
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-3 sm:p-5 animate-in fade-in duration-150">
+      <div className={`bg-[#FAF6F0] text-[#2E3029] rounded-2xl shadow-2xl w-full border border-[#DFE1D8] transition-all duration-300 max-h-[95vh] flex flex-col overflow-hidden ${
         enrollStep === 'DETAILS' ? 'max-w-3xl' : 'max-w-xl'
       }`}>
         
         {/* Top Header */}
-        <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 border-b border-[#DFE1D8] bg-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
+            <div className="p-2.5 rounded-xl bg-[#E8D2B5]/30 border border-[#A5A79B]/40 text-[#590907]">
               <Scan className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-base text-white">
+                <h3 className="font-bold text-base text-[#590907]">
                   {currentMode === 'TEST' && 'Biometric Face ID Diagnostic Test'}
                   {currentMode === 'ENROLL' && (enrollStep === 'SCAN' ? 'Step 1: Scan & Capture Face ID' : 'Step 2: Fill Person Details')}
                   {currentMode === 'PUNCH_IN' && 'Face ID Attendance — Clock In'}
                   {currentMode === 'PUNCH_OUT' && 'Face ID Attendance — Clock Out'}
                 </h3>
                 {currentMode === 'ENROLL' && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECEEE7] text-[#590907] border border-[#DFE1D8]">
                     {enrollStep === 'SCAN' ? 'STEP 1 OF 2' : 'STEP 2 OF 2'}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[#6B6D62] mt-0.5">
                 {currentMode === 'ENROLL' 
                   ? (enrollStep === 'SCAN' ? 'Align face in camera reticle to record mathematical template.' : 'Fill employee identity and role to link with captured Face ID.')
                   : (targetUserName ? `Target Employee: ${targetUserName}` : 'Company 1:N Biometric Authentication')}
@@ -474,7 +474,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-[#6B6D62] hover:text-[#590907] hover:bg-[#ECEEE7] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -482,7 +482,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
 
         {/* Mode Selector Tabs (Hidden when targeted or in details step) */}
         {!targetUserId && enrollStep === 'SCAN' && (
-          <div className="px-6 pt-3 pb-2 border-b border-slate-800 bg-slate-900/50 flex items-center gap-2 overflow-x-auto text-xs shrink-0">
+          <div className="px-6 pt-3 pb-2 border-b border-[#DFE1D8] bg-[#ECEEE7] flex items-center gap-2 overflow-x-auto text-xs shrink-0">
             {[
               { key: 'ENROLL', label: 'Enroll New Face ID', icon: Camera },
               { key: 'TEST', label: 'Test Face ID', icon: Activity },
@@ -502,10 +502,10 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                     setLivenessScore(null);
                     setStatusText('Align face inside the biometric oval ring.');
                   }}
-                  className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                     active 
-                      ? 'bg-teal-600 text-white shadow-sm' 
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                      ? 'bg-[#590907] text-[#FAF6F0] shadow-sm' 
+                      : 'text-[#6B6D62] hover:bg-white hover:text-[#590907]'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -540,10 +540,10 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                   {/* Simulated Camera Feed */}
                   {streamActive && isSimulatedStream && (
                     <div className="w-full h-full bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
-                      <div className="w-32 h-40 rounded-[50%] border-2 border-teal-500/80 bg-teal-500/10 flex items-center justify-center animate-pulse mb-3">
-                        <UserCheck className="w-16 h-16 text-teal-400" />
+                      <div className="w-32 h-40 rounded-[50%] border-2 border-[#A5A79B] bg-[#ECEEE7] flex items-center justify-center animate-pulse mb-3">
+                        <UserCheck className="w-16 h-16 text-[#590907]" />
                       </div>
-                      <span className="text-xs font-mono text-teal-400 bg-teal-950/80 px-3 py-1 rounded-full border border-teal-500/30">
+                      <span className="text-xs font-mono text-[#590907] bg-[#2E3029] px-3 py-1 rounded-full border border-[#DFE1D8]">
                         Virtual Camera Simulator Feed Active (60 FPS)
                       </span>
                     </div>
@@ -563,7 +563,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                             <button
                               type="button"
                               onClick={enableSimulatedCamera}
-                              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-medium text-xs transition shadow-sm"
+                              className="px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] font-medium text-xs transition shadow-sm"
                             >
                               Launch Simulated Camera Feed
                             </button>
@@ -578,7 +578,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                         </>
                       ) : (
                         <>
-                          <RefreshCw className="w-8 h-8 text-teal-400 mx-auto animate-spin" />
+                          <RefreshCw className="w-8 h-8 text-[#590907] mx-auto animate-spin" />
                           <p className="text-xs text-slate-300">Activating camera hardware and biometric sensor...</p>
                         </>
                       )}
@@ -591,27 +591,27 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                       <div
                         className={`w-44 h-56 sm:w-50 sm:h-64 rounded-[50%] border-2 transition-all duration-300 flex items-center justify-center relative ${
                           challengeStep === 'SUCCESS'
-                            ? 'border-emerald-500 shadow-[0_0_35px_rgba(16,185,129,0.6)]'
+                            ? 'border-[#4A5A3F] shadow-sm'
                             : challengeStep === 'FAILED'
                             ? 'border-rose-500 shadow-[0_0_35px_rgba(244,63,94,0.6)]'
                             : challengeStep === 'VERIFYING'
-                            ? 'border-blue-400 animate-pulse shadow-[0_0_25px_rgba(37,99,235,0.5)]'
+                            ? 'border-[#590907] animate-pulse shadow-sm'
                             : challengeStep === 'LIVENESS'
-                            ? 'border-teal-400 shadow-[0_0_20px_rgba(20,184,166,0.4)]'
-                            : 'border-teal-400/70 border-dashed'
+                            ? 'border-[#A5A79B] shadow-sm'
+                            : 'border-[#A5A79B] border-dashed'
                         }`}
                       >
                         {(challengeStep === 'LIVENESS' || challengeStep === 'VERIFYING') && (
-                          <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-teal-400 to-transparent top-1/2 -translate-y-1/2 animate-bounce" />
+                          <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-[#590907] to-transparent top-1/2 -translate-y-1/2 animate-bounce" />
                         )}
-                        <div className="w-2.5 h-2.5 rounded-full bg-teal-400 animate-ping opacity-75" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#590907] animate-ping opacity-75" />
                       </div>
                     </div>
                   )}
 
                   {/* Telemetry Badge */}
-                  <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-slate-950/85 backdrop-blur-md px-2.5 sm:px-3 py-1 rounded-lg text-[10px] sm:text-[11px] font-mono text-teal-300 border border-teal-500/30 flex items-center gap-1.5 z-10 max-w-[80%] truncate">
-                    <Sparkles className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-slate-950/85 backdrop-blur-md px-2.5 sm:px-3 py-1 rounded-lg text-[10px] sm:text-[11px] font-mono text-[#590907] border border-[#DFE1D8] flex items-center gap-1.5 z-10 max-w-[80%] truncate">
+                    <Sparkles className="w-3.5 h-3.5 text-[#590907] shrink-0" />
                     <span className="truncate">Optical 128-D Biometrics &bull; Anti-Spoof Active</span>
                   </div>
 
@@ -631,7 +631,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                 <div
                   className={`p-3.5 rounded-xl border text-sm transition-all ${
                     challengeStep === 'SUCCESS'
-                      ? 'bg-emerald-950/80 border-emerald-500/40 text-emerald-300'
+                      ? 'bg-[#ECEEE7] border border-[#C8CAC0] text-[#4A5A3F]'
                       : challengeStep === 'FAILED'
                       ? 'bg-rose-950/80 border-rose-500/40 text-rose-300'
                       : 'bg-slate-800/80 border-slate-700 text-slate-200'
@@ -639,11 +639,11 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                 >
                   <div className="flex items-start gap-3">
                     {challengeStep === 'SUCCESS' ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-[#4A5A3F] shrink-0 mt-0.5" />
                     ) : challengeStep === 'FAILED' ? (
                       <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
                     ) : (
-                      <KeyRound className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
+                      <KeyRound className="w-5 h-5 text-[#590907] shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1">
                       <p className="text-[10px] font-bold tracking-wider uppercase opacity-75">
@@ -655,15 +655,15 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                         <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-mono pt-2 border-t border-slate-700">
                           <div className="p-1.5 rounded-lg bg-black/30 text-center">
                             <span className="block text-[10px] text-slate-400">Match Conf</span>
-                            <span className="font-bold text-sm text-teal-300">{(confidence * 100).toFixed(1)}%</span>
+                            <span className="font-bold text-sm text-[#590907]">{(confidence * 100).toFixed(1)}%</span>
                           </div>
                           <div className="p-1.5 rounded-lg bg-black/30 text-center">
                             <span className="block text-[10px] text-slate-400">Liveness</span>
-                            <span className="font-bold text-sm text-teal-300">{(livenessScore! * 100).toFixed(0)}%</span>
+                            <span className="font-bold text-sm text-[#590907]">{(livenessScore! * 100).toFixed(0)}%</span>
                           </div>
                           <div className="p-1.5 rounded-lg bg-black/30 text-center">
                             <span className="block text-[10px] text-slate-400">Quality</span>
-                            <span className="font-bold text-sm text-teal-300">{(qualityScore * 100).toFixed(0)}%</span>
+                            <span className="font-bold text-sm text-[#590907]">{(qualityScore * 100).toFixed(0)}%</span>
                           </div>
                         </div>
                       )}
@@ -683,12 +683,12 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                     </p>
                   </div>
                 ) : (
-                  <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs flex items-center justify-between">
+                  <div className="p-2.5 rounded-xl bg-[#ECEEE7] border border-[#DFE1D8] text-[#590907] text-xs flex items-center justify-between">
                     <span className="flex items-center gap-1.5 font-medium">
-                      <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#590907]" />
                       <span>{APPROVED_BIOMETRIC_MODEL.name} ({APPROVED_BIOMETRIC_MODEL.dimensions}-D)</span>
                     </span>
-                    <span className="font-mono text-[10px] bg-teal-500/20 px-2 py-0.5 rounded font-bold">
+                    <span className="font-mono text-[10px] bg-[#ECEEE7] px-2 py-0.5 rounded font-bold">
                       {sdkLoading ? 'INITIALIZING...' : 'ENGINE READY'}
                     </span>
                   </div>
@@ -700,21 +700,21 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                     type="button"
                     onClick={handleCaptureAndExecute}
                     disabled={loading || !streamActive || !sdkAvailable || sdkLoading}
-                    className="flex-1 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-bold py-3.5 px-5 rounded-xl shadow-lg shadow-teal-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm active:scale-[0.99] cursor-pointer"
+                    className="flex-1 bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold py-3.5 px-5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm active:scale-[0.99] cursor-pointer border border-[#400605]"
                   >
                     {loading ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                        <RefreshCw className="w-4 h-4 animate-spin text-[#E8D2B5]" />
                         <span>Verifying with Biometric Engine...</span>
                       </>
                     ) : sdkLoading ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                        <RefreshCw className="w-4 h-4 animate-spin text-[#E8D2B5]" />
                         <span>Loading FaceNet Neural Model...</span>
                       </>
                     ) : (
                       <>
-                        <Camera className="w-4 h-4 text-slate-950" />
+                        <Camera className="w-4 h-4 text-[#E8D2B5]" />
                         <span>
                           {!sdkAvailable 
                             ? 'Biometric SDK Required' 
@@ -737,7 +737,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                         stopCamera();
                         setEnrollStep('DETAILS');
                       }}
-                      className="px-4 py-3 text-xs text-teal-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition font-semibold border border-teal-500/30 whitespace-nowrap cursor-pointer text-center"
+                      className="px-4 py-3 text-xs text-[#590907] hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition font-semibold border border-[#DFE1D8] whitespace-nowrap cursor-pointer text-center"
                     >
                       Fill Employee Details Directly &rarr;
                     </button>
@@ -772,7 +772,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                     value={fallbackReason}
                     onChange={(e) => setFallbackReason(e.target.value)}
                     placeholder="e.g. Camera hardware failure on desktop, temporary medical patch, network timeout..."
-                    className="w-full text-sm rounded-xl bg-slate-800 border border-slate-700 p-3 text-white focus:outline-none focus:border-teal-500"
+                    className="w-full text-sm rounded-xl bg-slate-800 border border-slate-700 p-3 text-white focus:outline-none focus:border-[#590907]"
                   />
                 </div>
 
@@ -780,7 +780,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-semibold py-3 px-4 rounded-xl text-sm transition"
+                    className="flex-1 bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] font-semibold py-3 px-4 rounded-xl text-sm transition"
                   >
                     {loading ? 'Submitting Punch...' : `Record Manual Clock ${currentMode === 'PUNCH_IN' ? 'In' : 'Out'}`}
                   </button>
@@ -801,13 +801,13 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
             <form onSubmit={handleDetailsSubmit} className="space-y-5 animate-in fade-in duration-200">
               
               {/* Biometrics Captured Success Badge Banner */}
-              <div className="p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-between gap-3">
+              <div className="p-4 rounded-xl bg-[#ECEEE7] border border-[#C8CAC0] flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <div className="w-9 h-9 rounded-full bg-[#ECEEE7] border border-[#C8CAC0] flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-[#4A5A3F]" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-xs uppercase tracking-wider text-emerald-300">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-[#4A5A3F]">
                       Step 1 Complete: Face ID Biometrics Captured
                     </h4>
                     <p className="text-xs text-slate-300 mt-0.5">
@@ -848,7 +848,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                         if (formErrors.firstName) setFormErrors({ ...formErrors, firstName: '' });
                       }}
                       placeholder="e.g. Rahul"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#590907]"
                     />
                   </div>
                   {formErrors.firstName && (
@@ -870,7 +870,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                       if (formErrors.lastName) setFormErrors({ ...formErrors, lastName: '' });
                     }}
                     placeholder="e.g. Sharma"
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#590907]"
                   />
                   {formErrors.lastName && (
                     <p className="text-[11px] text-rose-400 mt-1">{formErrors.lastName}</p>
@@ -893,7 +893,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                         if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
                       }}
                       placeholder="e.g. rahul.sharma@company.com"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#590907]"
                     />
                   </div>
                   {formErrors.email && (
@@ -913,7 +913,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="e.g. +91 98765 43210"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#590907]"
                     />
                   </div>
                 </div>
@@ -926,7 +926,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as UserType['role'] })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-teal-500"
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-[#590907]"
                   >
                     <option value="EMPLOYEE">Regular Employee</option>
                     <option value="MANAGER">Department Manager</option>
@@ -946,7 +946,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                   <select
                     value={formData.departmentId}
                     onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-teal-500"
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-[#590907]"
                   >
                     <option value="">Select Department...</option>
                     {departments.map((d) => (
@@ -969,7 +969,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                       value={formData.designation}
                       onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
                       placeholder="e.g. Senior Software Engineer"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#590907]"
                     />
                   </div>
                 </div>
@@ -982,7 +982,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                   <select
                     value={formData.branchId}
                     onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-teal-500"
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:border-[#590907]"
                   >
                     <option value="">Select Location...</option>
                     {branches.map((b) => (
@@ -1003,7 +1003,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                     value={formData.employeeCode}
                     onChange={(e) => setFormData({ ...formData, employeeCode: e.target.value })}
                     placeholder="Auto-generated if blank (e.g. FP-2026-0001)"
-                    className="w-full font-mono px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                    className="w-full font-mono px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#590907]"
                   />
                 </div>
 
@@ -1019,7 +1019,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       placeholder="Welcome2026!"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#590907]"
                     />
                   </div>
                 </div>
@@ -1036,7 +1036,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                       setConsentGiven(e.target.checked);
                       if (formErrors.consent) setFormErrors({ ...formErrors, consent: '' });
                     }}
-                    className="mt-1 h-4 w-4 text-teal-500 rounded border-slate-700 focus:ring-teal-500"
+                    className="mt-1 h-4 w-4 text-[#590907] rounded border-slate-700 focus:ring-[#590907]"
                   />
                   <span className="text-xs text-slate-300 leading-relaxed">
                     <strong>Biometric Consent:</strong> Employee explicitly consents to registering their optical face vector into the company attendance database for terminal clock in/out.
@@ -1065,7 +1065,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
                 <button
                   type="submit"
                   disabled={submittingForm}
-                  className="flex-1 max-w-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20 active:scale-95 cursor-pointer disabled:opacity-50"
+                  className="flex-1 max-w-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-[#590907]/20 active:scale-95 cursor-pointer disabled:opacity-50"
                 >
                   {submittingForm ? (
                     <>

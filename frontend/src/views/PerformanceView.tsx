@@ -269,7 +269,7 @@ export const PerformanceView: React.FC = () => {
 
                 <div className="p-3 rounded-lg border border-[var(--border-glass)] bg-[var(--surface-hover)]">
                   <span className="font-medium text-[var(--text-main)] mb-1 flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+                    <MessageSquare className="w-3.5 h-3.5 text-[#590907]" />
                     Manager Appraisal & Guidance
                   </span>
                   <p className="text-[var(--text-secondary)] leading-relaxed">

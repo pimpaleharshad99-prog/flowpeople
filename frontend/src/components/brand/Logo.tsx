@@ -1,7 +1,7 @@
-import { useId } from 'react';
+import React, { useId } from 'react';
 
 export type LogoProps = {
-  variant?: 'full' | 'icon';
+  variant?: 'full' | 'icon' | 'compact' | 'monochrome';
   size?: number;           // icon size in px
   className?: string;
   showTagline?: boolean;   // "by FlowCraft"
@@ -21,11 +21,60 @@ export function Logo({
 }: LogoProps) {
   const id = useId().replace(/:/g, '');
 
+  const isDarkBg = colorMode === 'dark';
+  const isMono = variant === 'monochrome';
+
+  // Badge Palette:
+  // 1. Muted Sage Grey: #A5A79B
+  // 2. Warm Cream Beige: #E8D2B5
+  // 3. Deep Burgundy: #590907
+  const badgeBg = isDarkBg 
+    ? '#400605' 
+    : isMono 
+    ? '#590907' 
+    : '#E8D2B5';
+
+  const badgeInnerBg = isDarkBg
+    ? '#590907'
+    : isMono
+    ? '#450605'
+    : '#F5EBE1';
+
+  const stemColor = isDarkBg
+    ? '#E8D2B5'
+    : isMono
+    ? '#FFFFFF'
+    : '#590907';
+
+  const armSecondaryColor = isDarkBg
+    ? '#A5A79B'
+    : isMono
+    ? '#DFE1D8'
+    : '#A5A79B';
+
+  const primaryNodeColor = isDarkBg
+    ? '#E8D2B5'
+    : isMono
+    ? '#FFFFFF'
+    : '#590907';
+
+  const primaryNodeCenter = isDarkBg
+    ? '#590907'
+    : isMono
+    ? '#590907'
+    : '#E8D2B5';
+
+  const borderColor = isDarkBg
+    ? 'rgba(232, 210, 181, 0.3)'
+    : isMono
+    ? 'rgba(255, 255, 255, 0.2)'
+    : '#A5A79B';
+
   const iconElement = customLogoUrl ? (
     <img
       src={customLogoUrl}
       alt={customTitle || 'Organization Logo'}
-      className="shrink-0 object-contain rounded-xl border border-[var(--border-glass)] bg-white/50 shadow-md"
+      className="shrink-0 object-contain rounded-xl border border-[#DFE1D8] bg-[#FAF6F0] shadow-sm"
       style={{ width: size, height: size }}
       onError={(e) => {
         e.currentTarget.style.display = 'none';
@@ -39,145 +88,124 @@ export function Logo({
       aria-hidden="true" 
       className="shrink-0 transition-transform duration-200 hover:scale-105 select-none"
       style={{
-        filter: 'drop-shadow(0 4px 12px rgba(0, 229, 153, 0.35)) drop-shadow(0 2px 6px rgba(255, 51, 102, 0.25)) drop-shadow(0 6px 18px rgba(0, 0, 0, 0.22))'
+        filter: isDarkBg 
+          ? 'drop-shadow(0 4px 12px rgba(89, 9, 7, 0.35))'
+          : 'drop-shadow(0 2px 8px rgba(89, 9, 7, 0.12))'
       }}
     >
       <defs>
-        {/* Full Chromatic Spectrum Gradient: Coral Pink -> Electric Amber -> Luminous Mint -> Cyan -> Violet */}
-        <linearGradient id={`bg-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FF3366" />
-          <stop offset="25%" stopColor="#FF9100" />
-          <stop offset="50%" stopColor="#00E599" />
-          <stop offset="75%" stopColor="#00D2FF" />
-          <stop offset="100%" stopColor="#7C3AED" />
-        </linearGradient>
-
-        {/* Luminous Specular Top Sheen */}
-        <linearGradient id={`sh-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-        </linearGradient>
-
-        {/* Dual Border Ring for high-contrast separation on both pure black & pure white */}
-        <linearGradient id={`br-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.85" />
-          <stop offset="35%" stopColor="#FFE066" stopOpacity="0.6" />
-          <stop offset="70%" stopColor="#67E8F9" stopOpacity="0.7" />
-          <stop offset="100%" stopColor="#E9D5FF" stopOpacity="0.85" />
-        </linearGradient>
+        {/* Soft Luxury Cream Inset Gradient */}
+        <radialGradient id={`glow-${id}`} cx="50%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity={isDarkBg ? "0.15" : "0.7"} />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+        </radialGradient>
       </defs>
 
-      {/* Main Chromatic Spectrum Badge */}
-      <rect width="96" height="96" rx="26" fill={`url(#bg-${id})`} />
-      
-      {/* Glossy Top Reflection */}
-      <rect width="96" height="48" rx="26" fill={`url(#sh-${id})`} />
-      
-      {/* Precision Hairline Outer Contrast for snow-white backgrounds */}
-      <rect 
-        x="0.5" 
-        y="0.5" 
-        width="95" 
-        height="95" 
-        rx="26" 
-        fill="none" 
-        stroke="rgba(15, 23, 42, 0.16)" 
-        strokeWidth="1" 
-      />
+      {/* Base Badge Container in Warm Cream Beige (#E8D2B5) / Deep Burgundy (#590907) */}
+      <rect width="96" height="96" rx="24" fill={badgeBg} />
+      <rect x="4" y="4" width="88" height="88" rx="20" fill={badgeInnerBg} />
+      <rect x="4" y="4" width="88" height="88" rx="20" fill={`url(#glow-${id})`} />
 
-      {/* Luminous High-Definition Inner Ring for black/dark backgrounds */}
+      {/* Precision Hairline Muted Sage Border */}
       <rect 
-        x="1.5" 
-        y="1.5" 
-        width="93" 
-        height="93" 
-        rx="25" 
+        x="0.75" 
+        y="0.75" 
+        width="94.5" 
+        height="94.5" 
+        rx="23.5" 
         fill="none" 
-        stroke={`url(#br-${id})`} 
+        stroke={borderColor} 
         strokeWidth="1.5" 
       />
 
-      {/* Stylized 'F' & Connected Human Flow Curves with 3D depth */}
+      {/* ABSTRACT GEOMETRIC 'F' & WORKFORCE CONNECTION MOTIF */}
+      {/* 1. Main Foundation Pillar & Upper Curved Arm: Deep Burgundy (#590907) */}
       <path 
-        d="M34 74V52C34 40 42 33 54 33H59" 
+        d="M32 72V45C32 35 39 31 51 31H57" 
         fill="none" 
-        stroke="#FFFFFF" 
-        strokeWidth="9" 
+        stroke={stemColor} 
+        strokeWidth="8" 
         strokeLinecap="round" 
         strokeLinejoin="round" 
-        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.28))' }}
       />
+
+      {/* 2. Secondary Collaborative Arm: Muted Sage Grey (#A5A79B) */}
       <path 
-        d="M34 56C44 56 50 52 62 52" 
+        d="M32 53C41 53 47 49 57 49H60" 
         fill="none" 
-        stroke="#FFFFFF" 
-        strokeOpacity="0.95" 
-        strokeWidth="9" 
+        stroke={armSecondaryColor} 
+        strokeWidth="7" 
         strokeLinecap="round" 
-        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.28))' }}
       />
-      
-      {/* Biometric Eye & Pulse Node with Multi-Ring Focus */}
-      <circle cx="71" cy="33" r="8" fill="#FFFFFF" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.28))' }} />
-      <circle cx="71" cy="33" r="4" fill="#00D2FF" />
-      <circle cx="71" cy="33" r="1.5" fill="#FFFFFF" />
+
+      {/* 3. Human Connection Apex Node (Primary Talent Lead) */}
+      <circle cx="68" cy="31" r="7" fill={primaryNodeColor} />
+      <circle cx="68" cy="31" r="2.8" fill={primaryNodeCenter} />
+
+      {/* 4. Secondary Connection Node (Workforce Synergy) */}
+      <circle cx="68" cy="49" r="5" fill={armSecondaryColor} />
+
+      {/* 5. Minimal Harmonic Workforce Link */}
+      <path 
+        d="M68 38V44" 
+        stroke={armSecondaryColor} 
+        strokeWidth="1.5" 
+        strokeDasharray="2 2" 
+        opacity="0.8" 
+      />
     </svg>
   );
 
-  // Dynamic Typography Styles Optimized for High Contrast on BOTH Black & White Backgrounds
+  // Typography Styles: Deep Burgundy & Dark Neutral / Warm Cream
   const getTypography = () => {
-    if (colorMode === 'dark') {
+    if (isDarkBg) {
       return {
-        brandFlow: 'bg-gradient-to-r from-[#00E599] via-[#00D2FF] to-[#A78BFA] bg-clip-text text-transparent font-black',
-        brandPeople: 'text-white font-extrabold',
-        tagline: 'text-slate-400',
-        flowCraft: 'bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent font-bold'
+        brandFlow: 'text-[#E8D2B5] font-black',
+        brandPeople: 'text-[#FAF6F0] font-extrabold',
+        tagline: 'text-[#A5A79B]',
+        flowCraft: 'text-[#E8D2B5] font-bold'
       };
     }
-    if (colorMode === 'light') {
-      return {
-        brandFlow: 'bg-gradient-to-r from-[#059669] via-[#0284C7] to-[#6366F1] bg-clip-text text-transparent font-black',
-        brandPeople: 'text-slate-950 font-extrabold',
-        tagline: 'text-slate-500',
-        flowCraft: 'text-teal-700 font-bold'
-      };
-    }
-    // Auto (adaptive to parent dark mode)
     return {
-      brandFlow: 'bg-gradient-to-r from-[#059669] via-[#0284C7] to-[#6366F1] dark:from-[#00E599] dark:via-[#00D2FF] dark:to-[#A78BFA] bg-clip-text text-transparent font-black',
-      brandPeople: 'text-slate-950 dark:text-white font-extrabold',
-      tagline: 'text-slate-500 dark:text-slate-400',
-      flowCraft: 'text-teal-700 dark:text-teal-300 font-bold'
+      brandFlow: 'text-[#590907] font-black',
+      brandPeople: 'text-[#2E3029] font-extrabold',
+      tagline: 'text-[#6B6D62]',
+      flowCraft: 'text-[#590907] font-bold'
     };
   };
 
   const typo = getTypography();
 
+  if (variant === 'icon' || variant === 'compact') {
+    return (
+      <div className={`inline-flex items-center ${className}`} role="img" aria-label={customTitle || "FlowPeople"}>
+        {iconElement}
+      </div>
+    );
+  }
+
   return (
     <div className={`inline-flex items-center gap-3 ${className}`} role="img" aria-label={customTitle || "FlowPeople by FlowCraft"}>
       {iconElement}
-      {variant === 'full' && (
-        <div className="leading-tight select-none min-w-0 text-left">
-          {customTitle ? (
-            <div className="text-[17px] font-bold tracking-tight text-[var(--text-main)] truncate max-w-[155px]" title={customTitle}>
-              {customTitle}
-            </div>
-          ) : (
-            <div className="text-[20px] tracking-tight flex items-center gap-0.5">
-              <span className={typo.brandFlow}>Flow</span>
-              <span className={typo.brandPeople}>People</span>
-            </div>
-          )}
-          {showTagline && (
-            <div className={`text-[10.5px] font-medium tracking-tight ${typo.tagline}`}>
-              by <span className={typo.flowCraft}>FlowCraft</span>
-            </div>
-          )}
-        </div>
-      )}
+      <div className="leading-tight select-none min-w-0 text-left">
+        {customTitle ? (
+          <div className="text-[17px] font-bold tracking-tight text-[#2E3029] truncate max-w-[155px]" title={customTitle}>
+            {customTitle}
+          </div>
+        ) : (
+          <div className="text-[20px] tracking-tight flex items-center gap-0.5">
+            <span className={typo.brandFlow}>Flow</span>
+            <span className={typo.brandPeople}>People</span>
+          </div>
+        )}
+        {showTagline && (
+          <div className={`text-[10.5px] font-medium tracking-tight ${typo.tagline}`}>
+            by <span className={typo.flowCraft}>FlowCraft</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 export default Logo;
-

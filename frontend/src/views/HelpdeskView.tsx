@@ -192,7 +192,7 @@ export const HelpdeskView: React.FC<HelpdeskViewProps> = ({ currentUser }) => {
                 setSelectedTicket(t);
                 setResolutionModalOpen(true);
               }}
-              className="px-2.5 py-1 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium inline-flex items-center gap-1 transition"
+              className="px-2.5 py-1 rounded-md bg-[#4A5A3F] hover:bg-[#3D4B34] text-[#FAF6F0] text-xs font-medium inline-flex items-center gap-1 transition"
             >
               <Check className="w-3 h-3" />
               <span>Resolve</span>
@@ -299,8 +299,8 @@ export const HelpdeskView: React.FC<HelpdeskViewProps> = ({ currentUser }) => {
             </div>
 
             {selectedTicket.resolution_notes && (
-              <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-2">
-                <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block flex items-center gap-1">
+              <div className="p-4 rounded-xl border border-[#C8CAC0] bg-[#ECEEE7] space-y-2">
+                <span className="text-[11px] font-medium text-[#4A5A3F] uppercase tracking-wider block flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Resolution Record
                 </span>
                 <p className="text-xs text-[var(--text-main)] leading-relaxed">
@@ -313,7 +313,7 @@ export const HelpdeskView: React.FC<HelpdeskViewProps> = ({ currentUser }) => {
               <div className="pt-4 border-t border-[var(--border-glass)] flex justify-end">
                 <button
                   onClick={() => setResolutionModalOpen(true)}
-                  className="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-medium shadow-sm flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-lg bg-[#4A5A3F] hover:bg-[#3D4B34] text-[#FAF6F0] font-medium shadow-sm flex items-center gap-1.5"
                 >
                   <Check className="w-3.5 h-3.5" />
                   <span>Mark Ticket as Resolved</span>
@@ -433,7 +433,7 @@ export const HelpdeskView: React.FC<HelpdeskViewProps> = ({ currentUser }) => {
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-medium shadow-sm disabled:opacity-50"
+              className="px-4 py-1.5 rounded-lg bg-[#4A5A3F] hover:bg-[#3D4B34] text-[#FAF6F0] font-medium shadow-sm disabled:opacity-50"
             >
               {submitting ? 'Closing...' : 'Close & Resolve Ticket'}
             </button>

@@ -99,7 +99,7 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
       color: #0f172a;
     }
     .brand h1 span {
-      color: #0d9488;
+      color: #590907;
     }
     .brand p {
       margin: 3px 0 0;
@@ -112,9 +112,9 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
     .meta .badge {
       display: inline-block;
       padding: 3px 8px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      color: #166534;
+      background: #ECEEE7;
+      border: 1px solid #A5A79B;
+      color: #4A5A3F;
       border-radius: 4px;
       font-weight: 700;
       font-size: 10px;
@@ -153,9 +153,9 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
       color: #0f172a;
       margin: 4px 0 0;
     }
-    .summary-card.teal .val { color: #0d9488; }
-    .summary-card.emerald .val { color: #059669; }
-    .summary-card.amber .val { color: #d97706; }
+    .summary-card.teal .val { color: #590907; }
+    .summary-card.emerald .val { color: #4A5A3F; }
+    .summary-card.amber .val { color: #8C4820; }
     
     table {
       width: 100%;
@@ -164,8 +164,8 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
       font-size: 10.5px;
     }
     th {
-      background: #0f172a;
-      color: #ffffff;
+      background: #590907;
+      color: #FAF6F0;
       text-align: left;
       padding: 8px 10px;
       font-weight: 700;
@@ -175,42 +175,42 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
     }
     td {
       padding: 8px 10px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid #DFE1D8;
       vertical-align: middle;
     }
     tr:nth-child(even) td {
-      background: #f8fafc;
+      background: #FAF6F0;
     }
     .emp-name {
       font-weight: 700;
-      color: #0f172a;
+      color: #2E3029;
       font-size: 11px;
     }
     .emp-code {
       font-family: monospace;
-      color: #64748b;
+      color: #717368;
       font-size: 10px;
     }
     .time-in {
       font-family: monospace;
       font-weight: 700;
-      color: #059669;
+      color: #4A5A3F;
     }
     .time-out {
       font-family: monospace;
       font-weight: 700;
-      color: #0284c7;
+      color: #590907;
     }
     .duration {
       font-family: monospace;
       font-weight: 700;
-      color: #0d9488;
+      color: #2E3029;
     }
     .punch-logs {
       font-family: monospace;
       font-size: 9.5px;
       color: #475569;
-      background: #f1f5f9;
+      background: #ECEEE7;
       padding: 2px 6px;
       border-radius: 4px;
       display: inline-block;
@@ -229,24 +229,24 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
       letter-spacing: 0.3px;
     }
     .status-checked-in {
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #86efac;
+      background: #ECEEE7;
+      color: #4A5A3F;
+      border: 1px solid #A5A79B;
     }
     .status-present {
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #7dd3fc;
+      background: #ECEEE7;
+      color: #4A5A3F;
+      border: 1px solid #A5A79B;
     }
     .status-absent {
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
+      background: #F7E8E8;
+      color: #590907;
+      border: 1px solid #E5BABA;
     }
     .status-late {
-      background: #fef3c7;
-      color: #92400e;
-      border: 1px solid #fcd34d;
+      background: #F9EFE4;
+      color: #8C4820;
+      border: 1px solid #E8D2B5;
     }
     .footer {
       margin-top: 32px;
@@ -278,8 +278,8 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
       margin-bottom: 16px;
     }
     .btn-print {
-      background: #0d9488;
-      color: white;
+      background: #590907;
+      color: #FAF6F0;
       border: none;
       padding: 8px 16px;
       border-radius: 6px;
@@ -287,7 +287,7 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
       cursor: pointer;
       font-size: 12px;
     }
-    .btn-print:hover { background: #0f766e; }
+    .btn-print:hover { background: #450605; }
     @media print {
       .no-print { display: none !important; }
       body { padding: 0 !important; }
@@ -411,7 +411,7 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
 
   <div class="footer" style="margin-top: 32px; border-top: 1px solid #cbd5e1; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #64748b;">
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span style="font-weight: 800; color: #0d8a7f; letter-spacing: 0.5px; font-size: 11px;">FlowPeople by FlowCraft</span>
+      <span style="font-weight: 800; color: #590907; letter-spacing: 0.5px; font-size: 11px;">FlowPeople by FlowCraft</span>
       <span>&bull;</span>
       <span>Enterprise Multi-Tenant HRMS & Biometric System</span>
     </div>

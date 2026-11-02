@@ -113,17 +113,17 @@ const ROLE_DESCRIPTIONS: Record<string, { label: string; desc: string; color: st
   MANAGER: {
     label: 'Team Manager',
     desc: 'Direct report attendance tracking, shift scheduling, leave approvals, and team reviews.',
-    color: 'border-blue-500/30'
+    color: 'border-[#DFE1D8]'
   },
   HR_EXECUTIVE: {
     label: 'HR Executive',
     desc: 'Employee directory access, attendance regularizations, onboarding coordination, and helpdesk.',
-    color: 'border-teal-500/30'
+    color: 'border-[#DFE1D8]'
   },
   HR_ADMIN: {
     label: 'HR Administrator',
     desc: 'Full workforce governance, policy controls, biometric resets, department structuring, and audits.',
-    color: 'border-emerald-500/30'
+    color: 'border-[#DFE1D8]'
   },
   PAYROLL_ADMIN: {
     label: 'Payroll Administrator',
@@ -133,12 +133,12 @@ const ROLE_DESCRIPTIONS: Record<string, { label: string; desc: string; color: st
   AUDITOR: {
     label: 'Compliance Auditor',
     desc: 'Read-only access to biometric event logs, anti-spoof records, and enterprise audit trails.',
-    color: 'border-purple-500/30'
+    color: 'border-[#DFE1D8]'
   },
   COMPANY_ADMIN: {
     label: 'Company Administrator',
     desc: 'Comprehensive administrative authority over all branch locations, users, and organization settings.',
-    color: 'border-indigo-500/30'
+    color: 'border-[#DFE1D8]'
   },
   SUPER_ADMIN: {
     label: 'Super Admin',
@@ -481,7 +481,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
       render: (emp: User) => (
         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${
           emp.has_face_enrolled 
-            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+            ? 'bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]' 
             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
         }`}>
           <Camera className="w-2.5 h-2.5" />
@@ -667,7 +667,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                   />
                   {emp.has_face_enrolled && (
                     <span 
-                      className="absolute bottom-0 right-1/2 translate-x-5 p-1 rounded-full bg-emerald-500 text-white shadow-xs" 
+                      className="absolute bottom-0 right-1/2 translate-x-5 p-1 rounded-full bg-[#4A5A3F] text-white shadow-xs" 
                       title="Face ID Enrolled & Active"
                     >
                       <Camera className="w-2.5 h-2.5" />
@@ -726,7 +726,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                   currentStep === st.num 
                     ? 'bg-[var(--accent)] text-white shadow-md ring-2 ring-[var(--accent)]/30' 
                     : currentStep > st.num 
-                    ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30' 
+                    ? 'bg-[#ECEEE7] text-[#4A5A3F] font-bold border border-[#C8CAC0]' 
                     : 'bg-[var(--surface-hover)] text-[var(--text-muted)] border border-[var(--border-subtle)]'
                 }`}>
                   {currentStep > st.num ? <Check className="w-4 h-4 stroke-[2.5]" /> : st.num}
@@ -1300,11 +1300,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                 {/* 1. Biometric Enrollment Status & Model Architecture */}
                 <div className={`p-4 rounded-xl border space-y-2 text-center ${
                   selectedEmployee.has_face_enrolled 
-                    ? 'border-emerald-500/30 bg-emerald-500/5' 
+                    ? 'border-[#C8CAC0] bg-[#ECEEE7]' 
                     : 'border-amber-500/30 bg-amber-500/5'
                 }`}>
                   <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center ${
-                    selectedEmployee.has_face_enrolled ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                    selectedEmployee.has_face_enrolled ? 'bg-[#ECEEE7] text-[#4A5A3F]' : 'bg-amber-500/20 text-amber-400'
                   }`}>
                     <Camera className="w-6 h-6" />
                   </div>
@@ -1334,7 +1334,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                       {APPROVED_BIOMETRIC_MODEL.id} &bull; 128-D L2 &bull; 160x160 RGB
                     </span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#ECEEE7] text-[#590907] border border-[#DFE1D8]">
                     ENFORCED
                   </span>
                 </div>
@@ -1375,7 +1375,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                     onClick={checkCameraAvailability}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${
                       cameraCheckResult === 'AVAILABLE'
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                        ? 'bg-[#ECEEE7] border-[#C8CAC0] text-[#4A5A3F]'
                         : 'border-[var(--border-glass)] hover:bg-[var(--surface-hover)] text-[var(--text-main)]'
                     }`}
                   >
@@ -1394,7 +1394,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                           setFaceModalTargetUser(selectedEmployee);
                           setIsFaceModalOpen(true);
                         }}
-                        className="w-full py-2 rounded-lg border border-teal-500/30 text-teal-600 dark:text-teal-400 hover:bg-teal-500/10 transition font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full py-2 rounded-lg border border-[#DFE1D8] text-[#590907] hover:bg-[#ECEEE7] transition font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Update / Re-enroll Face ID Template</span>
@@ -1483,7 +1483,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                           className="px-3 py-1.5 rounded-lg border border-[var(--border-glass)] hover:bg-[var(--surface-glass)] text-[var(--text-secondary)] font-medium inline-flex items-center gap-1 transition"
                           title="Copy onboarding link"
                         >
-                          {copiedToken === selectedEmployee.invitation_token ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedToken === selectedEmployee.invitation_token ? <Check className="w-3.5 h-3.5 text-[#4A5A3F]" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>Copy Link</span>
                         </button>
                       )}

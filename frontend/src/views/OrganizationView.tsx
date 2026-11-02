@@ -402,7 +402,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
             ) : activeTab === 'subscription' ? (
               <button
                 onClick={() => setIsUpgradeModalOpen(true)}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#590907] text-[#FAF6F0] hover:bg-[#450605] border border-[#400605] transition-colors shadow-sm"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Upgrade / Change Plan</span>
@@ -442,7 +442,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
           label="SaaS Plan Quota"
           value={subInfo ? `${subInfo.usage.employees_count}/${subInfo.usage.employees_limit}` : '10/10'}
           subtext={subInfo ? `${subInfo.plan.name}` : 'Trial Active'}
-          icon={<CreditCard className="w-4 h-4 text-emerald-500" />}
+          icon={<CreditCard className="w-4 h-4 text-[#4A5A3F]" />}
         />
       </div>
 
@@ -509,7 +509,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                     </div>
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                       b.is_geofence_enforced 
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                        ? 'bg-[#ECEEE7] text-[#4A5A3F]  border border-[#C8CAC0]' 
                         : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                     }`}>
                       {b.is_geofence_enforced ? 'Enforced' : 'Flexible'}
@@ -615,11 +615,11 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
       {activeTab === 'subscription' && (
         <div className="space-y-6">
           {/* Active Subscription Overview Card */}
-          <GlassCard className="p-6 border-l-4 border-l-emerald-500">
+          <GlassCard className="p-6 border-l-4 border-l-[#4A5A3F]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]">
                     {subInfo?.subscription.status || 'TRIALING'}
                   </span>
                   <span className="text-xs text-[var(--text-subtle)] uppercase tracking-wider font-mono">
@@ -652,7 +652,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setIsUpgradeModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-md shadow-emerald-500/20"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#590907] text-[#FAF6F0] hover:bg-[#450605] border border-[#400605] transition-colors shadow-sm"
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>Change / Upgrade Tier</span>
@@ -668,7 +668,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
             <GlassCard className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                  <div className="p-2 rounded-lg bg-[#ECEEE7] text-[#4A5A3F]">
                     <Users className="w-4 h-4" />
                   </div>
                   <div>
@@ -687,7 +687,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                   className={`h-full transition-all duration-500 ${
                     ((subInfo?.usage.employees_count || 0) / (subInfo?.usage.employees_limit || 1)) >= 0.9 
                       ? 'bg-rose-500' 
-                      : 'bg-emerald-500'
+                      : 'bg-[#4A5A3F]'
                   }`}
                   style={{
                     width: `${Math.min(100, Math.round(((subInfo?.usage.employees_count || 0) / (subInfo?.usage.employees_limit || 1)) * 100))}%`
@@ -705,7 +705,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
             <GlassCard className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600">
+                  <div className="p-2 rounded-lg bg-[#ECEEE7] text-[#590907]">
                     <Shield className="w-4 h-4" />
                   </div>
                   <div>
@@ -720,7 +720,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
 
               <div className="w-full bg-[var(--surface-sunken)] rounded-full h-2.5 overflow-hidden border border-[var(--border-glass)]">
                 <div 
-                  className="h-full bg-indigo-500 transition-all duration-500"
+                  className="h-full bg-[#590907] transition-all duration-500"
                   style={{
                     width: `${Math.min(100, Math.round(((subInfo?.usage.admins_count || 0) / (subInfo?.usage.admins_limit || 1)) * 100))}%`
                   }}
@@ -742,19 +742,19 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                 <h4 className="text-xs font-semibold text-[var(--text-main)]">Enterprise Capabilities</h4>
               </div>
               <div className="space-y-1.5 text-xs">
-                <div className="flex items-center gap-2 text-emerald-600">
+                <div className="flex items-center gap-2 text-[#4A5A3F]">
                   <Check className="w-3.5 h-3.5" />
                   <span className="text-[var(--text-secondary)]">Pure 128-D Face Recognition</span>
                 </div>
-                <div className="flex items-center gap-2 text-emerald-600">
+                <div className="flex items-center gap-2 text-[#4A5A3F]">
                   <Check className="w-3.5 h-3.5" />
                   <span className="text-[var(--text-secondary)]">Physical Fingerprint Hardware Bridge</span>
                 </div>
-                <div className="flex items-center gap-2 text-emerald-600">
+                <div className="flex items-center gap-2 text-[#4A5A3F]">
                   <Check className="w-3.5 h-3.5" />
                   <span className="text-[var(--text-secondary)]">Vector Attendance & Timesheet PDF</span>
                 </div>
-                <div className="flex items-center gap-2 text-emerald-600">
+                <div className="flex items-center gap-2 text-[#4A5A3F]">
                   <Check className="w-3.5 h-3.5" />
                   <span className="text-[var(--text-secondary)]">Indian DPDP & Vector Encryption</span>
                 </div>
@@ -766,7 +766,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
           <GlassCard className="p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-glass)] pb-3">
               <div className="flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-emerald-500" />
+                <Receipt className="w-4 h-4 text-[#4A5A3F]" />
                 <h4 className="text-sm font-semibold text-[var(--text-main)]">Billing Invoices & Receipts</h4>
               </div>
               <span className="text-xs text-[var(--text-subtle)]">
@@ -809,7 +809,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                           {inv.currency === 'INR' ? '₹' : '$'}{inv.amount.toLocaleString()}
                         </td>
                         <td className="py-2.5 px-3">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]">
                             {inv.status}
                           </span>
                         </td>
@@ -946,7 +946,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-xs text-teal-800 dark:text-teal-300 flex items-start gap-2.5">
+              <div className="p-3.5 rounded-xl bg-[#ECEEE7] border border-[#DFE1D8] text-xs text-[#590907] flex items-start gap-2.5">
                 <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
                 <p>
                   <strong>Footer Attribution:</strong> As requested, generated PDF attendance and timesheet exports will carry your organization's logo and title prominently at the top, while keeping the platform certification stamp <em>"FlowPeople by FlowCraft"</em> discreetly at the bottom footer.
@@ -977,7 +977,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
             <div className="flex items-center justify-between border-b border-[var(--border-glass)] pb-3">
               <div>
                 <h3 className="text-base font-bold text-[var(--text-main)] flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-500" />
+                  <Sparkles className="w-4 h-4 text-[#4A5A3F]" />
                   <span>Upgrade / Change SaaS Plan</span>
                 </h3>
                 <p className="text-xs text-[var(--text-subtle)]">
@@ -1001,7 +1001,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                   onClick={() => setUpgradeCycle('MONTHLY')}
                   className={`px-3 py-1 rounded-lg font-medium transition-all ${
                     upgradeCycle === 'MONTHLY'
-                      ? 'bg-emerald-600 text-white shadow-sm'
+                      ? 'bg-[#590907] text-[#FAF6F0] shadow-sm'
                       : 'text-[var(--text-subtle)] hover:text-[var(--text-main)]'
                   }`}
                 >
@@ -1012,7 +1012,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                   onClick={() => setUpgradeCycle('ANNUAL')}
                   className={`px-3 py-1 rounded-lg font-medium transition-all ${
                     upgradeCycle === 'ANNUAL'
-                      ? 'bg-emerald-600 text-white shadow-sm'
+                      ? 'bg-[#590907] text-[#FAF6F0] shadow-sm'
                       : 'text-[var(--text-subtle)] hover:text-[var(--text-main)]'
                   }`}
                 >
@@ -1057,13 +1057,13 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                     onClick={() => setSelectedPlanId(p.id)}
                     className={`cursor-pointer rounded-xl p-4 border transition-all space-y-3 ${
                       isSelected
-                        ? 'border-emerald-500 bg-emerald-500/5 ring-2 ring-emerald-500/20 shadow-md'
+                        ? 'border-[#590907] bg-[#ECEEE7] ring-2 ring-[#590907]/20 shadow-md'
                         : 'border-[var(--border-glass)] hover:border-slate-400 bg-[var(--surface-sunken)]/40'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-[var(--text-main)]">{p.name}</h4>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-[#4A5A3F]" />}
                     </div>
                     <div>
                       <span className="text-2xl font-bold font-mono text-[var(--text-main)]">
@@ -1077,7 +1077,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                       {p.description}
                     </p>
                     <div className="pt-2 border-t border-[var(--border-glass)] space-y-1 text-[11px]">
-                      <div className="font-semibold text-emerald-600">
+                      <div className="font-semibold text-[#4A5A3F]">
                         Up to {p.max_employees} Staff
                       </div>
                       <div className="text-[var(--text-subtle)]">
@@ -1110,7 +1110,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                     placeholder="Enter Payment Ref or leave blank for instant auto-mock gateway"
                     value={paymentTxRef}
                     onChange={(e) => setPaymentTxRef(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl text-xs bg-[var(--surface-sunken)] border border-[var(--border-glass)] text-[var(--text-main)] focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                    className="flex-1 px-3 py-2 rounded-xl text-xs bg-[var(--surface-sunken)] border border-[var(--border-glass)] text-[var(--text-main)] focus:outline-none focus:ring-1 focus:ring-[#590907] font-mono"
                   />
                   <button
                     type="button"
@@ -1136,7 +1136,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                 <button
                   type="submit"
                   disabled={paying}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold bg-[#590907] text-[#FAF6F0] hover:bg-[#450605] border border-[#400605] transition-colors shadow-lg shadow-[#590907]/20 disabled:opacity-50"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{paying ? 'Verifying Payment...' : 'Confirm Upgrade & Activate'}</span>

@@ -121,11 +121,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`glass-panel rounded-none border-y-0 border-l-0 border-r border-[var(--border-glass)] bg-[var(--surface-glass)] flex flex-col shrink-0 min-h-screen transition-all duration-200 select-none ${isCollapsed ? 'w-[72px]' : 'w-[240px]'
+      className={`rounded-none border-y-0 border-l-0 border-r border-[#DFE1D8] bg-[#ECEEE7] text-[#2E3029] flex flex-col shrink-0 min-h-screen transition-all duration-200 select-none shadow-xs ${isCollapsed ? 'w-[72px]' : 'w-[240px]'
         }`}
     >
       {/* Brand Header */}
-      <div className="h-16 px-3.5 flex items-center justify-between border-b border-[var(--border-glass)]">
+      <div className="h-16 px-3.5 flex items-center justify-between border-b border-[#DFE1D8] bg-[#F7F8F5]">
         {!isCollapsed ? (
           <button
             onClick={() => setActiveTab('dashboard')}
@@ -159,15 +159,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="px-3 pt-3">
           <button
             onClick={onOpenKiosk}
-            className={`w-full py-2 px-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-xs transition flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-2 cursor-pointer`}
+            className={`w-full py-2 px-2.5 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold text-xs shadow-xs transition flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-2 cursor-pointer border border-[#400605]`}
             title="Launch Company Face Scanner Kiosk"
           >
             <div className="flex items-center gap-2">
-              <Scan className="w-4 h-4 animate-pulse shrink-0" />
+              <Scan className="w-4 h-4 animate-pulse shrink-0 text-[#E8D2B5]" />
               {!isCollapsed && <span>Face Kiosk</span>}
             </div>
             {!isCollapsed && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20 font-mono font-semibold">1:N KIOSK</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FAF6F0]/15 text-[#E8D2B5] font-mono font-semibold">1:N KIOSK</span>
             )}
           </button>
         </div>
@@ -183,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer User Info & Collapse Toggle */}
       <div className="p-3 border-t border-[var(--border-glass)] space-y-2">
         {!isCollapsed && currentUser && (
-          <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-[var(--radius-button)] bg-[var(--surface-hover)] border border-[var(--border-glass)]">
+          <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-[var(--radius-button)] bg-[#FAF6F0] border border-[#DFE1D8]">
             <Avatar name={`${currentUser.first_name} ${currentUser.last_name}`} src={currentUser.avatar_url} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-[var(--text-main)] truncate">

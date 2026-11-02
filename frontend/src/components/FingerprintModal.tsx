@@ -174,39 +174,39 @@ export const FingerprintModal: React.FC<FingerprintModalProps> = ({
               <div
                 className={`w-28 h-28 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                   successData
-                    ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.5)]'
+                    ? 'border-[#4A5A3F] bg-[#ECEEE7] shadow-sm'
                     : errorMsg
                     ? 'border-rose-500 bg-rose-500/10 shadow-[0_0_20px_rgba(244,63,94,0.4)]'
                     : scanning
-                    ? 'border-teal-400 bg-teal-500/10 animate-pulse shadow-[0_0_30px_rgba(20,184,166,0.6)]'
+                    ? 'border-[#590907] bg-[#ECEEE7] animate-pulse shadow-sm'
                     : hasHardware
-                    ? 'border-teal-500/40 bg-teal-500/5'
+                    ? 'border-[#DFE1D8] bg-[#FAF6F0]'
                     : 'border-slate-800 bg-slate-900/50'
                 }`}
               >
                 <Fingerprint
                   className={`w-14 h-14 transition-all ${
                     successData
-                      ? 'text-emerald-400 scale-110'
+                      ? 'text-[#4A5A3F] scale-110'
                       : errorMsg
                       ? 'text-rose-400'
                       : scanning
-                      ? 'text-teal-300 animate-pulse'
+                      ? 'text-[#590907] animate-pulse'
                       : hasHardware
-                      ? 'text-teal-400'
+                      ? 'text-[#590907]'
                       : 'text-slate-600'
                   }`}
                 />
               </div>
 
               {scanning && (
-                <div className="absolute inset-0 rounded-full border-2 border-teal-400 animate-ping opacity-75 pointer-events-none" />
+                <div className="absolute inset-0 rounded-full border-2 border-[#590907] animate-ping opacity-75 pointer-events-none" />
               )}
             </div>
 
             {/* Hardware badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono bg-slate-900/90 border border-slate-800 text-slate-300">
-              <Cpu className="w-3.5 h-3.5 text-teal-400" />
+              <Cpu className="w-3.5 h-3.5 text-[#590907]" />
               <span>
                 {checkingHardware
                   ? 'Probing Hardware...'
@@ -221,7 +221,7 @@ export const FingerprintModal: React.FC<FingerprintModalProps> = ({
           <div
             className={`p-3.5 rounded-xl border text-sm transition-all ${
               successData
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                ? 'bg-[#ECEEE7] border-[#C8CAC0] text-[#4A5A3F]'
                 : errorMsg
                 ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
                 : 'bg-[var(--surface-glass)] border-[var(--border-subtle)] text-[var(--text-primary)]'
@@ -229,7 +229,7 @@ export const FingerprintModal: React.FC<FingerprintModalProps> = ({
           >
             <div className="flex items-start gap-3">
               {successData ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-[#4A5A3F] shrink-0 mt-0.5" />
               ) : errorMsg ? (
                 <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
               ) : (
@@ -270,7 +270,7 @@ export const FingerprintModal: React.FC<FingerprintModalProps> = ({
               <button
                 type="button"
                 onClick={initScanner}
-                className="mt-1 text-[11px] underline font-semibold text-teal-600 dark:text-teal-400"
+                className="mt-1 text-[11px] underline font-semibold text-[#590907]"
               >
                 Retry Hardware Detection
               </button>

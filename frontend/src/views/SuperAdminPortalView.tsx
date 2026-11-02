@@ -154,7 +154,7 @@ export const SuperAdminPortalView: React.FC = () => {
       header: 'Organization & Code',
       render: (comp: CompanyTenant) => (
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 font-mono font-bold text-xs border border-teal-500/20">
+          <div className="p-2 rounded-xl bg-[#E8D2B5]/30 text-[#590907] font-mono font-bold text-xs border border-[#A5A79B]/30">
             {comp.code}
           </div>
           <div>
@@ -177,7 +177,7 @@ export const SuperAdminPortalView: React.FC = () => {
       render: (comp: CompanyTenant) => (
         <div className="space-y-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/20 uppercase">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#ECEEE7] text-[#590907] border border-[#DFE1D8] uppercase">
               {comp.subscription?.plan_name || 'Free Trial'}
             </span>
             <span className="text-[10px] font-mono text-[var(--text-subtle)]">
@@ -216,7 +216,7 @@ export const SuperAdminPortalView: React.FC = () => {
               });
               setShowEditPlanModal(true);
             }}
-            className="px-2.5 py-1 rounded-lg border border-[var(--border-glass)] hover:bg-[var(--surface-hover)] text-xs font-semibold text-teal-600 dark:text-teal-400 transition"
+            className="px-2.5 py-1 rounded-lg border border-[var(--border-glass)] hover:bg-[var(--surface-hover)] text-xs font-semibold text-[#590907] transition"
           >
             Adjust Limits
           </button>
@@ -224,8 +224,8 @@ export const SuperAdminPortalView: React.FC = () => {
             onClick={() => handleToggleStatus(comp)}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
               comp.is_active
-                ? 'border-rose-500/30 text-rose-600 hover:bg-rose-500/10'
-                : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
+                ? 'border-[#590907]/30 text-[#590907] hover:bg-[#590907]/10'
+                : 'border-[#4A5A3F]/30 text-[#4A5A3F] hover:bg-[#4A5A3F]/10'
             }`}
           >
             {comp.is_active ? 'Suspend' : 'Activate'}
@@ -238,15 +238,15 @@ export const SuperAdminPortalView: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Platform Owner Security Banner */}
-      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-teal-500/15 to-emerald-500/15 border border-amber-500/30 flex items-center justify-between gap-4">
+      <div className="p-3.5 rounded-2xl bg-[#ECEEE7] border border-[#DFE1D8] flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500">
+          <div className="p-2 rounded-xl bg-[#E8D2B5] text-[#590907]">
             <Lock className="w-5 h-5" />
           </div>
           <div>
             <div className="font-extrabold text-xs text-[var(--text-main)] flex items-center gap-2">
               <span>AUTHORIZED PLATFORM-OWNER CONSOLE</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FAF6F0] text-[#590907] border border-[#DFE1D8] font-bold">
                 ROOT PRIVILEGES
               </span>
             </div>
@@ -259,7 +259,7 @@ export const SuperAdminPortalView: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowAddCompanyModal(true)}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 text-xs font-extrabold shadow transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="px-3.5 py-1.5 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] text-xs font-extrabold shadow-sm transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>+ Provision Organization</span>
@@ -370,7 +370,7 @@ export const SuperAdminPortalView: React.FC = () => {
                       className="p-3 rounded-xl border border-[var(--border-glass)] bg-[var(--surface-hover)] flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-[#4A5A3F] animate-pulse" />
                         <span className="font-semibold text-[var(--text-main)]">{s.name}</span>
                       </div>
                       <span className="font-mono text-[10px] text-[var(--accent)] font-bold">
@@ -528,7 +528,7 @@ export const SuperAdminPortalView: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs"
+              className="px-5 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold text-xs shadow-sm border border-[#400605]"
             >
               Provision Workspace
             </button>
@@ -588,7 +588,7 @@ export const SuperAdminPortalView: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs"
+              className="px-5 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold text-xs shadow-sm border border-[#400605]"
             >
               Save Adjustments
             </button>

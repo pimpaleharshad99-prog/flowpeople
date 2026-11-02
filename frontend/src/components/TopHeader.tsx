@@ -156,10 +156,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         {onOpenKiosk && (
           <button
             onClick={onOpenKiosk}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-button)] bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-button)] bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold text-xs shadow-xs transition cursor-pointer border border-[#400605]"
             title="Launch Company-Wide Face Attendance Terminal"
           >
-            <Scan className="w-3.5 h-3.5 animate-pulse" />
+            <Scan className="w-3.5 h-3.5 animate-pulse text-[#E8D2B5]" />
             <span className="hidden sm:inline">Face Kiosk</span>
           </button>
         )}
@@ -171,19 +171,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         >
           <Bell className="w-4 h-4 stroke-[1.5]" />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-        </button>
-
-        {/* Theme Toggle (Light / Dark) */}
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-[var(--radius-button)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-glass-hover)] transition-colors"
-          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-        >
-          {theme === 'dark' ? (
-            <Sun className="w-4 h-4 stroke-[1.5]" />
-          ) : (
-            <Moon className="w-4 h-4 stroke-[1.5]" />
-          )}
         </button>
 
         {/* User Avatar Menu */}

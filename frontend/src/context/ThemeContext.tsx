@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light';
 
 interface ThemeContextType {
   theme: Theme;
@@ -15,29 +15,19 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('flowpeople_theme');
-    if (saved === 'dark' || saved === 'light') return saved;
-    return 'dark'; // Default to sleek dark theme matching landing page everywhere
-  });
+  const [theme] = useState<Theme>('light');
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('flowpeople_theme', theme);
-  }, [theme]);
+    root.classList.remove('dark');
+    localStorage.setItem('flowpeople_theme', 'light');
+  }, []);
 
   const toggleTheme = () => {
-    setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
+    // Strictly bright theme across the entire application
   };
 
-  const setTheme = (t: Theme) => {
-    setThemeState(t);
-  };
+  const setTheme = () => {};
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
@@ -47,4 +37,3 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 export const useTheme = () => useContext(ThemeContext);
-

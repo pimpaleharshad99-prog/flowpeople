@@ -32,8 +32,8 @@ export const StatCard: React.FC<StatCardProps> = ({
               <span
                 className={`font-semibold shrink-0 ${
                   trend.positive
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-rose-600 dark:text-rose-400'
+                    ? 'text-[#4A5A3F]'
+                    : 'text-[#590907]'
                 }`}
               >
                 {trend.value}

@@ -69,13 +69,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           >
             <div className="flex items-start gap-2.5 min-w-0">
               {(toast.type === 'success') && (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#4A5A3F] shrink-0 mt-0.5" />
               )}
               {(toast.type === 'error' || toast.type === 'danger') && (
-                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-[#590907] shrink-0 mt-0.5" />
               )}
               {toast.type === 'warning' && (
-                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <AlertTriangle className="w-4 h-4 text-[#8C4820] shrink-0 mt-0.5" />
               )}
               {(toast.type === 'info' || toast.type === 'default') && (
                 <Info className="w-4 h-4 text-[var(--accent)] shrink-0 mt-0.5" />

@@ -193,7 +193,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Prominent Employee Attendance & Face ID Card */}
       <div className="p-5 rounded-2xl border border-[var(--border-glass)] bg-[var(--surface-glass)] backdrop-blur-xl shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#E8D2B5]/20 rounded-full blur-2xl pointer-events-none" />
         
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
           {/* User info & Shift details */}
@@ -232,7 +232,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="text-right">
               <div className="flex items-center gap-1.5 justify-end">
                 <span className={`w-2 h-2 rounded-full ${
-                  isCheckedIn ? 'bg-emerald-500 animate-pulse' : hasLastOut ? 'bg-indigo-500' : 'bg-amber-500'
+                  isCheckedIn ? 'bg-[#4A5A3F] animate-pulse' : hasLastOut ? 'bg-[#590907]' : 'bg-[#8C4820]'
                 }`} />
                 <span className="text-xs font-semibold text-[var(--text-main)]">
                   {isCheckedIn 
@@ -257,11 +257,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 setFaceModalMode(isCheckedIn ? 'PUNCH_OUT' : 'PUNCH_IN');
                 setFaceModalOpen(true);
               }}
-              className={`px-4 py-2.5 rounded-xl text-xs font-semibold text-white shadow-sm transition-all inline-flex items-center gap-2 ${
-                isCheckedIn 
-                  ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20' 
-                  : 'bg-[var(--accent)] hover:opacity-90 shadow-teal-500/20'
-              }`}
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer"
             >
               <Camera className="w-4 h-4" />
               <span>{isCheckedIn ? 'Check Out with Face ID' : 'Check In with Face ID'}</span>

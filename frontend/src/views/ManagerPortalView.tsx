@@ -212,7 +212,7 @@ export const ManagerPortalView: React.FC = () => {
                     <div className="pt-2 border-t border-[var(--border-glass)] flex justify-end gap-2">
                       <button
                         onClick={() => handleApproveLeave(req.id, req.user_name || 'Team Member')}
-                        className="px-3 py-1 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium inline-flex items-center gap-1 transition"
+                        className="px-3 py-1 rounded-md bg-[#4A5A3F] hover:bg-[#3D4B34] text-[#FAF6F0] text-xs font-medium inline-flex items-center gap-1 transition"
                       >
                         <Check className="w-3 h-3" />
                         <span>Approve</span>

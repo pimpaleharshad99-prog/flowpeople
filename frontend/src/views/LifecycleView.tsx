@@ -185,9 +185,9 @@ export const LifecycleView: React.FC<LifecycleViewProps> = ({ currentUser }) => 
       case 'DOCUMENTS':
         return <FileText className="w-3.5 h-3.5 text-[var(--accent)]" />;
       case 'IT_SETUP':
-        return <Laptop className="w-3.5 h-3.5 text-blue-500" />;
+        return <Laptop className="w-3.5 h-3.5 text-[#590907]" />;
       case 'TRAINING':
-        return <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />;
+        return <GraduationCap className="w-3.5 h-3.5 text-[#590907]" />;
       default:
         return <UserPlus className="w-3.5 h-3.5 text-slate-500" />;
     }
@@ -231,7 +231,7 @@ export const LifecycleView: React.FC<LifecycleViewProps> = ({ currentUser }) => 
               onClick={() => setShowTransitionModal(true)}
               className="px-3.5 py-1.5 rounded-lg border border-[var(--border-glass)] hover:bg-[var(--surface-hover)] text-[var(--text-main)] text-xs font-medium transition inline-flex items-center gap-1.5"
             >
-              <Award className="w-3.5 h-3.5 text-indigo-500" />
+              <Award className="w-3.5 h-3.5 text-[#590907]" />
               <span>Record Milestone</span>
             </button>
           )}
@@ -322,7 +322,7 @@ export const LifecycleView: React.FC<LifecycleViewProps> = ({ currentUser }) => 
                   >
                     <div className="mt-0.5">
                       {task.is_completed ? (
-                        <CheckSquare className="w-4 h-4 text-emerald-600" />
+                        <CheckSquare className="w-4 h-4 text-[#4A5A3F]" />
                       ) : (
                         <Square className="w-4 h-4 text-[var(--text-subtle)]" />
                       )}

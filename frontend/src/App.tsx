@@ -16,6 +16,7 @@ import { ApprovalsView } from './views/ApprovalsView';
 import { OrganizationView } from './views/OrganizationView';
 import { AnnouncementsView } from './views/AnnouncementsView';
 import { SuperAdminPortalView } from './views/SuperAdminPortalView';
+import { SuperAdminGatekeeperView } from './views/SuperAdminGatekeeperView';
 import { HRAdminPortalView } from './views/HRAdminPortalView';
 import { ManagerPortalView } from './views/ManagerPortalView';
 import { PerformanceView } from './views/PerformanceView';
@@ -160,28 +161,13 @@ export function App() {
       return (
         <ThemeProvider>
           <ToastProvider>
-            <FlowPeopleAuthView
-              initialMode="login"
+            <SuperAdminGatekeeperView
               onSuccess={(user) => {
                 setCurrentUser(user);
                 loadLiveStatus();
                 loadApprovalStats();
               }}
               onNavigateHome={() => navigateTo('/')}
-              onNavigateMode={(m) => {
-                const targetPath = (
-                  m === 'login'
-                    ? '/login'
-                    : m === 'signup'
-                    ? '/signup'
-                    : m === 'forgot'
-                    ? '/forgot-password'
-                    : m === 'reset'
-                    ? '/reset-password'
-                    : '/verify-email'
-                );
-                navigateTo(targetPath);
-              }}
             />
           </ToastProvider>
         </ThemeProvider>
@@ -191,33 +177,34 @@ export function App() {
     // Authenticated: check if platform owner
     const isPlatformOwner = Boolean(
       currentUser.is_platform_owner ||
-      currentUser.email.toLowerCase() === 'pimpaleharshad99@gmail.com' ||
-      currentUser.email.toLowerCase() === 'admin@flowcraft.io' ||
+      currentUser.email?.toLowerCase() === 'pimpaleg80@gmail.com' ||
+      currentUser.email?.toLowerCase() === 'pimpaleharshad99@gmail.com' ||
+      currentUser.email?.toLowerCase() === 'admin@flowcraft.io' ||
       currentUser.role === 'PLATFORM_OWNER'
     );
 
     if (!isPlatformOwner) {
       return (
         <ThemeProvider>
-          <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center font-sans">
-            <div className="p-4 rounded-3xl bg-rose-500/10 border border-rose-500/30 text-rose-500 mb-4">
+          <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center font-sans">
+            <div className="p-4 rounded-3xl bg-rose-50 border border-rose-200 text-rose-600 mb-4 shadow-sm">
               <ShieldAlert className="w-12 h-12" />
             </div>
-            <h1 className="text-2xl font-extrabold text-white">403 Forbidden: Access Restricted</h1>
-            <p className="text-xs text-slate-400 max-w-md mt-2 leading-relaxed">
-              You are currently signed in as <strong className="text-white">{currentUser.email}</strong> with role <strong className="text-white">{currentUser.role}</strong>. The Super Admin Console is strictly restricted to the platform owner.
+            <h1 className="text-2xl font-extrabold text-slate-900">403 Forbidden: Access Restricted</h1>
+            <p className="text-xs text-slate-600 max-w-md mt-2 leading-relaxed">
+              You are currently signed in as <strong className="text-slate-900">{currentUser.email}</strong> with role <strong className="text-slate-900">{currentUser.role}</strong>. The Super Admin Console is strictly restricted to the platform owner.
             </p>
             <div className="mt-6 flex items-center gap-3">
               <button
                 onClick={() => navigateTo('/app')}
-                className="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Return to Organization Workspace</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-xs font-semibold text-slate-300 transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-[#DFE1D8] hover:bg-[#ECEEE7] text-xs font-semibold text-[#590907] transition cursor-pointer"
               >
                 Sign In With Different Account
               </button>
@@ -231,31 +218,31 @@ export function App() {
     return (
       <ThemeProvider>
         <ToastProvider>
-          <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-            <header className="px-6 py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+          <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+            <header className="px-6 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shadow-xs">
               <div className="flex items-center gap-3">
-                <Logo variant="icon" size={30} />
+                <Logo variant="icon" size={30} colorMode="light" />
                 <div>
-                  <span className="font-extrabold text-sm text-white flex items-center gap-2">
+                  <span className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
                     FlowPeople Super Admin Console
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 border border-amber-500/30">
                       ROOT OWNER
                     </span>
                   </span>
-                  <span className="text-[10px] text-slate-400 block -mt-0.5">Platform Fleet & SaaS Management</span>
+                  <span className="text-[10px] text-slate-500 block -mt-0.5">Platform Fleet & SaaS Management</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigateTo('/app')}
-                  className="px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-xs text-slate-300 font-medium"
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs text-slate-700 font-medium cursor-pointer"
                 >
                   Customer Workspace View
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold"
+                  className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-bold cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -347,11 +334,11 @@ export function App() {
     <ThemeProvider>
       <ToastProvider>
         <div className="relative flex h-screen font-sans bg-[var(--surface-canvas)] text-[var(--text-main)] overflow-hidden">
-          {/* Ambient blurred color blobs */}
+          {/* Ambient warm editorial color blobs */}
           <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-teal-500/10 dark:bg-teal-500/5 blur-3xl" />
-            <div className="absolute top-1/3 -right-32 w-80 h-80 rounded-full bg-slate-400/10 dark:bg-slate-400/5 blur-3xl" />
-            <div className="absolute -bottom-32 left-1/4 w-96 h-96 rounded-full bg-teal-600/10 dark:bg-teal-600/5 blur-3xl" />
+            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#E8D2B5]/25 blur-3xl" />
+            <div className="absolute top-1/3 -right-32 w-80 h-80 rounded-full bg-[#A5A79B]/15 blur-3xl" />
+            <div className="absolute -bottom-32 left-1/4 w-96 h-96 rounded-full bg-[#590907]/5 blur-3xl" />
           </div>
 
           <div className="relative z-10 flex h-screen w-full overflow-hidden">

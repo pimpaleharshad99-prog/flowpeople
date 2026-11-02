@@ -490,7 +490,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                 <h3 className="font-bold text-sm sm:text-base tracking-tight text-white">
                   FlowPeople Face Attendance Kiosk
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#ECEEE7] text-[#590907] border border-[#A5A79B]">
                   SUPABASE EDGE TERMINAL
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-slate-700/60 text-slate-300 border border-slate-600/50" title={APPROVED_BIOMETRIC_MODEL.name}>
@@ -506,7 +506,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
           {/* Clock & Action Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="text-right hidden sm:block pr-2 border-r border-slate-700">
-              <span className="font-mono text-sm font-bold text-teal-400 block">
+              <span className="font-mono text-sm font-bold text-[#590907] block">
                 {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
               <span className="text-[10px] text-slate-400">
@@ -519,7 +519,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
               onClick={() => setShowDeviceSetup(true)}
               className={`p-2 rounded-lg border transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
                 devicePaired
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  ? 'bg-[#ECEEE7] border-[#C8CAC0] text-[#4A5A3F]'
                   : 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse'
               }`}
               title="Kiosk Hardware Device Provisioning"
@@ -533,7 +533,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
               className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition cursor-pointer"
               title={soundEnabled ? 'Mute Chime' : 'Enable Chime'}
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-teal-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-[#590907]" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
             </button>
 
             <button
@@ -570,7 +570,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
           {/* Camera Loading State */}
           {cameraLoading && (
             <div className="text-center p-6 space-y-3">
-              <RefreshCw className="w-10 h-10 text-teal-400 mx-auto animate-spin" />
+              <RefreshCw className="w-10 h-10 text-[#590907] mx-auto animate-spin" />
               <p className="text-sm font-semibold text-white">Initializing Optical Camera...</p>
               <p className="text-xs text-slate-400">Requesting hardware sensor access.</p>
             </div>
@@ -591,7 +591,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
               <button
                 type="button"
                 onClick={startCamera}
-                className="mt-4 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow transition cursor-pointer flex items-center gap-2"
+                className="mt-4 px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold text-xs shadow transition cursor-pointer flex items-center gap-2"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Retry Camera Connection</span>
@@ -604,24 +604,24 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-4">
               <div className={`w-48 h-60 sm:w-60 sm:h-76 rounded-[48%] border-2 transition-all duration-300 relative ${
                 isScanning
-                  ? 'border-teal-400 animate-pulse shadow-[0_0_35px_rgba(45,212,191,0.5)]'
+                  ? 'border-[#590907] animate-pulse shadow-sm'
                   : 'border-slate-500/60'
               }`}>
                 {/* Corner Guide Brackets */}
-                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-teal-400 -mt-1 -ml-1" />
-                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-teal-400 -mt-1 -mr-1" />
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-teal-400 -mb-1 -ml-1" />
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-teal-400 -mb-1 -mr-1" />
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#A5A79B] -mt-1 -ml-1" />
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#A5A79B] -mt-1 -mr-1" />
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#A5A79B] -mb-1 -ml-1" />
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#A5A79B] -mb-1 -mr-1" />
 
                 {/* Scanning Laser Bar */}
                 {isScanning && (
-                  <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-teal-400 to-transparent shadow-[0_0_12px_#2dd4bf] animate-[bounce_1.5s_infinite]" />
+                  <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#590907] to-transparent shadow-[0_0_12px_#2dd4bf] animate-[bounce_1.5s_infinite]" />
                 )}
               </div>
 
               {/* Subtext Positioning Instructions */}
               <div className="mt-4 px-4 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-xs font-medium text-slate-200 flex items-center gap-2 shadow-lg">
-                <Scan className="w-3.5 h-3.5 text-teal-400" />
+                <Scan className="w-3.5 h-3.5 text-[#590907]" />
                 <span>
                   {isCooldown
                     ? `Ready for next employee in ${cooldownCountdown}s...`
@@ -636,27 +636,27 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
           {/* SUCCESSFUL RECOGNITION SCREEN (Section 5) */}
           {lastSuccess && (
             <div className="absolute inset-0 z-30 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 animate-in zoom-in-95 duration-200">
-              <div className="max-w-md w-full p-6 sm:p-8 rounded-2xl border border-emerald-500/50 bg-emerald-950/90 shadow-2xl text-center space-y-4 ring-2 ring-emerald-500/20">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mx-auto text-emerald-400">
+              <div className="max-w-md w-full p-6 sm:p-8 rounded-2xl border border-[#C8CAC0] bg-[#ECEEE7] shadow-2xl text-center space-y-4 ring-2 ring-[#4A5A3F]/20">
+                <div className="w-16 h-16 rounded-full bg-[#ECEEE7] border-2 border-[#4A5A3F] flex items-center justify-center mx-auto text-[#4A5A3F]">
                   <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs uppercase font-extrabold tracking-widest text-emerald-300">
+                  <span className="text-xs uppercase font-extrabold tracking-widest text-[#4A5A3F]">
                     {lastSuccess.outcome === 'CHECK_IN' ? 'WELCOME BACK!' : 'HAVE A GREAT EVENING!'}
                   </span>
                   <h3 className="text-xl sm:text-2xl font-black text-white">
                     {lastSuccess.employee.full_name}
                   </h3>
-                  <p className="text-xs font-mono text-emerald-200/80">
+                  <p className="text-xs font-mono text-[#4A5A3F]">
                     {lastSuccess.employee.employee_code} &bull; {lastSuccess.employee.department}
                   </p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-emerald-500/30 space-y-1.5 text-left text-xs font-medium">
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-[#C8CAC0] space-y-1.5 text-left text-xs font-medium">
                   <div className="flex justify-between">
                     <span className="text-slate-400">Attendance Action:</span>
-                    <span className="font-bold text-emerald-400">
+                    <span className="font-bold text-[#4A5A3F]">
                       {lastSuccess.outcome === 'CHECK_IN' ? 'CHECK-IN SUCCESSFUL' : 'CHECK-OUT SUCCESSFUL'}
                     </span>
                   </div>
@@ -671,7 +671,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                   {lastSuccess.attendance.working_duration && (
                     <div className="flex justify-between border-t border-slate-800 pt-1.5">
                       <span className="text-slate-400">Working Duration:</span>
-                      <span className="font-mono text-emerald-300 font-bold">
+                      <span className="font-mono text-[#4A5A3F] font-bold">
                         {lastSuccess.attendance.working_duration}
                       </span>
                     </div>
@@ -723,8 +723,8 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
               </div>
             </div>
           ) : sdkLoading ? (
-            <div className="absolute inset-x-4 bottom-20 z-10 max-w-sm mx-auto p-2.5 rounded-xl bg-slate-900/90 border border-teal-500/40 text-teal-300 text-xs flex items-center justify-center gap-2 shadow-xl">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-400" />
+            <div className="absolute inset-x-4 bottom-20 z-10 max-w-sm mx-auto p-2.5 rounded-xl bg-slate-900/90 border border-[#A5A79B] text-[#590907] text-xs flex items-center justify-center gap-2 shadow-xl">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#590907]" />
               <span>Initializing FaceNet 128-D neural models...</span>
             </div>
           ) : null}
@@ -733,8 +733,8 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
         {/* Bottom Control Bar */}
         <div className="px-5 py-4 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-2 text-xs text-slate-400">
-            <ShieldCheck className="w-4 h-4 text-teal-400" />
-            <span>Engine: <code className="text-teal-300 font-mono text-[11px]">{devicePaired ? 'Supabase Edge + Native 1:N' : 'FlowPeople 1:N Biometric Terminal'}</code></span>
+            <ShieldCheck className="w-4 h-4 text-[#590907]" />
+            <span>Engine: <code className="text-[#590907] font-mono text-[11px]">{devicePaired ? 'Supabase Edge + Native 1:N' : 'FlowPeople 1:N Biometric Terminal'}</code></span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -745,7 +745,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
               className={`px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                 isCooldown
                   ? 'bg-slate-800 text-slate-500 border border-slate-700'
-                  : 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 shadow-teal-500/25 active:scale-95'
+                  : 'bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] shadow-sm border border-[#400605] active:scale-95'
               }`}
             >
               {isScanning ? (
@@ -773,7 +773,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
           <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 text-xs">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <div className="flex items-center gap-2 text-teal-400">
+                <div className="flex items-center gap-2 text-[#590907]">
                   <Key className="w-5 h-5" />
                   <h4 className="font-bold text-sm text-white">Kiosk Device Provisioning & Pairing</h4>
                 </div>
@@ -788,7 +788,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                   type="button"
                   onClick={() => { setSetupTab('PAIR'); setDeviceSetupError(null); }}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    setupTab === 'PAIR' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                    setupTab === 'PAIR' ? 'bg-[#590907] text-[#FAF6F0] shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Pair Terminal
@@ -797,7 +797,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                   type="button"
                   onClick={() => { setSetupTab('REGISTER'); setDeviceSetupError(null); }}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    setupTab === 'REGISTER' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                    setupTab === 'REGISTER' ? 'bg-[#590907] text-[#FAF6F0] shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Register Device (RPC)
@@ -806,7 +806,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                   type="button"
                   onClick={() => { setSetupTab('ROTATE'); setDeviceSetupError(null); }}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    setupTab === 'ROTATE' ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                    setupTab === 'ROTATE' ? 'bg-[#590907] text-[#FAF6F0] shadow-sm' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Rotate Secret
@@ -815,12 +815,12 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
 
               {/* ONE-TIME SECRET NOTICE AFTER PROVISIONING */}
               {provisionedRecord && (
-                <div className="p-3.5 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-200 space-y-2">
-                  <div className="flex items-center gap-1.5 font-bold text-emerald-300">
+                <div className="p-3.5 rounded-xl bg-[#ECEEE7] border border-[#C8CAC0] text-[#4A5A3F] space-y-2">
+                  <div className="flex items-center gap-1.5 font-bold text-[#4A5A3F]">
                     <CheckCircle2 className="w-4 h-4" />
                     <span>One-Time Device Credentials Generated</span>
                   </div>
-                  <div className="space-y-1 font-mono text-[11px] bg-slate-950/70 p-2.5 rounded-lg border border-emerald-500/20">
+                  <div className="space-y-1 font-mono text-[11px] bg-slate-950/70 p-2.5 rounded-lg border border-[#C8CAC0]">
                     <div>
                       <span className="text-slate-400">Device ID: </span>
                       <span className="text-white select-all">{provisionedRecord.device_id}</span>
@@ -828,14 +828,14 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                     <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-800">
                       <div className="min-w-0 truncate">
                         <span className="text-slate-400">Plaintext Secret: </span>
-                        <span className="text-emerald-400 font-bold select-all">{provisionedRecord.device_secret}</span>
+                        <span className="text-[#4A5A3F] font-bold select-all">{provisionedRecord.device_secret}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(provisionedRecord.device_secret)}
                         className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-white shrink-0 inline-flex items-center gap-1 border border-slate-700"
                       >
-                        {copiedSecret ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedSecret ? <Check className="w-3 h-3 text-[#4A5A3F]" /> : <Copy className="w-3 h-3" />}
                         <span>{copiedSecret ? 'Copied' : 'Copy'}</span>
                       </button>
                     </div>
@@ -851,7 +851,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                       setShowDeviceSetup(false);
                       setProvisionedRecord(null);
                     }}
-                    className="w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow"
+                    className="w-full py-2 rounded-lg bg-[#4A5A3F] hover:bg-[#3D4B34] text-[#FAF6F0] font-bold transition shadow"
                   >
                     Pair Active Terminal with These Credentials
                   </button>
@@ -873,7 +873,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                       value={inputDeviceId}
                       onChange={(e) => setInputDeviceId(e.target.value)}
                       placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-[#590907]"
                     />
                   </div>
 
@@ -885,7 +885,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                       value={inputDeviceSecret}
                       onChange={(e) => setInputDeviceSecret(e.target.value)}
                       placeholder="Enter terminal device secret"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-[#590907]"
                     />
                   </div>
 
@@ -909,7 +909,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold transition shadow-sm"
+                      className="px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold transition shadow-sm"
                     >
                       Save & Pair Terminal
                     </button>
@@ -920,7 +920,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
               {/* TAB 2: REGISTER NEW DEVICE (AUTHORIZED RPC) */}
               {setupTab === 'REGISTER' && (
                 <form onSubmit={handleRegisterDeviceRpc} className="space-y-3">
-                  <div className="p-3 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-300 text-[11px]">
+                  <div className="p-3 rounded-lg bg-[#ECEEE7] border border-[#DFE1D8] text-[#590907] text-[11px]">
                     Calls backend RPC <code>public.register_kiosk_device(p_company_id, p_name)</code> to insert into <code>attendance_devices</code> and generate a secure secret in <code>private.kiosk_credentials</code>.
                   </div>
 
@@ -932,7 +932,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                       value={registerTerminalName}
                       onChange={(e) => setRegisterTerminalName(e.target.value)}
                       placeholder="e.g. Main Reception Face Terminal 1"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#590907]"
                     />
                   </div>
 
@@ -944,7 +944,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                       value={registerCompanyId}
                       onChange={(e) => setRegisterCompanyId(e.target.value)}
                       placeholder="Company UUID"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-[#590907]"
                     />
                   </div>
 
@@ -963,7 +963,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                     <button
                       type="submit"
                       disabled={isProvisioning}
-                      className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold transition shadow-sm inline-flex items-center gap-1.5 disabled:opacity-50"
+                      className="px-4 py-2 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] font-bold transition shadow-sm inline-flex items-center gap-1.5 disabled:opacity-50"
                     >
                       {isProvisioning && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                       <span>{isProvisioning ? 'Registering...' : 'Register Device (RPC)'}</span>
@@ -987,7 +987,7 @@ export const FaceKioskModal: React.FC<FaceKioskModalProps> = ({
                       value={inputDeviceId}
                       onChange={(e) => setInputDeviceId(e.target.value)}
                       placeholder="Existing Device UUID"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-teal-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-[#590907]"
                     />
                   </div>
 

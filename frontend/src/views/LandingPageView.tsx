@@ -31,25 +31,25 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
       {/* Embedded High-Fidelity Styles from flowpeople.html */}
       <style>{`
         .flowpeople-landing {
-          --teal-50: #effcfa;
-          --teal-100: #d5f5f0;
-          --teal-200: #aeeae0;
-          --teal-400: #2dc4b2;
-          --teal-500: #14a89a;
-          --teal-600: #0d8a7f;
-          --teal-700: #0f6e67;
-          --teal-900: #0b3b3a;
-          --ink: #0f1f24;
-          --ink-2: #41565c;
-          --ink-3: #6d8187;
-          --line: #e4ecee;
-          --bg: #fff;
-          --bg-soft: #f6fafa;
-          --shadow-sm: 0 1px 2px rgba(15,31,36,.05), 0 2px 8px rgba(15,31,36,.05);
-          --shadow-md: 0 8px 24px rgba(15,31,36,.08);
-          --shadow-lg: 0 24px 60px rgba(13,138,127,.16), 0 8px 24px rgba(15,31,36,.08);
-          --r: 20px;
-          font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+          --palette-cream-canvas: #FAF6F0; #FAF6F0;
+          --palette-cream-soft: #F5EBE1; #F5EBE1;
+          --palette-cream: #E8D2B5; #E8D2B5;
+          --palette-sage: #A5A79B; #A5A79B;
+          --palette-sage-dark: #8E9084; #8E9084;
+          --palette-burgundy: #590907; #590907;
+          --palette-burgundy-dark: #450605; #450605;
+          --palette-burgundy-deep: #300302; #300302;
+          --ink: #2E3029;
+          --ink-2: #4B4D44;
+          --ink-3: #6B6D62;
+          --line: #DFE1D8;
+          --bg: #FAF6F0;
+          --bg-soft: #ECEEE7;
+          --shadow-sm: 0 1px 2px rgba(46,48,41,.05), 0 2px 8px rgba(46,48,41,.05);
+          --shadow-md: 0 8px 24px rgba(46,48,41,.08);
+          --shadow-lg: 0 20px 48px rgba(89,9,7,.12), 0 8px 24px rgba(46,48,41,.06);
+          --r: 16px;
+          font-family: 'Plus Jakarta Sans', Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
           color: var(--ink);
           background: var(--bg);
           line-height: 1.6;
@@ -91,9 +91,9 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           font: 600 13px/1 "Plus Jakarta Sans", sans-serif;
           letter-spacing: .08em;
           text-transform: uppercase;
-          color: var(--teal-600);
-          background: var(--teal-50);
-          border: 1px solid var(--teal-100);
+          color: var(--palette-burgundy);
+          background: var(--palette-cream-canvas);
+          border: 1px solid var(--palette-cream-soft);
           padding: 8px 14px;
           border-radius: 99px;
           margin-bottom: 18px;
@@ -132,18 +132,18 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing a:focus-visible,
         .flowpeople-landing summary:focus-visible,
         .flowpeople-landing button:focus-visible {
-          outline: 3px solid var(--teal-400);
+          outline: 3px solid var(--palette-sage);
           outline-offset: 3px;
         }
 
         .flowpeople-landing .btn-primary {
-          background: var(--teal-600);
+          background: var(--palette-burgundy);
           color: #fff;
           box-shadow: 0 6px 18px rgba(13,138,127,.3);
         }
 
         .flowpeople-landing .btn-primary:hover {
-          background: var(--teal-700);
+          background: var(--palette-burgundy-dark);
           transform: translateY(-2px);
         }
 
@@ -155,7 +155,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .btn-ghost:hover {
-          border-color: var(--teal-400);
+          border-color: var(--palette-sage);
           transform: translateY(-2px);
         }
 
@@ -199,7 +199,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
         .flowpeople-landing .logo small {
           font-weight: 600;
-          color: var(--teal-600);
+          color: var(--palette-burgundy);
         }
 
         .flowpeople-landing .logo-mark {
@@ -218,7 +218,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .nav-links a:hover {
-          color: var(--teal-600);
+          color: var(--palette-burgundy);
         }
 
         .flowpeople-landing .nav-cta {
@@ -238,8 +238,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .nav-cta .login:hover {
-          color: var(--teal-600);
-          background: var(--teal-50);
+          color: var(--palette-burgundy);
+          background: var(--palette-cream-canvas);
         }
 
         .flowpeople-landing .burger {
@@ -283,8 +283,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         /* HERO */
         .flowpeople-landing .hero {
           padding: 72px 0 88px;
-          background: radial-gradient(900px 500px at 85% -10%, var(--teal-100), transparent 60%),
-                      radial-gradient(600px 400px at 0% 20%, var(--teal-50), transparent 60%);
+          background: radial-gradient(900px 500px at 85% -10%, #E8D2B5 0%, #FAF6F0 60%),
+                      radial-gradient(600px 400px at 0% 20%, #F5EBE1 0%, #FAF6F0 60%);
         }
 
         .flowpeople-landing .hero-grid {
@@ -297,13 +297,11 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing .hero h1 {
           font-size: clamp(40px, 6vw, 66px);
           margin-bottom: 20px;
+          color: #590907;
         }
 
         .flowpeople-landing .hero h1 span {
-          background: linear-gradient(90deg, var(--teal-600), var(--teal-400));
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
+          color: #590907;
         }
 
         .flowpeople-landing .hero p.lead {
@@ -337,7 +335,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing .trust svg {
           width: 16px;
           height: 16px;
-          color: var(--teal-500);
+          color: var(--palette-sage-dark);
         }
 
         .flowpeople-landing .hero-visual {
@@ -368,8 +366,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           width: 36px;
           height: 36px;
           border-radius: 10px;
-          background: var(--teal-50);
-          color: var(--teal-600);
+          background: var(--palette-cream-canvas);
+          color: var(--palette-burgundy);
           display: grid;
           place-items: center;
         }
@@ -455,8 +453,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .side div.on {
-          background: var(--teal-50);
-          color: var(--teal-700);
+          background: var(--palette-cream-canvas);
+          color: var(--palette-burgundy-dark);
           font-weight: 600;
         }
 
@@ -500,7 +498,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing .kpi em {
           font-style: normal;
           font-size: 11px;
-          color: var(--teal-600);
+          color: var(--palette-burgundy);
           font-weight: 600;
         }
 
@@ -532,7 +530,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
         .flowpeople-landing .bars span {
           flex: 1;
-          background: linear-gradient(var(--teal-400), var(--teal-500));
+          background: linear-gradient(var(--palette-sage), var(--palette-sage-dark));
           border-radius: 6px 6px 2px 2px;
           transform-origin: bottom;
           animation: barGrow 1.2s cubic-bezier(.2,.8,.2,1) both;
@@ -563,8 +561,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           width: 22px;
           height: 22px;
           border-radius: 50%;
-          background: var(--teal-100);
-          color: var(--teal-700);
+          background: var(--palette-cream-soft);
+          color: var(--palette-burgundy-dark);
           font: 700 10px/22px "Plus Jakarta Sans", sans-serif;
           text-align: center;
           flex: none;
@@ -577,8 +575,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           font-weight: 600;
           padding: 3px 8px;
           border-radius: 99px;
-          background: var(--teal-50);
-          color: var(--teal-700);
+          background: var(--palette-cream-canvas);
+          color: var(--palette-burgundy-dark);
         }
 
         .flowpeople-landing .pill.late {
@@ -611,7 +609,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing .stat strong {
           display: block;
           font: 800 34px "Plus Jakarta Sans", sans-serif;
-          color: var(--teal-600);
+          color: var(--palette-burgundy);
         }
 
         .flowpeople-landing .stat span {
@@ -638,15 +636,15 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing .card:hover {
           transform: translateY(-5px);
           box-shadow: var(--shadow-md);
-          border-color: var(--teal-200);
+          border-color: var(--palette-cream);
         }
 
         .flowpeople-landing .card .ic {
           width: 48px;
           height: 48px;
           border-radius: 14px;
-          background: var(--teal-50);
-          color: var(--teal-600);
+          background: var(--palette-cream-canvas);
+          color: var(--palette-burgundy);
           display: grid;
           place-items: center;
           margin-bottom: 18px;
@@ -668,7 +666,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .card.hi {
-          background: linear-gradient(160deg, var(--teal-600), var(--teal-700));
+          background: linear-gradient(160deg, var(--palette-burgundy), var(--palette-burgundy-dark));
           color: #fff;
           border: 0;
         }
@@ -705,7 +703,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           left: 12%;
           right: 12%;
           height: 2px;
-          background: repeating-linear-gradient(90deg, var(--teal-200) 0 8px, transparent 8px 16px);
+          background: repeating-linear-gradient(90deg, var(--palette-cream) 0 8px, transparent 8px 16px);
         }
 
         .flowpeople-landing .step {
@@ -718,8 +716,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           height: 56px;
           border-radius: 50%;
           background: #fff;
-          border: 2px solid var(--teal-400);
-          color: var(--teal-600);
+          border: 2px solid var(--palette-sage);
+          color: var(--palette-burgundy);
           font: 800 20px/52px "Plus Jakarta Sans", sans-serif;
           margin: 0 auto 18px;
           box-shadow: 0 0 0 8px var(--bg-soft);
@@ -773,7 +771,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           width: 22px;
           height: 22px;
           flex: none;
-          color: var(--teal-600);
+          color: var(--palette-burgundy);
           margin-top: 2px;
         }
 
@@ -782,7 +780,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .kiosk {
-          background: linear-gradient(160deg, #0e2b2e, #0b3b3a);
+          background: linear-gradient(160deg, #590907, #380504);
           border-radius: 28px;
           padding: 28px;
           box-shadow: var(--shadow-lg);
@@ -797,14 +795,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           inset: -40% -20% auto auto;
           width: 360px;
           height: 360px;
-          background: radial-gradient(circle, rgba(45,196,178,.35), transparent 65%);
+          background: radial-gradient(circle, rgba(232,210,181,.2), transparent 65%);
         }
 
         .flowpeople-landing .kiosk-top {
           display: flex;
           justify-content: space-between;
           font-size: 13px;
-          color: #a9cfcb;
+          color: var(--palette-cream);
           position: relative;
         }
 
@@ -818,7 +816,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           aspect-ratio: 3/4;
           margin: 22px auto;
           border-radius: 22px;
-          background: linear-gradient(180deg, #14484a, #0e3436);
+          background: linear-gradient(180deg, #3D0605, #240302);
           border: 1px solid rgba(255,255,255,.12);
           overflow: hidden;
         }
@@ -828,7 +826,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           inset: 0;
           margin: auto;
           width: 78%;
-          color: #7fe0d3;
+          color: var(--palette-cream);
           opacity: .9;
         }
 
@@ -836,7 +834,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           position: absolute;
           width: 34px;
           height: 34px;
-          border: 3px solid var(--teal-400);
+          border: 3px solid var(--palette-sage);
         }
 
         .flowpeople-landing .c1 {
@@ -877,8 +875,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           right: 8%;
           height: 3px;
           border-radius: 3px;
-          background: linear-gradient(90deg, transparent, var(--teal-400), transparent);
-          box-shadow: 0 0 18px var(--teal-400);
+          background: linear-gradient(90deg, transparent, #590907, transparent);
+          box-shadow: 0 0 14px rgba(89, 9, 7, 0.4);
           animation: scanLaser 2.8s ease-in-out infinite;
         }
 
@@ -903,8 +901,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           height: 40px;
           line-height: 40px;
           font-size: 14px;
-          background: var(--teal-400);
-          color: #06302d;
+          background: var(--palette-sage);
+          color: var(--palette-burgundy);
         }
 
         .flowpeople-landing .result b {
@@ -913,13 +911,13 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .result small {
-          color: #a9cfcb;
+          color: var(--palette-cream);
         }
 
         .flowpeople-landing .result .ok {
           margin-left: auto;
-          background: var(--teal-400);
-          color: #06302d;
+          background: var(--palette-sage);
+          color: var(--palette-burgundy);
           font: 700 12px "Plus Jakarta Sans", sans-serif;
           padding: 6px 12px;
           border-radius: 99px;
@@ -928,7 +926,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
         /* DASH PREVIEW TABS */
         .flowpeople-landing .preview {
-          background: linear-gradient(180deg, #fff, var(--teal-50));
+          background: linear-gradient(180deg, #fff, var(--palette-cream-canvas));
         }
 
         .flowpeople-landing .tabs {
@@ -951,9 +949,9 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .tab.active {
-          background: var(--teal-600);
+          background: var(--palette-burgundy);
           color: #fff;
-          border-color: var(--teal-600);
+          border-color: var(--palette-burgundy);
         }
 
         .flowpeople-landing .big-dash {
@@ -986,7 +984,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
         .flowpeople-landing .progress {
           height: 8px;
-          background: var(--teal-50);
+          background: var(--palette-cream-canvas);
           border-radius: 9px;
           overflow: hidden;
           min-width: 70px;
@@ -995,7 +993,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing .progress i {
           display: block;
           height: 100%;
-          background: var(--teal-500);
+          background: var(--palette-sage-dark);
           border-radius: 9px;
         }
 
@@ -1008,7 +1006,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
         .flowpeople-landing .sec-banner {
           margin-top: 28px;
-          background: var(--teal-900);
+          background: var(--palette-burgundy-deep);
           color: #fff;
           border-radius: var(--r);
           padding: 32px;
@@ -1050,7 +1048,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           width: 52px;
           height: 30px;
           border-radius: 99px;
-          background: var(--teal-600);
+          background: var(--palette-burgundy);
           border: 0;
           position: relative;
           cursor: pointer;
@@ -1073,8 +1071,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .save {
-          background: var(--teal-100);
-          color: var(--teal-700);
+          background: var(--palette-cream-soft);
+          color: var(--palette-burgundy-dark);
           font-size: 12px;
           padding: 4px 10px;
           border-radius: 99px;
@@ -1099,7 +1097,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .plan.pop {
-          border: 2px solid var(--teal-500);
+          border: 2px solid var(--palette-sage-dark);
           box-shadow: var(--shadow-lg);
           transform: translateY(-10px);
         }
@@ -1109,7 +1107,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           top: -14px;
           left: 50%;
           transform: translateX(-50%);
-          background: var(--teal-600);
+          background: var(--palette-burgundy);
           color: #fff;
           font: 700 12px "Plus Jakarta Sans", sans-serif;
           padding: 6px 14px;
@@ -1158,7 +1156,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           width: 18px;
           height: 18px;
           flex: none;
-          color: var(--teal-600);
+          color: var(--palette-burgundy);
           margin-top: 3px;
         }
 
@@ -1190,7 +1188,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing details[open] {
-          border-color: var(--teal-200);
+          border-color: var(--palette-cream);
         }
 
         .flowpeople-landing summary {
@@ -1211,7 +1209,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         .flowpeople-landing summary:after {
           content: "+";
           font: 500 26px/1 Inter, sans-serif;
-          color: var(--teal-600);
+          color: var(--palette-burgundy);
           transition: transform .2s;
         }
 
@@ -1230,13 +1228,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing .cta-box {
-          background: linear-gradient(135deg, var(--teal-600), var(--teal-700));
+          background: #590907;
           border-radius: 32px;
           padding: 64px 32px;
           text-align: center;
-          color: #fff;
+          color: #FAF6F0;
           position: relative;
           overflow: hidden;
+          border: 1px solid #400605;
         }
 
         .flowpeople-landing .cta-box:before {
@@ -1247,33 +1246,34 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           width: 300px;
           height: 300px;
           border-radius: 50%;
-          background: rgba(255,255,255,.08);
+          background: rgba(232, 210, 181, 0.08);
         }
 
         .flowpeople-landing .cta-box h2 {
           font-size: clamp(28px, 4vw, 42px);
           margin-bottom: 12px;
           position: relative;
-          color: #fff;
+          color: #FAF6F0;
         }
 
         .flowpeople-landing .cta-box p {
-          color: #d3f3ee;
+          color: #E8D2B5;
           margin-bottom: 28px;
           font-size: 18px;
           position: relative;
         }
 
         .flowpeople-landing .cta-box .btn-primary {
-          background: #fff;
-          color: var(--teal-700);
+          background: #E8D2B5;
+          color: #590907;
           box-shadow: none;
+          font-weight: 700;
         }
 
         .flowpeople-landing .cta-box .btn-ghost {
           background: transparent;
-          color: #fff;
-          border-color: rgba(255,255,255,.5);
+          color: #FAF6F0;
+          border-color: rgba(232, 210, 181, 0.4);
           box-shadow: none;
         }
 
@@ -1323,7 +1323,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         }
 
         .flowpeople-landing footer a:hover {
-          color: var(--teal-400);
+          color: var(--palette-sage);
         }
 
         .flowpeople-landing .foot-bottom {
@@ -1388,7 +1388,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
       <header className={isScrolled ? 'scrolled' : ''}>
         <div className="wrap nav">
           <div className="logo cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <Logo variant="full" size={36} colorMode="dark" />
+            <Logo variant="full" size={36} colorMode="light" />
           </div>
 
           <nav className="nav-links">
@@ -1897,7 +1897,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                 <h3>Your data is never sold or shared.</h3>
                 <p>Biometric data is used only for attendance and is never used for advertising or sold to third parties.</p>
               </div>
-              <a className="btn btn-primary" style={{ background: '#fff', color: 'var(--teal-700)', boxShadow: 'none' }} href="#faq">
+              <a className="btn btn-primary" style={{ background: '#FAF6F0', color: '#590907', boxShadow: 'none' }} href="#faq">
                 Read security FAQs
               </a>
             </div>
@@ -2055,7 +2055,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                 <summary>Is there a free trial?</summary>
                 <p>
                   Yes, 14 days free with no credit card needed.{' '}
-                  <span onClick={() => onNavigateRegister()} style={{ color: 'var(--teal-600)', fontWeight: 600, cursor: 'pointer' }}>
+                  <span onClick={() => onNavigateRegister()} style={{ color: '#590907', fontWeight: 600, cursor: 'pointer' }}>
                     Start your free trial
                   </span>.
                 </p>
