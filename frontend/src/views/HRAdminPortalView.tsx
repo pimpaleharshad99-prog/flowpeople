@@ -15,6 +15,7 @@ import {
   Eye,
   Camera,
   Download,
+  FileDown,
   AlertCircle,
   Building2,
   Check,
@@ -46,6 +47,7 @@ import { FaceKioskModal } from '../components/FaceKioskModal';
 import { FaceCameraModal } from '../components/FaceCameraModal';
 import { EmployeeAttendanceHistoryModal } from '../components/EmployeeAttendanceHistoryModal';
 import { removeFaceBiometrics } from '../services/kioskService';
+import { generateAttendancePdf, AttendancePdfRecord } from '../utils/pdfGenerator';
 
 export const HRAdminPortalView: React.FC = () => {
   const { addToast } = useToast();
@@ -182,6 +184,40 @@ export const HRAdminPortalView: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleGeneratePdf = () => {
+    if (!dashboardData?.employees) return;
+    const pdfRecords: AttendancePdfRecord[] = dashboardData.employees.map(emp => {
+      const hrs = Math.floor(emp.total_work_minutes / 60);
+      const mins = emp.total_work_minutes % 60;
+      return {
+        name: emp.full_name,
+        code: emp.employee_code,
+        department: emp.department_name,
+        branch: emp.branch_name,
+        date: dashboardData.date,
+        whenIn: emp.first_check_in ? new Date(emp.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        whenOut: emp.last_check_out ? new Date(emp.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (emp.status === 'CHECKED_IN' ? 'Active / On Duty' : '—'),
+        duration: `${hrs}h ${mins}m`,
+        status: emp.status,
+        method: emp.verification_method || 'FACE',
+        punchLogs: `${emp.punch_count} recorded punches`
+      };
+    });
+
+    generateAttendancePdf({
+      title: 'HR Administration Attendance & In-Out Roster',
+      subtitle: `Official Verification Record for ${dashboardData.date} • Branch: All Branches`,
+      date: dashboardData.date,
+      records: pdfRecords,
+      summary: {
+        totalEmployees: dashboardData.total_employees,
+        present: dashboardData.present_today,
+        checkedIn: dashboardData.currently_checked_in,
+        absent: dashboardData.absent_today
+      }
+    });
   };
 
   const renderRoleBadge = (role?: string, roleTitle?: string) => {
@@ -550,6 +586,14 @@ export const HRAdminPortalView: React.FC = () => {
             >
               <Scan className="w-3.5 h-3.5" />
               <span>Face Kiosk Terminal</span>
+            </button>
+            <button
+              onClick={handleGeneratePdf}
+              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-xs font-bold text-white transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
+              title="Generate official PDF attendance roster"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Generate PDF Roster</span>
             </button>
             <button
               onClick={exportAttendanceCSV}

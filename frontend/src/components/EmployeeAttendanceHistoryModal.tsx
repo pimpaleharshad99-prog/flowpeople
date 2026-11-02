@@ -7,6 +7,7 @@ import {
   CheckCircle2, 
   TrendingUp, 
   Download,
+  FileDown,
   Filter,
   ArrowUpRight,
   ArrowDownRight,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { api, AttendanceRecord } from '../services/api';
 import { GlassCard, StatusBadge } from './ui';
+import { generateAttendancePdf, AttendancePdfRecord } from '../utils/pdfGenerator';
 
 interface EmployeeAttendanceHistoryModalProps {
   isOpen: boolean;
@@ -106,6 +108,44 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
     document.body.removeChild(link);
   };
 
+  const exportPDF = () => {
+    if (records.length === 0) return;
+    const pdfRecords: AttendancePdfRecord[] = records.map(r => {
+      const hrs = Math.floor(r.total_work_minutes / 60);
+      const mins = r.total_work_minutes % 60;
+      const punchesSummary = r.punches && r.punches.length > 0 
+        ? r.punches.map(p => `${p.punch_type}: ${new Date(p.punch_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`).join(' → ')
+        : '—';
+      const lastPunch = r.punches && r.punches.length > 0 ? r.punches[r.punches.length - 1] : null;
+
+      return {
+        name: employeeName,
+        code: employeeCode || `#${userId}`,
+        department: 'General',
+        branch: 'Headquarters',
+        date: r.date,
+        whenIn: r.first_check_in ? new Date(r.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        whenOut: r.last_check_out ? new Date(r.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        duration: `${hrs}h ${mins}m`,
+        status: r.status,
+        method: lastPunch?.verification_method || 'FACE',
+        punchLogs: punchesSummary
+      };
+    });
+
+    generateAttendancePdf({
+      title: `Employee Monthly Attendance Timesheet`,
+      subtitle: `Official In-Out Punch Ledger for ${employeeName} (${employeeCode || `#${userId}`}) — ${selectedMonth}`,
+      date: selectedMonth,
+      records: pdfRecords,
+      summary: {
+        totalEmployees: 1,
+        present: presentRecords.length,
+        absent: incompleteRecords.length
+      }
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
       <div className="relative w-full max-w-4xl max-h-[90vh] bg-[var(--surface-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
@@ -131,16 +171,25 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
 
           <div className="flex items-center gap-2">
             <button
+              onClick={exportPDF}
+              disabled={records.length === 0}
+              className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition inline-flex items-center gap-1.5 disabled:opacity-50 shadow-xs cursor-pointer"
+              title="Generate printable PDF timesheet report"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Generate PDF</span>
+            </button>
+            <button
               onClick={exportCSV}
               disabled={records.length === 0}
-              className="px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] hover:bg-[var(--surface-hover)] text-xs font-semibold text-[var(--text-main)] transition inline-flex items-center gap-1.5 disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] hover:bg-[var(--surface-hover)] text-xs font-semibold text-[var(--text-main)] transition inline-flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-[var(--text-subtle)] hover:text-[var(--text-main)] hover:bg-[var(--surface-hover)] transition"
+              className="p-1.5 rounded-lg text-[var(--text-subtle)] hover:text-[var(--text-main)] hover:bg-[var(--surface-hover)] transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

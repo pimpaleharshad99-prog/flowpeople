@@ -19,9 +19,13 @@ import {
   Maximize2,
   Building,
   UserCheck,
-  Check
+  Check,
+  FileDown,
+  LogIn,
+  LogOut
 } from 'lucide-react';
-import { api, AttendanceRecord, AttendanceStatus, BiometricLog, User } from '../services/api';
+import { api, AttendanceRecord, AttendanceStatus, BiometricLog, User, HRDashboardData, HRDashboardEmployee } from '../services/api';
+import { generateAttendancePdf, AttendancePdfRecord } from '../utils/pdfGenerator';
 import { 
   StatCard, 
   GlassCard, 
@@ -68,12 +72,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const [qrAdminKioskOpen, setQrAdminKioskOpen] = useState(false);
 
   // Tabs
-  const [activeTab, setActiveTab] = useState<'HISTORY' | 'TEAM' | 'LOGS' | 'KIOSK'>('HISTORY');
+  const [activeTab, setActiveTab] = useState<'HISTORY' | 'REPORTS' | 'TEAM' | 'LOGS' | 'KIOSK'>('HISTORY');
 
   // Data
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [employees, setEmployees] = useState<User[]>([]);
   const [biometricLogs, setBiometricLogs] = useState<BiometricLog[]>([]);
+  const [hrData, setHrData] = useState<HRDashboardData | null>(null);
+  const [reportDate, setReportDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -97,14 +103,16 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const loadData = async () => {
     try {
       setLoading(true);
-      const [recordsData, empData, logsData] = await Promise.all([
+      const [recordsData, empData, logsData, hrDashboardRes] = await Promise.all([
         api.getMyAttendanceRecords().catch(() => []),
         isManagerOrAdmin ? api.getEmployees().catch(() => []) : Promise.resolve([]),
-        isAdminOrHR ? api.getBiometricLogs().catch(() => []) : Promise.resolve([])
+        isAdminOrHR ? api.getBiometricLogs().catch(() => []) : Promise.resolve([]),
+        isManagerOrAdmin ? api.getHRDashboard({ date: reportDate }).catch(() => null) : Promise.resolve(null)
       ]);
       setRecords(recordsData);
       setEmployees(empData);
       setBiometricLogs(logsData);
+      if (hrDashboardRes) setHrData(hrDashboardRes);
     } finally {
       setLoading(false);
     }
@@ -112,7 +120,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   useEffect(() => {
     loadData();
-  }, [currentUser]);
+  }, [currentUser, reportDate]);
 
   const handleTriggerPrimaryPunch = () => {
     const punchMode = attendanceStatus?.is_checked_in ? 'PUNCH_OUT' : 'PUNCH_IN';
@@ -131,6 +139,75 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const handlePunchSuccess = (data: any) => {
     onRefreshStatus();
     loadData();
+  };
+
+  const handleGeneratePdf = () => {
+    // If viewing company / team roster in REPORTS or TEAM tab
+    if (activeTab === 'REPORTS' || activeTab === 'TEAM') {
+      const rosterList = hrData?.employees || [];
+      const pdfRecords: AttendancePdfRecord[] = rosterList.map(emp => {
+        const hrs = Math.floor(emp.total_work_minutes / 60);
+        const mins = emp.total_work_minutes % 60;
+        return {
+          name: emp.full_name,
+          code: emp.employee_code,
+          department: emp.department_name,
+          branch: emp.branch_name,
+          date: hrData?.date || reportDate,
+          whenIn: emp.first_check_in ? new Date(emp.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+          whenOut: emp.last_check_out ? new Date(emp.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (emp.status === 'CHECKED_IN' ? 'Active / On Duty' : '—'),
+          duration: `${hrs}h ${mins}m`,
+          status: emp.status,
+          method: emp.verification_method || 'FACE',
+          punchLogs: `${emp.punch_count} recorded punches`
+        };
+      });
+
+      generateAttendancePdf({
+        title: `Official Attendance & In-Out Timesheet Ledger`,
+        subtitle: `Complete Employee Clock-In, Departure & Biometric Verification Record`,
+        date: reportDate,
+        records: pdfRecords,
+        summary: {
+          totalEmployees: hrData?.total_employees,
+          present: hrData?.present_today,
+          checkedIn: hrData?.currently_checked_in,
+          absent: hrData?.absent_today
+        }
+      });
+      return;
+    }
+
+    // Default: My Attendance Timesheet PDF
+    const pdfRecords: AttendancePdfRecord[] = records.map(r => {
+      const hrs = Math.floor(r.total_work_minutes / 60);
+      const mins = r.total_work_minutes % 60;
+      const punchesSummary = r.punches && r.punches.length > 0 
+        ? r.punches.map(p => `${p.punch_type}: ${new Date(p.punch_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`).join(' → ')
+        : '—';
+      const lastPunch = r.punches && r.punches.length > 0 ? r.punches[r.punches.length - 1] : null;
+
+      return {
+        name: currentUser?.full_name || 'Employee',
+        code: currentUser?.employee_code || 'EMP',
+        department: currentUser?.department_name || 'General',
+        branch: currentUser?.branch_name || 'Headquarters',
+        date: r.date,
+        whenIn: r.first_check_in ? new Date(r.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        whenOut: r.last_check_out ? new Date(r.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        duration: `${hrs}h ${mins}m`,
+        status: r.status,
+        method: lastPunch?.verification_method || 'FACE',
+        punchLogs: punchesSummary
+      };
+    });
+
+    generateAttendancePdf({
+      title: `Employee Personal Attendance Timesheet`,
+      subtitle: `Official In-Out Punch Ledger for ${currentUser?.full_name} (${currentUser?.employee_code})`,
+      date: new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long' }),
+      records: pdfRecords
+    });
   };
 
   const exportCSV = () => {
@@ -167,6 +244,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   const tabs = [
     { id: 'HISTORY', label: 'My Attendance', count: records.length },
+    { id: 'REPORTS', label: 'Full In-Out Ledger & PDF', count: isManagerOrAdmin ? (hrData?.employees?.length || employees.length) : records.length },
     ...(isManagerOrAdmin ? [{ id: 'TEAM', label: 'Team Attendance', count: employees.length }] : []),
     ...(isAdminOrHR ? [{ id: 'LOGS', label: 'Biometric Security Audit', count: biometricLogs.length }] : []),
     ...(isAdminOrHR ? [{ id: 'KIOSK', label: 'Attendance Kiosks' }] : [])
@@ -217,6 +295,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleGeneratePdf}
+              className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              title="Generate and Download Official Attendance Timesheet PDF"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Generate PDF</span>
+            </button>
             <button
               onClick={() => setFaceKioskOpen(true)}
               className="px-3 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition text-xs font-bold flex items-center gap-1.5 shadow-sm"
@@ -480,6 +566,263 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         </GlassCard>
       )}
 
+      {/* TAB: Comprehensive In-Out Ledger & PDF Timesheets */}
+      {activeTab === 'REPORTS' && (
+        <GlassCard
+          title="Full Attendance & In-Out Timesheet Ledger"
+          subtitle="Complete records with exact clock-in, departure times, work hours, and instant PDF report generation"
+        >
+          {/* Action & Filter Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-[var(--border-subtle)]">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-[var(--surface-primary)] border border-[var(--border-subtle)] px-2.5 py-1.5 rounded-xl">
+                <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
+                <input
+                  type="date"
+                  value={reportDate}
+                  onChange={(e) => setReportDate(e.target.value)}
+                  className="bg-transparent text-xs font-mono text-[var(--text-primary)] focus:outline-none"
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder="Search employee or code..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="glass-input text-xs px-3 py-1.5 rounded-xl min-w-[200px]"
+              />
+
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="glass-input text-xs px-3 py-1.5 rounded-xl"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="PRESENT">Present</option>
+                <option value="CHECKED_IN">Checked In</option>
+                <option value="ABSENT">Absent</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleGeneratePdf}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-teal-500/20 active:scale-95 transition"
+              >
+                <FileDown className="w-4 h-4" />
+                <span>Generate PDF Report</span>
+              </button>
+            </div>
+          </div>
+
+          {/* KPI Summary Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div className="p-3 rounded-xl bg-[var(--surface-hover)] border border-[var(--border-subtle)]">
+              <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider block">Total Tracked</span>
+              <span className="text-lg font-bold text-[var(--text-primary)] font-mono">
+                {isManagerOrAdmin ? (hrData?.total_employees || employees.length) : 1}
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider block">Completed Today</span>
+              <span className="text-lg font-bold font-mono">
+                {isManagerOrAdmin ? (hrData?.present_today || 0) : (records.filter(r => r.last_check_out).length)}
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider block">Currently Checked In</span>
+              <span className="text-lg font-bold font-mono">
+                {isManagerOrAdmin ? (hrData?.currently_checked_in || 0) : (attendanceStatus?.is_checked_in ? 1 : 0)}
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider block">Absent / Incomplete</span>
+              <span className="text-lg font-bold font-mono">
+                {isManagerOrAdmin ? (hrData?.absent_today || 0) : (records.filter(r => !r.first_check_in).length)}
+              </span>
+            </div>
+          </div>
+
+          {/* Roster / Ledger Table */}
+          {loading ? (
+            <div className="space-y-3 py-6">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : isManagerOrAdmin && hrData && hrData.employees ? (
+            <DataTable
+              data={hrData.employees.filter(e => {
+                if (searchQuery) {
+                  const q = searchQuery.toLowerCase();
+                  if (!e.full_name.toLowerCase().includes(q) && !e.employee_code.toLowerCase().includes(q)) return false;
+                }
+                if (statusFilter !== 'ALL' && e.status !== statusFilter) return false;
+                return true;
+              })}
+              columns={[
+                {
+                  key: 'employee',
+                  header: 'Employee Name & Code',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={emp.full_name} src={emp.avatar_url} size="sm" />
+                      <div>
+                        <div className="font-bold text-xs text-[var(--text-primary)]">{emp.full_name}</div>
+                        <div className="text-[10px] font-mono text-[var(--text-muted)]">{emp.employee_code}</div>
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  key: 'dept',
+                  header: 'Department',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div>
+                      <span className="text-xs text-[var(--text-secondary)] block font-medium">{emp.department_name || 'General'}</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">{emp.branch_name || 'Headquarters'}</span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'whenIn',
+                  header: 'When In (Clock In)',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        {emp.first_check_in ? new Date(emp.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'whenOut',
+                  header: 'When Out (Go Out)',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogOut className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                      {emp.last_check_out ? (
+                        <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
+                          {new Date(emp.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      ) : emp.status === 'CHECKED_IN' ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500 animate-pulse">
+                          <span>Active / On Duty</span>
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)] font-mono">—</span>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: 'duration',
+                  header: 'Duration',
+                  render: (emp: HRDashboardEmployee) => {
+                    const hrs = Math.floor(emp.total_work_minutes / 60);
+                    const mins = emp.total_work_minutes % 60;
+                    return (
+                      <span className="font-mono text-xs font-semibold text-[var(--accent)]">
+                        {hrs}h {mins}m
+                      </span>
+                    );
+                  }
+                },
+                {
+                  key: 'punches',
+                  header: 'Punches',
+                  render: (emp: HRDashboardEmployee) => (
+                    <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--surface-hover)] border border-[var(--border-subtle)] text-[var(--text-secondary)] font-medium">
+                      {emp.punch_count} punches
+                    </span>
+                  )
+                },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  render: (emp: HRDashboardEmployee) => <StatusBadge status={emp.status} />
+                }
+              ]}
+            />
+          ) : (
+            <DataTable
+              data={records}
+              columns={[
+                {
+                  key: 'date',
+                  header: 'Date',
+                  render: (r: AttendanceRecord) => <span className="font-medium text-xs font-mono">{r.date}</span>
+                },
+                {
+                  key: 'whenIn',
+                  header: 'When In (Clock In)',
+                  render: (r: AttendanceRecord) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        {r.first_check_in ? new Date(r.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'whenOut',
+                  header: 'When Out (Go Out)',
+                  render: (r: AttendanceRecord) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogOut className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                      <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
+                        {r.last_check_out ? new Date(r.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'punches',
+                  header: 'In/Out Timeline',
+                  render: (r: AttendanceRecord) => {
+                    if (!r.punches || r.punches.length === 0) return <span className="text-[11px] text-[var(--text-muted)]">—</span>;
+                    return (
+                      <div className="flex flex-wrap items-center gap-1">
+                        {r.punches.map((p, i) => (
+                          <span
+                            key={i}
+                            className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                              p.punch_type === 'IN' 
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                                : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'
+                            }`}
+                          >
+                            {p.punch_type}: {new Date(p.punch_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  }
+                },
+                {
+                  key: 'duration',
+                  header: 'Duration',
+                  render: (r: AttendanceRecord) => (
+                    <span className="font-mono text-xs font-semibold text-[var(--accent)]">
+                      {formatWorkHours(r.total_work_minutes)}
+                    </span>
+                  )
+                },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  render: (r: AttendanceRecord) => <StatusBadge status={r.status} />
+                }
+              ]}
+            />
+          )}
+        </GlassCard>
+      )}
+
       {/* TAB 2: Team Attendance (Managers & Admins) */}
       {activeTab === 'TEAM' && isManagerOrAdmin && (
         <GlassCard
@@ -603,6 +946,263 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   key: 'status',
                   header: 'Status',
                   render: (l: BiometricLog) => <StatusBadge status={l.status} />
+                }
+              ]}
+            />
+          )}
+        </GlassCard>
+      )}
+
+      {/* TAB: Comprehensive In-Out Ledger & PDF Timesheets */}
+      {activeTab === 'REPORTS' && (
+        <GlassCard
+          title="Full Attendance & In-Out Timesheet Ledger"
+          subtitle="Complete records with exact clock-in, departure times, work hours, and instant PDF report generation"
+        >
+          {/* Action & Filter Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-[var(--border-subtle)]">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-[var(--surface-primary)] border border-[var(--border-subtle)] px-2.5 py-1.5 rounded-xl">
+                <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
+                <input
+                  type="date"
+                  value={reportDate}
+                  onChange={(e) => setReportDate(e.target.value)}
+                  className="bg-transparent text-xs font-mono text-[var(--text-primary)] focus:outline-none"
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder="Search employee or code..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="glass-input text-xs px-3 py-1.5 rounded-xl min-w-[200px]"
+              />
+
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="glass-input text-xs px-3 py-1.5 rounded-xl"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="PRESENT">Present</option>
+                <option value="CHECKED_IN">Checked In</option>
+                <option value="ABSENT">Absent</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleGeneratePdf}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-teal-500/20 active:scale-95 transition"
+              >
+                <FileDown className="w-4 h-4" />
+                <span>Generate PDF Report</span>
+              </button>
+            </div>
+          </div>
+
+          {/* KPI Summary Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div className="p-3 rounded-xl bg-[var(--surface-hover)] border border-[var(--border-subtle)]">
+              <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider block">Total Tracked</span>
+              <span className="text-lg font-bold text-[var(--text-primary)] font-mono">
+                {isManagerOrAdmin ? (hrData?.total_employees || employees.length) : 1}
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider block">Completed Today</span>
+              <span className="text-lg font-bold font-mono">
+                {isManagerOrAdmin ? (hrData?.present_today || 0) : (records.filter(r => r.last_check_out).length)}
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider block">Currently Checked In</span>
+              <span className="text-lg font-bold font-mono">
+                {isManagerOrAdmin ? (hrData?.currently_checked_in || 0) : (attendanceStatus?.is_checked_in ? 1 : 0)}
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider block">Absent / Incomplete</span>
+              <span className="text-lg font-bold font-mono">
+                {isManagerOrAdmin ? (hrData?.absent_today || 0) : (records.filter(r => !r.first_check_in).length)}
+              </span>
+            </div>
+          </div>
+
+          {/* Roster / Ledger Table */}
+          {loading ? (
+            <div className="space-y-3 py-6">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : isManagerOrAdmin && hrData && hrData.employees ? (
+            <DataTable
+              data={hrData.employees.filter(e => {
+                if (searchQuery) {
+                  const q = searchQuery.toLowerCase();
+                  if (!e.full_name.toLowerCase().includes(q) && !e.employee_code.toLowerCase().includes(q)) return false;
+                }
+                if (statusFilter !== 'ALL' && e.status !== statusFilter) return false;
+                return true;
+              })}
+              columns={[
+                {
+                  key: 'employee',
+                  header: 'Employee Name & Code',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={emp.full_name} src={emp.avatar_url} size="sm" />
+                      <div>
+                        <div className="font-bold text-xs text-[var(--text-primary)]">{emp.full_name}</div>
+                        <div className="text-[10px] font-mono text-[var(--text-muted)]">{emp.employee_code}</div>
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  key: 'dept',
+                  header: 'Department',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div>
+                      <span className="text-xs text-[var(--text-secondary)] block font-medium">{emp.department_name || 'General'}</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">{emp.branch_name || 'Headquarters'}</span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'whenIn',
+                  header: 'When In (Clock In)',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        {emp.first_check_in ? new Date(emp.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'whenOut',
+                  header: 'When Out (Go Out)',
+                  render: (emp: HRDashboardEmployee) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogOut className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                      {emp.last_check_out ? (
+                        <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
+                          {new Date(emp.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      ) : emp.status === 'CHECKED_IN' ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500 animate-pulse">
+                          <span>Active / On Duty</span>
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)] font-mono">—</span>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: 'duration',
+                  header: 'Duration',
+                  render: (emp: HRDashboardEmployee) => {
+                    const hrs = Math.floor(emp.total_work_minutes / 60);
+                    const mins = emp.total_work_minutes % 60;
+                    return (
+                      <span className="font-mono text-xs font-semibold text-[var(--accent)]">
+                        {hrs}h {mins}m
+                      </span>
+                    );
+                  }
+                },
+                {
+                  key: 'punches',
+                  header: 'Punches',
+                  render: (emp: HRDashboardEmployee) => (
+                    <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--surface-hover)] border border-[var(--border-subtle)] text-[var(--text-secondary)] font-medium">
+                      {emp.punch_count} punches
+                    </span>
+                  )
+                },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  render: (emp: HRDashboardEmployee) => <StatusBadge status={emp.status} />
+                }
+              ]}
+            />
+          ) : (
+            <DataTable
+              data={records}
+              columns={[
+                {
+                  key: 'date',
+                  header: 'Date',
+                  render: (r: AttendanceRecord) => <span className="font-medium text-xs font-mono">{r.date}</span>
+                },
+                {
+                  key: 'whenIn',
+                  header: 'When In (Clock In)',
+                  render: (r: AttendanceRecord) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogIn className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        {r.first_check_in ? new Date(r.first_check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'whenOut',
+                  header: 'When Out (Go Out)',
+                  render: (r: AttendanceRecord) => (
+                    <div className="flex items-center gap-1.5">
+                      <LogOut className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                      <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
+                        {r.last_check_out ? new Date(r.last_check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      </span>
+                    </div>
+                  )
+                },
+                {
+                  key: 'punches',
+                  header: 'In/Out Timeline',
+                  render: (r: AttendanceRecord) => {
+                    if (!r.punches || r.punches.length === 0) return <span className="text-[11px] text-[var(--text-muted)]">—</span>;
+                    return (
+                      <div className="flex flex-wrap items-center gap-1">
+                        {r.punches.map((p, i) => (
+                          <span
+                            key={i}
+                            className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                              p.punch_type === 'IN' 
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                                : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'
+                            }`}
+                          >
+                            {p.punch_type}: {new Date(p.punch_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  }
+                },
+                {
+                  key: 'duration',
+                  header: 'Duration',
+                  render: (r: AttendanceRecord) => (
+                    <span className="font-mono text-xs font-semibold text-[var(--accent)]">
+                      {formatWorkHours(r.total_work_minutes)}
+                    </span>
+                  )
+                },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  render: (r: AttendanceRecord) => <StatusBadge status={r.status} />
                 }
               ]}
             />
