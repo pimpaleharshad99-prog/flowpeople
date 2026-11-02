@@ -1,5 +1,5 @@
 from app.core.database import Base
-from app.models.company import Company, Branch, Department, Designation, Holiday, CompanySettings
+from app.models.company import Company, Branch, Department, Designation, Holiday, CompanySettings, OrganizationMember
 from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
 from app.models.shift import Shift, ShiftAssignment
 from app.models.attendance import AttendanceRecord, AttendancePunch, AttendanceRegularization, AttendanceStatus, PunchType, RegularizationStatus
@@ -35,6 +35,7 @@ __all__ = [
     "Designation",
     "Holiday",
     "CompanySettings",
+    "OrganizationMember",
     "User",
     "UserRole",
     "EmploymentStatus",

@@ -1,49 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  UserPlus, 
-  Mail, 
-  Phone, 
-  Building2, 
-  Briefcase, 
-  LayoutGrid, 
-  List, 
+import {
+  Users,
+  Search,
+  Filter,
+  UserPlus,
+  Mail,
+  Phone,
+  Building2,
+  Briefcase,
+  LayoutGrid,
+  List,
   Calendar,
-  CheckCircle2, 
-  Shield, 
-  Clock, 
-  Send, 
-  Copy, 
-  RotateCcw, 
-  Camera, 
-  Check, 
-  ChevronRight, 
-  ChevronLeft, 
-  UserCheck, 
-  MapPin, 
+  CheckCircle2,
+  Shield,
+  Clock,
+  Send,
+  Copy,
+  RotateCcw,
+  Camera,
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  UserCheck,
+  MapPin,
   AlertCircle,
   Sparkles,
   ExternalLink,
   RefreshCw
 } from 'lucide-react';
 import { api, User, Branch } from '../services/api';
-import { 
-  PageHeader, 
-  StatCard, 
-  GlassCard, 
-  DataTable, 
-  StatusBadge, 
-  Drawer, 
-  Modal, 
-  useToast, 
-  Avatar, 
+import {
+  PageHeader,
+  StatCard,
+  GlassCard,
+  DataTable,
+  StatusBadge,
+  Drawer,
+  Modal,
+  useToast,
+  Avatar,
   Tabs,
   ConfirmDialog
 } from '../components/ui';
 import { FaceCameraModal } from '../components/FaceCameraModal';
 import { removeFaceBiometrics, APPROVED_BIOMETRIC_MODEL, ACTIVE_MODEL_VERSION } from '../services/kioskService';
+import { useOrganization } from '../context/OrganizationContext';
 
 interface DirectoryViewProps {
   currentUser: User | null;
@@ -113,17 +114,17 @@ const ROLE_DESCRIPTIONS: Record<string, { label: string; desc: string; color: st
   MANAGER: {
     label: 'Team Manager',
     desc: 'Direct report attendance tracking, shift scheduling, leave approvals, and team reviews.',
-    color: 'border-[#DFE1D8]'
+    color: 'border-blue-500/30'
   },
   HR_EXECUTIVE: {
     label: 'HR Executive',
     desc: 'Employee directory access, attendance regularizations, onboarding coordination, and helpdesk.',
-    color: 'border-[#DFE1D8]'
+    color: 'border-teal-500/30'
   },
   HR_ADMIN: {
     label: 'HR Administrator',
     desc: 'Full workforce governance, policy controls, biometric resets, department structuring, and audits.',
-    color: 'border-[#DFE1D8]'
+    color: 'border-emerald-500/30'
   },
   PAYROLL_ADMIN: {
     label: 'Payroll Administrator',
@@ -133,12 +134,12 @@ const ROLE_DESCRIPTIONS: Record<string, { label: string; desc: string; color: st
   AUDITOR: {
     label: 'Compliance Auditor',
     desc: 'Read-only access to biometric event logs, anti-spoof records, and enterprise audit trails.',
-    color: 'border-[#DFE1D8]'
+    color: 'border-purple-500/30'
   },
   COMPANY_ADMIN: {
     label: 'Company Administrator',
     desc: 'Comprehensive administrative authority over all branch locations, users, and organization settings.',
-    color: 'border-[#DFE1D8]'
+    color: 'border-indigo-500/30'
   },
   SUPER_ADMIN: {
     label: 'Super Admin',
@@ -149,6 +150,7 @@ const ROLE_DESCRIPTIONS: Record<string, { label: string; desc: string; color: st
 
 export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => {
   const { addToast } = useToast();
+  const { organization, counts, refreshCounts } = useOrganization();
   const [employees, setEmployees] = useState<User[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [designations, setDesignations] = useState<any[]>([]);
@@ -160,7 +162,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
   const [selectedBranch, setSelectedBranch] = useState<number | undefined>();
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
+
   // Profile Drawer State
   const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const [profileTab, setProfileTab] = useState('overview');
@@ -225,6 +227,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
         status: selectedStatus === 'ALL' ? undefined : selectedStatus
       });
       setEmployees(data);
+      refreshCounts().catch(() => {});
     } catch (err: any) {
       addToast({
         title: 'Error loading directory',
@@ -416,10 +419,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
     }
   };
 
-  const isHRorAdmin = 
-    currentUser?.role === 'SUPER_ADMIN' || 
-    currentUser?.role === 'COMPANY_ADMIN' || 
-    currentUser?.role === 'HR_ADMIN' || 
+  const isHRorAdmin =
+    currentUser?.role === 'ORGANIZATION_OWNER' ||
+    currentUser?.role === 'SUPER_ADMIN' ||
+    currentUser?.role === 'COMPANY_ADMIN' ||
+    currentUser?.role === 'HR_ADMIN' ||
     currentUser?.role === 'HR_EXECUTIVE';
 
   const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
@@ -429,7 +433,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
       key: 'name',
       header: 'Employee',
       render: (emp: User) => (
-        <div 
+        <div
           onClick={() => setSelectedEmployee(emp)}
           className="flex items-center gap-3 cursor-pointer group"
         >
@@ -479,11 +483,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
       key: 'face_status',
       header: 'Face ID',
       render: (emp: User) => (
-        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-          emp.has_face_enrolled 
-            ? 'bg-[#ECEEE7] text-[#4A5A3F] border border-[#C8CAC0]' 
-            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-        }`}>
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${emp.has_face_enrolled
+          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+          }`}>
           <Camera className="w-2.5 h-2.5" />
           <span>{emp.has_face_enrolled ? 'Enrolled' : 'Not Enrolled'}</span>
         </span>
@@ -543,22 +546,20 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
             <div className="flex p-0.5 rounded-lg border border-[var(--border-glass)] bg-[var(--surface-glass)]">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md text-xs transition ${
-                  viewMode === 'grid' 
-                    ? 'bg-[var(--surface-hover)] text-[var(--accent)] font-medium shadow-2xs' 
-                    : 'text-[var(--text-subtle)]'
-                }`}
+                className={`p-1.5 rounded-md text-xs transition ${viewMode === 'grid'
+                  ? 'bg-[var(--surface-hover)] text-[var(--accent)] font-medium shadow-2xs'
+                  : 'text-[var(--text-subtle)]'
+                  }`}
                 title="Grid view"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md text-xs transition ${
-                  viewMode === 'list' 
-                    ? 'bg-[var(--surface-hover)] text-[var(--accent)] font-medium shadow-2xs' 
-                    : 'text-[var(--text-subtle)]'
-                }`}
+                className={`p-1.5 rounded-md text-xs transition ${viewMode === 'list'
+                  ? 'bg-[var(--surface-hover)] text-[var(--accent)] font-medium shadow-2xs'
+                  : 'text-[var(--text-subtle)]'
+                  }`}
                 title="List view"
               >
                 <List className="w-3.5 h-3.5" />
@@ -654,20 +655,20 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {employees.map((emp) => (
-            <GlassCard 
-              key={emp.id} 
+            <GlassCard
+              key={emp.id}
               className="text-center cursor-pointer hover:border-[var(--accent)] transition relative group"
             >
               <div onClick={() => setSelectedEmployee(emp)} className="space-y-3">
                 <div className="flex justify-center relative">
-                  <Avatar 
-                    name={`${emp.first_name} ${emp.last_name}`} 
-                    src={emp.avatar_url} 
-                    size="lg" 
+                  <Avatar
+                    name={`${emp.first_name} ${emp.last_name}`}
+                    src={emp.avatar_url}
+                    size="lg"
                   />
                   {emp.has_face_enrolled && (
-                    <span 
-                      className="absolute bottom-0 right-1/2 translate-x-5 p-1 rounded-full bg-[#4A5A3F] text-white shadow-xs" 
+                    <span
+                      className="absolute bottom-0 right-1/2 translate-x-5 p-1 rounded-full bg-emerald-500 text-white shadow-xs"
                       title="Face ID Enrolled & Active"
                     >
                       <Camera className="w-2.5 h-2.5" />
@@ -722,19 +723,17 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
               { num: 4, title: 'Review & Confirm', subtitle: 'Dispatch account' }
             ].map((st, idx) => (
               <div key={st.num} className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${
-                  currentStep === st.num 
-                    ? 'bg-[var(--accent)] text-white shadow-md ring-2 ring-[var(--accent)]/30' 
-                    : currentStep > st.num 
-                    ? 'bg-[#ECEEE7] text-[#4A5A3F] font-bold border border-[#C8CAC0]' 
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${currentStep === st.num
+                  ? 'bg-[var(--accent)] text-white shadow-md ring-2 ring-[var(--accent)]/30'
+                  : currentStep > st.num
+                    ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30'
                     : 'bg-[var(--surface-hover)] text-[var(--text-muted)] border border-[var(--border-subtle)]'
-                }`}>
+                  }`}>
                   {currentStep > st.num ? <Check className="w-4 h-4 stroke-[2.5]" /> : st.num}
                 </div>
                 <div className="hidden md:block">
-                  <div className={`text-xs font-bold leading-tight ${
-                    currentStep === st.num ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'
-                  }`}>
+                  <div className={`text-xs font-bold leading-tight ${currentStep === st.num ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'
+                    }`}>
                     {st.title}
                   </div>
                   <div className="text-[10px] text-[var(--text-muted)]">{st.subtitle}</div>
@@ -1026,11 +1025,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                       <div
                         key={rKey}
                         onClick={() => setFormData({ ...formData, role: rKey })}
-                        className={`p-4 sm:p-5 rounded-2xl border-2 text-left cursor-pointer transition-all ${
-                          isSelected 
-                            ? 'bg-[var(--surface-hover)] border-[var(--accent)] ring-2 ring-[var(--accent)]/30 shadow-sm' 
-                            : 'bg-[var(--surface-glass)]/70 border-[var(--border-subtle)] hover:border-[var(--border-strong)]'
-                        }`}
+                        className={`p-4 sm:p-5 rounded-2xl border-2 text-left cursor-pointer transition-all ${isSelected
+                          ? 'bg-[var(--surface-hover)] border-[var(--accent)] ring-2 ring-[var(--accent)]/30 shadow-sm'
+                          : 'bg-[var(--surface-glass)]/70 border-[var(--border-subtle)] hover:border-[var(--border-strong)]'
+                          }`}
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <span className={`font-bold text-sm ${isSelected ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
@@ -1102,11 +1100,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, submit_mode: 'INVITE' })}
-                      className={`p-3.5 rounded-xl border-2 text-left transition ${
-                        formData.submit_mode === 'INVITE'
-                          ? 'border-[var(--accent)] bg-[var(--surface-glass)] shadow-xs text-[var(--accent)] font-semibold'
-                          : 'border-[var(--border-subtle)] text-[var(--text-secondary)]'
-                      }`}
+                      className={`p-3.5 rounded-xl border-2 text-left transition ${formData.submit_mode === 'INVITE'
+                        ? 'border-[var(--accent)] bg-[var(--surface-glass)] shadow-xs text-[var(--accent)] font-semibold'
+                        : 'border-[var(--border-subtle)] text-[var(--text-secondary)]'
+                        }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Send className="w-4 h-4 text-[var(--accent)]" />
@@ -1118,11 +1115,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, submit_mode: 'DRAFT' })}
-                      className={`p-3.5 rounded-xl border-2 text-left transition ${
-                        formData.submit_mode === 'DRAFT'
-                          ? 'border-[var(--accent)] bg-[var(--surface-glass)] shadow-xs text-[var(--accent)] font-semibold'
-                          : 'border-[var(--border-subtle)] text-[var(--text-secondary)]'
-                      }`}
+                      className={`p-3.5 rounded-xl border-2 text-left transition ${formData.submit_mode === 'DRAFT'
+                        ? 'border-[var(--accent)] bg-[var(--surface-glass)] shadow-xs text-[var(--accent)] font-semibold'
+                        : 'border-[var(--border-subtle)] text-[var(--text-secondary)]'
+                        }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="w-4 h-4 text-[var(--accent)]" />
@@ -1199,10 +1195,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
         {selectedEmployee && (
           <div className="space-y-6">
             <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--surface-hover)] border border-[var(--border-glass)]">
-              <Avatar 
-                name={`${selectedEmployee.first_name} ${selectedEmployee.last_name}`} 
-                src={selectedEmployee.avatar_url} 
-                size="lg" 
+              <Avatar
+                name={`${selectedEmployee.first_name} ${selectedEmployee.last_name}`}
+                src={selectedEmployee.avatar_url}
+                size="lg"
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -1298,14 +1294,12 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
             {profileTab === 'biometrics' && (
               <div className="space-y-4 text-xs">
                 {/* 1. Biometric Enrollment Status & Model Architecture */}
-                <div className={`p-4 rounded-xl border space-y-2 text-center ${
-                  selectedEmployee.has_face_enrolled 
-                    ? 'border-[#C8CAC0] bg-[#ECEEE7]' 
-                    : 'border-amber-500/30 bg-amber-500/5'
-                }`}>
-                  <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center ${
-                    selectedEmployee.has_face_enrolled ? 'bg-[#ECEEE7] text-[#4A5A3F]' : 'bg-amber-500/20 text-amber-400'
+                <div className={`p-4 rounded-xl border space-y-2 text-center ${selectedEmployee.has_face_enrolled
+                  ? 'border-emerald-500/30 bg-emerald-500/5'
+                  : 'border-amber-500/30 bg-amber-500/5'
                   }`}>
+                  <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center ${selectedEmployee.has_face_enrolled ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                    }`}>
                     <Camera className="w-6 h-6" />
                   </div>
                   <div className="space-y-0.5">
@@ -1313,13 +1307,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                       {selectedEmployee.has_face_enrolled ? 'Face ID Enrolled & Active' : 'Face ID Not Registered'}
                     </span>
                     <span className="font-mono text-[10px] text-[var(--text-subtle)]">
-                      {selectedEmployee.has_face_enrolled 
-                        ? `Template: ${APPROVED_BIOMETRIC_MODEL.id} (${APPROVED_BIOMETRIC_MODEL.dimensions}-D) • Model Compatible` 
+                      {selectedEmployee.has_face_enrolled
+                        ? `Template: ${APPROVED_BIOMETRIC_MODEL.id} (${APPROVED_BIOMETRIC_MODEL.dimensions}-D) • Model Compatible`
                         : 'Awaiting Employee Biometric Consent & Optical Capture'}
                     </span>
                   </div>
                   <p className="text-[11px] text-[var(--text-subtle)] leading-relaxed">
-                    {selectedEmployee.has_face_enrolled 
+                    {selectedEmployee.has_face_enrolled
                       ? `Biometric mathematical vector (${APPROVED_BIOMETRIC_MODEL.dimensions}-D, L2-normalized) is active on the server and verified for optical attendance kiosks.`
                       : `Employee must complete optical face enrollment before biometric check-in is enabled. System enforces ${APPROVED_BIOMETRIC_MODEL.name}.`
                     }
@@ -1373,11 +1367,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                   <button
                     type="button"
                     onClick={checkCameraAvailability}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${
-                      cameraCheckResult === 'AVAILABLE'
-                        ? 'bg-[#ECEEE7] border-[#C8CAC0] text-[#4A5A3F]'
-                        : 'border-[var(--border-glass)] hover:bg-[var(--surface-hover)] text-[var(--text-main)]'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${cameraCheckResult === 'AVAILABLE'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                      : 'border-[var(--border-glass)] hover:bg-[var(--surface-hover)] text-[var(--text-main)]'
+                      }`}
                   >
                     {cameraCheckResult === 'CHECKING' ? 'Checking...' : cameraCheckResult === 'AVAILABLE' ? 'Verified' : 'Check Camera'}
                   </button>
@@ -1386,7 +1379,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                 {/* 4. Start Enrollment Action & Authorized Revocation */}
                 <div className="p-3.5 rounded-xl border border-[var(--border-glass)] bg-[var(--surface-glass)] space-y-3">
                   <span className="text-xs font-bold text-[var(--text-main)] block">Biometric Enrollment Actions</span>
-                  
+
                   {selectedEmployee.has_face_enrolled ? (
                     <div className="space-y-2">
                       <button
@@ -1394,7 +1387,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                           setFaceModalTargetUser(selectedEmployee);
                           setIsFaceModalOpen(true);
                         }}
-                        className="w-full py-2 rounded-lg border border-[#DFE1D8] text-[#590907] hover:bg-[#ECEEE7] transition font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full py-2 rounded-lg border border-teal-500/30 text-teal-600 dark:text-teal-400 hover:bg-teal-500/10 transition font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Update / Re-enroll Face ID Template</span>
@@ -1467,7 +1460,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                 {isHRorAdmin && (
                   <div className="p-3 rounded-lg border border-[var(--border-glass)] bg-[var(--surface-hover)] space-y-3">
                     <span className="text-[11px] font-semibold text-[var(--text-main)] block">Invitation Controls</span>
-                    
+
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleSendInvite(selectedEmployee)}
@@ -1483,7 +1476,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({ currentUser }) => 
                           className="px-3 py-1.5 rounded-lg border border-[var(--border-glass)] hover:bg-[var(--surface-glass)] text-[var(--text-secondary)] font-medium inline-flex items-center gap-1 transition"
                           title="Copy onboarding link"
                         >
-                          {copiedToken === selectedEmployee.invitation_token ? <Check className="w-3.5 h-3.5 text-[#4A5A3F]" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedToken === selectedEmployee.invitation_token ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>Copy Link</span>
                         </button>
                       )}

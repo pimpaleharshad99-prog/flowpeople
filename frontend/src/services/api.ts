@@ -632,10 +632,28 @@ export const api = {
     fetchJson<any>(`${API_BASE}/employees/${id}/invite`, { method: 'POST' }),
   resendInvite: (id: number) =>
     fetchJson<any>(`${API_BASE}/employees/${id}/resend-invite`, { method: 'POST' }),
+  deactivateEmployee: (id: number) =>
+    fetchJson<User>(`${API_BASE}/employees/${id}/deactivate`, { method: 'PUT' }),
+  reactivateEmployee: (id: number) =>
+    fetchJson<User>(`${API_BASE}/employees/${id}/reactivate`, { method: 'PUT' }),
   activateInvite: (data: { token: string; password: string; auth_user_id?: string }) =>
     fetchJson<any>(`${API_BASE}/auth/activate-invite`, { method: 'POST', body: JSON.stringify(data) }),
 
   getCompany: () => fetchJson<any>(`${API_BASE}/organization/company`),
+  getEmployeeCounts: () => fetchJson<{
+    organization_id: number;
+    organization_uuid?: string;
+    organization_name: string;
+    organization_code: string;
+    total_employees: number;
+    active_employees: number;
+    inactive_employees: number;
+    pending_invitations: number;
+    max_employees: number;
+    capacity_remaining: number;
+    plan_id: string;
+    subscription_status: string;
+  }>(`${API_BASE}/organization/employee-counts`),
   updateCompanyBranding: (data: { name?: string; brand_name?: string; logo_url?: string; timezone?: string; currency?: string }) =>
     fetchJson<any>(`${API_BASE}/organization/company/branding`, { method: 'PUT', body: JSON.stringify(data) }),
   getDepartments: () => fetchJson<any[]>(`${API_BASE}/organization/departments`),

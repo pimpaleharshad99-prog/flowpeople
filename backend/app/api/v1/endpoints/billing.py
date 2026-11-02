@@ -7,8 +7,9 @@ import secrets
 
 from app.core.database import get_db
 from app.core.security import get_password_hash, create_access_token
-from app.models.company import Company, Branch, CompanySettings
+from app.models.company import Company, Branch, CompanySettings, OrganizationMember
 from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
+import uuid
 from app.models.subscription import (
     SubscriptionPlan, Subscription, PaymentTransaction,
     PlanTier, SubscriptionStatus, BillingCycle
@@ -112,13 +113,16 @@ def register_organization(
 
     # 3. Create Tenant (Company)
     company = Company(
+        uuid=str(uuid.uuid4()),
         name=req.company_name.strip(),
         code=clean_code,
         brand_name=req.brand_name.strip() if req.brand_name else req.company_name.strip(),
         logo_url=req.logo_url.strip() if req.logo_url else None,
         contact_email=clean_email,
+        phone=req.owner_phone,
         timezone=req.timezone or "Asia/Kolkata",
         currency=req.currency or "INR",
+        status="ACTIVE",
         is_active=True,
         subscription_plan_id=plan.id,
         subscription_status="TRIALING" if trial_days > 0 else "ACTIVE",
@@ -155,6 +159,7 @@ def register_organization(
     owner_user = User(
         company_id=company.id,
         branch_id=branch.id,
+        uuid=str(uuid.uuid4()),
         employee_code=f"{clean_code}-001",
         email=clean_email,
         hashed_password=hashed_pwd,
@@ -170,6 +175,19 @@ def register_organization(
     )
     db.add(owner_user)
     db.flush()
+
+    # Link Owner ID and create OrganizationMember
+    company.owner_user_id = owner_user.id
+    member = OrganizationMember(
+        uuid=str(uuid.uuid4()),
+        company_id=company.id,
+        user_id=owner_user.id,
+        role=UserRole.ORGANIZATION_OWNER.value,
+        status="ACTIVE",
+        joined_at=now,
+        created_at=now
+    )
+    db.add(member)
 
     # 6. Create Initial Subscription
     period_days = 30 if req.billing_cycle == "MONTHLY" else 365
@@ -197,6 +215,7 @@ def register_organization(
         "token_type": "bearer",
         "organization": {
             "id": company.id,
+            "uuid": company.uuid,
             "name": company.name,
             "code": company.code,
             "plan_id": plan.id,
@@ -205,6 +224,7 @@ def register_organization(
         },
         "user": {
             "id": owner_user.id,
+            "uuid": owner_user.uuid,
             "email": owner_user.email,
             "full_name": f"{owner_user.first_name} {owner_user.last_name}",
             "role": owner_user.role

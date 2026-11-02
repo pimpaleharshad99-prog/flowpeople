@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from pydantic import BaseModel
 from app.core.database import get_db
@@ -22,6 +23,58 @@ def get_company(current_user: User = Depends(get_current_user), db: Session = De
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     return company
+
+@router.get("/employee-counts")
+def get_employee_counts(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Automated Organization-Level Employee Headcount:
+    Calculates live counts from the database:
+    - total_employees: all employees registered in this organization
+    - active_employees: ACTIVE or PROBATION status
+    - inactive_employees: INACTIVE, TERMINATED, SUSPENDED
+    - pending_invitations: PENDING_INVITATION, INVITED, DRAFT
+    - max_employees: plan allowance
+    - capacity_remaining: remaining slots
+    """
+    cid = current_user.company_id
+    company = db.query(Company).filter(Company.id == cid).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    total = db.query(func.count(User.id)).filter(User.company_id == cid).scalar() or 0
+    active = db.query(func.count(User.id)).filter(
+        User.company_id == cid,
+        User.status.in_(["ACTIVE", "PROBATION"])
+    ).scalar() or 0
+    inactive = db.query(func.count(User.id)).filter(
+        User.company_id == cid,
+        User.status.in_(["INACTIVE", "TERMINATED", "SUSPENDED"])
+    ).scalar() or 0
+    pending = db.query(func.count(User.id)).filter(
+        User.company_id == cid,
+        User.status.in_(["PENDING_INVITATION", "INVITED", "DRAFT"])
+    ).scalar() or 0
+
+    max_emp = company.max_employees or 10
+    capacity_remaining = max(0, max_emp - active)
+
+    return {
+        "organization_id": company.id,
+        "organization_uuid": company.uuid,
+        "organization_name": company.name,
+        "organization_code": company.code,
+        "total_employees": total,
+        "active_employees": active,
+        "inactive_employees": inactive,
+        "pending_invitations": pending,
+        "max_employees": max_emp,
+        "capacity_remaining": capacity_remaining,
+        "plan_id": company.subscription_plan_id,
+        "subscription_status": company.subscription_status
+    }
 
 class CompanyBrandingUpdate(BaseModel):
     name: Optional[str] = None

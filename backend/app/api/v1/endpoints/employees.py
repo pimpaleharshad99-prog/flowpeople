@@ -8,10 +8,12 @@ import re
 from app.core.database import get_db
 from app.core.security import get_password_hash
 from app.models.user import User, UserRole, EmploymentStatus
+from app.models.company import Company, OrganizationMember
 from app.models.shift import Shift, ShiftAssignment
 from app.models.leave import LeaveType, LeaveBalance
 from app.schemas.user import UserOut, UserCreate, UserUpdate, InviteEmployeeResponse
 from app.api.deps import get_current_user, require_admin
+import uuid
 
 router = APIRouter()
 
@@ -61,6 +63,7 @@ def serialize_user(u: User) -> UserOut:
 
     return UserOut(
         id=u.id,
+        uuid=u.uuid,
         company_id=u.company_id,
         is_platform_owner=bool(u.is_platform_owner),
         employee_code=u.employee_code,
@@ -153,12 +156,28 @@ def create_employee(
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
+    # 0. Organization Validation & Quota Enforcement
+    company = db.query(Company).filter(Company.id == current_user.company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="Organization context not found.")
+
+    if company.max_employees:
+        active_count = db.query(User).filter(
+            User.company_id == current_user.company_id,
+            User.status.in_(["ACTIVE", "PROBATION", "INVITED", "PENDING_INVITATION"])
+        ).count()
+        if active_count >= company.max_employees:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Employee capacity limit reached for current plan ({company.subscription_plan_id or 'Starter'}). Your limit is {company.max_employees} employees. Please upgrade your subscription to add more team members."
+            )
+
     # 1. Role Assignment Privilege Verification
     if current_user.role in [UserRole.HR_ADMIN.value, UserRole.HR_MANAGER.value, "HR_EXECUTIVE"]:
-        if employee_in.role in [UserRole.SUPER_ADMIN.value, UserRole.ADMIN.value]:
+        if employee_in.role in [UserRole.SUPER_ADMIN.value, UserRole.ADMIN.value, UserRole.ORGANIZATION_OWNER.value]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="HR administrators cannot assign Super Admin or Company Admin privileges."
+                detail="HR administrators cannot assign Super Admin, Company Admin, or Organization Owner privileges."
             )
 
     # 2. Concurrency-Safe Automatic Employee ID Generation
@@ -191,6 +210,7 @@ def create_employee(
 
     user = User(
         company_id=current_user.company_id,
+        uuid=str(uuid.uuid4()),
         employee_code=assigned_code,
         email=employee_in.email.strip().lower(),
         hashed_password=hashed_password,
@@ -218,6 +238,20 @@ def create_employee(
         emergency_contact_phone=employee_in.emergency_contact_phone
     )
     db.add(user)
+    db.flush()
+
+    # Link into organization_members
+    now_dt = datetime.now(timezone.utc)
+    member = OrganizationMember(
+        uuid=str(uuid.uuid4()),
+        company_id=current_user.company_id,
+        user_id=user.id,
+        role=user.role,
+        status=user.status,
+        joined_at=now_dt,
+        created_at=now_dt
+    )
+    db.add(member)
     db.commit()
     db.refresh(user)
 
@@ -271,15 +305,116 @@ def update_employee(
         raise HTTPException(status_code=404, detail="Employee not found")
 
     update_dict = emp_update.model_dump(exclude_unset=True)
-    if "role" in update_dict and current_user.role in [UserRole.HR_ADMIN.value, UserRole.HR_MANAGER.value, "HR_EXECUTIVE"]:
-        if update_dict["role"] in [UserRole.SUPER_ADMIN.value, UserRole.ADMIN.value]:
+
+    # 1. Enforce strict isolation: block cross-tenant reassignment
+    if "company_id" in update_dict:
+        if update_dict["company_id"] != current_user.company_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="HR administrators cannot assign Super Admin or Company Admin privileges."
+                detail="Unauthorized: Reassigning an employee to another organization is strictly prohibited."
             )
+        update_dict.pop("company_id", None)
+
+    # 2. Prevent unauthorized role elevation
+    if "role" in update_dict and current_user.role in [UserRole.HR_ADMIN.value, UserRole.HR_MANAGER.value, "HR_EXECUTIVE"]:
+        if update_dict["role"] in [UserRole.SUPER_ADMIN.value, UserRole.ADMIN.value, UserRole.ORGANIZATION_OWNER.value]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="HR administrators cannot assign Super Admin, Company Admin, or Organization Owner privileges."
+            )
+
+    # 3. Capacity verification if reactivating employee
+    if update_dict.get("status") in ["ACTIVE", "PROBATION"] and user.status in ["INACTIVE", "TERMINATED", "SUSPENDED"]:
+        company = db.query(Company).filter(Company.id == current_user.company_id).first()
+        if company and company.max_employees:
+            active_count = db.query(User).filter(
+                User.company_id == current_user.company_id,
+                User.status.in_(["ACTIVE", "PROBATION", "INVITED", "PENDING_INVITATION"]),
+                User.id != user.id
+            ).count()
+            if active_count >= company.max_employees:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Cannot reactivate employee: organization has reached its capacity limit of {company.max_employees} employees on plan {company.subscription_plan_id or 'Starter'}."
+                )
 
     for field, val in update_dict.items():
         setattr(user, field, val)
+
+    # 4. Synchronize organization_members entry
+    member = db.query(OrganizationMember).filter(
+        OrganizationMember.company_id == current_user.company_id,
+        OrganizationMember.user_id == user.id
+    ).first()
+    if member:
+        if "role" in update_dict:
+            member.role = user.role
+        if "status" in update_dict:
+            member.status = user.status
+        member.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+    db.refresh(user)
+    return serialize_user(user)
+
+@router.put("/{id}/deactivate", response_model=UserOut)
+def deactivate_employee(
+    id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Deactivates an employee account and releases quota capacity."""
+    user = db.query(User).filter(User.id == id, User.company_id == current_user.company_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="You cannot deactivate your own account.")
+
+    user.status = EmploymentStatus.INACTIVE.value
+    member = db.query(OrganizationMember).filter(
+        OrganizationMember.company_id == current_user.company_id,
+        OrganizationMember.user_id == user.id
+    ).first()
+    if member:
+        member.status = "INACTIVE"
+        member.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+    db.refresh(user)
+    return serialize_user(user)
+
+@router.put("/{id}/reactivate", response_model=UserOut)
+def reactivate_employee(
+    id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Reactivates an inactive employee with capacity quota check."""
+    user = db.query(User).filter(User.id == id, User.company_id == current_user.company_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    company = db.query(Company).filter(Company.id == current_user.company_id).first()
+    if company and company.max_employees:
+        active_count = db.query(User).filter(
+            User.company_id == current_user.company_id,
+            User.status.in_(["ACTIVE", "PROBATION", "INVITED", "PENDING_INVITATION"]),
+            User.id != user.id
+        ).count()
+        if active_count >= company.max_employees:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot reactivate employee: organization limit of {company.max_employees} employees is reached."
+            )
+
+    user.status = EmploymentStatus.ACTIVE.value
+    member = db.query(OrganizationMember).filter(
+        OrganizationMember.company_id == current_user.company_id,
+        OrganizationMember.user_id == user.id
+    ).first()
+    if member:
+        member.status = "ACTIVE"
+        member.updated_at = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(user)

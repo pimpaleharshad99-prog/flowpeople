@@ -8,7 +8,8 @@ from datetime import datetime, timezone
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
-from app.models.company import Company, Branch
+from app.models.company import Company, Branch, OrganizationMember
+import uuid
 from app.schemas.user import (
     UserOut, Token, LoginRequest, UserUpdate, ActivateInviteRequest,
     RegisterRequest, SupabaseSyncRequest,
@@ -27,6 +28,7 @@ def serialize_user_out(user: User) -> UserOut:
 
     return UserOut(
         id=user.id,
+        uuid=user.uuid,
         company_id=user.company_id,
         is_platform_owner=bool(user.is_platform_owner),
         employee_code=user.employee_code,
@@ -270,7 +272,8 @@ def supabase_auth_sync(sync_data: SupabaseSyncRequest, db: Session = Depends(get
             hashed_password=get_password_hash("SupabaseAuthLinked!"),
             first_name=first_name,
             last_name=last_name,
-            role=UserRole.SUPER_ADMIN.value if count == 1 else UserRole.EMPLOYEE.value,
+            role=UserRole.ORGANIZATION_OWNER.value if count == 1 else UserRole.EMPLOYEE.value,
+            is_platform_owner=False,
             status=EmploymentStatus.ACTIVE.value,
             employment_type=EmploymentType.FULL_TIME.value,
             date_of_joining=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
@@ -345,6 +348,28 @@ def activate_account_invitation(
 
     # One-time use: invalidate token
     user.invitation_token = None
+
+    # Sync organization_members entry
+    member = db.query(OrganizationMember).filter(
+        OrganizationMember.company_id == user.company_id,
+        OrganizationMember.user_id == user.id
+    ).first()
+    now_dt = datetime.now(timezone.utc)
+    if member:
+        member.status = "ACTIVE"
+        member.joined_at = now_dt
+        member.updated_at = now_dt
+    else:
+        member = OrganizationMember(
+            uuid=str(uuid.uuid4()),
+            company_id=user.company_id,
+            user_id=user.id,
+            role=user.role,
+            status="ACTIVE",
+            joined_at=now_dt,
+            created_at=now_dt
+        )
+        db.add(member)
 
     db.commit()
     db.refresh(user)

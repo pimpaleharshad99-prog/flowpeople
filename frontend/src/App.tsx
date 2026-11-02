@@ -28,6 +28,7 @@ import { FaceKioskModal } from './components/FaceKioskModal';
 import type { User, AttendanceStatus } from './services/api';
 import { api } from './services/api';
 import { ThemeProvider } from './context/ThemeContext';
+import { OrganizationProvider } from './context/OrganizationContext';
 import { ToastProvider } from './components/ui';
 import { ShieldAlert, ArrowLeft, Lock } from 'lucide-react';
 
@@ -332,8 +333,9 @@ export function App() {
   // 4. AUTHENTICATED CUSTOMER WORKSPACE
   return (
     <ThemeProvider>
-      <ToastProvider>
-        <div className="relative flex h-screen font-sans bg-[var(--surface-canvas)] text-[var(--text-main)] overflow-hidden">
+      <OrganizationProvider currentUser={currentUser}>
+        <ToastProvider>
+          <div className="relative flex h-screen font-sans bg-[var(--surface-canvas)] text-[var(--text-main)] overflow-hidden">
           {/* Ambient warm editorial color blobs */}
           <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
             <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#E8D2B5]/25 blur-3xl" />
@@ -432,7 +434,8 @@ export function App() {
           />
         </div>
       </ToastProvider>
-    </ThemeProvider>
+    </OrganizationProvider>
+  </ThemeProvider>
   );
 }
 

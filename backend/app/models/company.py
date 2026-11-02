@@ -1,23 +1,35 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, Time
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, Time, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
+import uuid
 from app.core.database import Base
 
 def utcnow():
     return datetime.now(timezone.utc)
 
+def gen_uuid():
+    return str(uuid.uuid4())
+
 class Company(Base):
     __tablename__ = "companies"
 
     id = Column(Integer, primary_key=True, index=True)
+    uuid = Column(String(36), unique=True, index=True, default=gen_uuid)
     name = Column(String(200), nullable=False)
     code = Column(String(50), unique=True, index=True, nullable=False)
+    slug = Column(String(100), unique=True, index=True, nullable=True)
     brand_name = Column(String(200), nullable=True) # Custom software/brand title
+    owner_user_id = Column(Integer, nullable=True) # Organization Owner User ID
     logo_url = Column(String(500), nullable=True)
     domain = Column(String(100), nullable=True)
     timezone = Column(String(50), default="UTC")
     currency = Column(String(10), default="USD")
     contact_email = Column(String(150), nullable=True)
+    phone = Column(String(50), nullable=True)
+    address = Column(Text, nullable=True)
+    industry = Column(String(100), nullable=True)
+    company_size = Column(String(50), nullable=True)
+    status = Column(String(50), default="ACTIVE")
     is_active = Column(Boolean, default=True)
     subscription_plan_id = Column(String(50), default="free_trial")
     subscription_status = Column(String(50), default="TRIALING")
@@ -25,6 +37,7 @@ class Company(Base):
     max_admins = Column(Integer, default=1)
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
     # Relationships
     subscriptions = relationship("Subscription", back_populates="company", cascade="all, delete-orphan")
@@ -32,6 +45,7 @@ class Company(Base):
     departments = relationship("Department", back_populates="company", cascade="all, delete-orphan")
     designations = relationship("Designation", back_populates="company", cascade="all, delete-orphan")
     users = relationship("User", back_populates="company", cascade="all, delete-orphan")
+    members = relationship("OrganizationMember", back_populates="company", cascade="all, delete-orphan")
     shifts = relationship("Shift", back_populates="company", cascade="all, delete-orphan")
     holidays = relationship("Holiday", back_populates="company", cascade="all, delete-orphan")
     leave_types = relationship("LeaveType", back_populates="company", cascade="all, delete-orphan")
@@ -119,4 +133,24 @@ class CompanySettings(Base):
     leave_year_start_month = Column(Integer, default=1) # 1 = January
     auto_approval_regularization = Column(Boolean, default=False)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+class OrganizationMember(Base):
+    __tablename__ = "organization_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    uuid = Column(String(36), unique=True, index=True, default=gen_uuid)
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    role = Column(String(50), default="EMPLOYEE", nullable=False) # ORGANIZATION_OWNER, HR_ADMIN, MANAGER, EMPLOYEE
+    status = Column(String(50), default="ACTIVE", nullable=False) # ACTIVE, PENDING, INVITED, INACTIVE
+    joined_at = Column(DateTime(timezone=True), default=utcnow)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('company_id', 'user_id', name='uq_company_user_member'),
+    )
+
+    company = relationship("Company", back_populates="members")
+    user = relationship("User", back_populates="memberships")
 

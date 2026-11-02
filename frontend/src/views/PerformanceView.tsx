@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Target, 
-  Award, 
-  Star, 
-  Plus, 
-  CheckCircle2, 
+  Target,
+  Award,
+  Star,
+  Plus,
+  CheckCircle2,
   Clock,
-  TrendingUp, 
-  Calendar, 
-  UserCheck, 
+  TrendingUp,
+  Calendar,
+  UserCheck,
   MessageSquare,
   BarChart3
 } from 'lucide-react';
 import { api, Goal, PerformanceReview } from '../services/api';
-import { 
-  PageHeader, 
-  StatCard, 
-  GlassCard, 
-  Tabs, 
-  Modal, 
-  StatusBadge, 
-  useToast, 
-  Avatar 
+import {
+  PageHeader,
+  StatCard,
+  GlassCard,
+  Tabs,
+  Modal,
+  StatusBadge,
+  useToast,
+  Avatar
 } from '../components/ui';
 
 export const PerformanceView: React.FC = () => {
@@ -115,7 +115,7 @@ export const PerformanceView: React.FC = () => {
   };
 
   // Metrics
-  const avgProgress = goals.length > 0 
+  const avgProgress = goals.length > 0
     ? Math.round(goals.reduce((acc, g) => acc + (g.current_value / Math.max(1, g.target_value)), 0) / goals.length * 100)
     : 0;
 
@@ -189,9 +189,9 @@ export const PerformanceView: React.FC = () => {
                 title={g.title}
                 subtitle={`Owner: ${g.employee_name}`}
                 action={
-                  <StatusBadge 
-                    status={g.status === 'ACHIEVED' ? 'ACTIVE' : 'INACTIVE'} 
-                    customLabel={g.status} 
+                  <StatusBadge
+                    status={g.status === 'ACHIEVED' ? 'ACTIVE' : 'INACTIVE'}
+                    customLabel={g.status}
                   />
                 }
               >

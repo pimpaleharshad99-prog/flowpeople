@@ -21,6 +21,7 @@ import {
 import { api, DashboardStats, LeaveBalance, Announcement, User, AttendanceStatus } from '../services/api';
 import { PageHeader, StatCard, GlassCard, StatusBadge, Skeleton, EmptyState, useToast } from '../components/ui';
 import { FaceCameraModal } from '../components/FaceCameraModal';
+import { useOrganization } from '../context/OrganizationContext';
 
 interface DashboardViewProps {
   currentUser: User | null;
@@ -36,6 +37,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onRefreshStatus
 }) => {
   const { addToast } = useToast();
+  const { organization, counts } = useOrganization();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [holidays, setHolidays] = useState<any[]>([]);
@@ -285,21 +287,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Headcount"
-          value={stats?.total_employees || 7}
-          subtext="Full-time & Contract"
-          trend={{ value: "+2 this quarter", positive: true }}
+          value={counts?.total_employees ?? stats?.total_employees ?? 0}
+          subtext={`Active: ${counts?.active_employees ?? 0} • Pending: ${counts?.pending_invitations ?? 0}`}
+          trend={{ value: `${counts?.capacity_remaining ?? 0} slots open (${counts?.max_employees ?? 10} cap)`, positive: (counts?.capacity_remaining ?? 0) > 0 }}
           icon={Users}
         />
         <StatCard
           label="Present Today"
-          value={stats?.present_today || 6}
+          value={stats?.present_today || 0}
           subtext="Biometric & Manual punches"
-          trend={{ value: "92% attendance", positive: true }}
+          trend={{ value: `${counts?.total_employees ? Math.round(((stats?.present_today || 0) / counts.total_employees) * 100) : 0}% attendance`, positive: true }}
           icon={UserCheck}
         />
         <StatCard
           label="On Leave Today"
-          value={stats?.on_leave_today || 1}
+          value={stats?.on_leave_today || 0}
           subtext="Approved absences"
           icon={CalendarOff}
         />

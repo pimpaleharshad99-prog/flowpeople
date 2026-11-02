@@ -195,7 +195,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     {currentUser?.first_name} {currentUser?.last_name}
                   </p>
                   <p className="text-[11px] text-[var(--text-muted)] truncate">{currentUser?.email}</p>
-                  <p className="text-[10px] text-[var(--accent)] font-mono mt-0.5">{currentUser?.employee_code}</p>
+                  <div className="flex items-center justify-between text-[10px] mt-1 text-[var(--text-subtle)]">
+                    <span className="text-[var(--accent)] font-mono">{currentUser?.employee_code}</span>
+                    <span className="font-semibold text-[#590907] uppercase">{currentUser?.role?.replace('_', ' ')}</span>
+                  </div>
+                  {currentUser?.company_name && (
+                    <p className="text-[10px] text-[var(--text-muted)] truncate mt-1 pt-1 border-t border-[var(--border-subtle)]">
+                      Org: <strong>{currentUser.brand_name || currentUser.company_name}</strong>
+                    </p>
+                  )}
                 </div>
 
                 {onLogout && (

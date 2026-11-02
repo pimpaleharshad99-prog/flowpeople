@@ -2,10 +2,14 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Bool
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
+import uuid
 from app.core.database import Base
 
 def utcnow():
     return datetime.now(timezone.utc)
+
+def gen_uuid():
+    return str(uuid.uuid4())
 
 class UserRole(str, enum.Enum):
     PLATFORM_OWNER = "PLATFORM_OWNER"
@@ -42,6 +46,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    uuid = Column(String(36), unique=True, index=True, default=gen_uuid)
     company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
     employee_code = Column(String(50), index=True, nullable=False)
     email = Column(String(150), unique=True, index=True, nullable=False)
@@ -88,6 +93,7 @@ class User(Base):
 
     # Relationships
     company = relationship("Company", back_populates="users")
+    memberships = relationship("OrganizationMember", back_populates="user", cascade="all, delete-orphan")
     branch = relationship("Branch", back_populates="users")
     department = relationship("Department", back_populates="users")
     designation = relationship("Designation", back_populates="users")

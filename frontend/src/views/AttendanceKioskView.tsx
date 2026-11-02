@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Scan, 
-  Camera, 
-  Fingerprint, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  Building2, 
-  RotateCcw, 
-  ShieldCheck, 
+import {
+  Scan,
+  Camera,
+  Fingerprint,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  Building2,
+  RotateCcw,
+  ShieldCheck,
   Sparkles,
   ArrowLeft,
   X,
@@ -32,7 +32,7 @@ export const AttendanceKioskView: React.FC<AttendanceKioskViewProps> = ({
   const [method, setMethod] = useState<'FACE' | 'FINGERPRINT'>('FACE');
   const [currentDate, setCurrentDate] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
-  
+
   // Camera & Face ID State
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -189,9 +189,9 @@ export const AttendanceKioskView: React.FC<AttendanceKioskViewProps> = ({
     setFpError(null);
     try {
       // 1. Check WebAuthn platform authenticator
-      const isAvailable = window.PublicKeyCredential && 
+      const isAvailable = window.PublicKeyCredential &&
         await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-      
+
       if (isAvailable) {
         setFpStatus('CONNECTED');
       } else {
@@ -212,7 +212,7 @@ export const AttendanceKioskView: React.FC<AttendanceKioskViewProps> = ({
       // Request platform authenticator assertion
       const challengeRes = await api.getFingerprintChallenge();
       const challengeBuffer = Uint8Array.from(atob(challengeRes.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-      
+
       const credential = await navigator.credentials.get({
         publicKey: {
           challenge: challengeBuffer,

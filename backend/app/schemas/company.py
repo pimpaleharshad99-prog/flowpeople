@@ -55,13 +55,26 @@ class HolidayOut(HolidayBase):
 
 class CompanyOut(BaseModel):
     id: int
+    uuid: Optional[str] = None
     name: str
     code: str
+    slug: Optional[str] = None
     brand_name: Optional[str] = None
     logo_url: Optional[str] = None
     domain: Optional[str] = None
     timezone: str
     currency: str
+    contact_email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    industry: Optional[str] = None
+    company_size: Optional[str] = None
+    status: Optional[str] = "ACTIVE"
+    subscription_plan_id: Optional[str] = "free_trial"
+    subscription_status: Optional[str] = "TRIALING"
+    max_employees: Optional[int] = 10
+    max_admins: Optional[int] = 1
+    trial_ends_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

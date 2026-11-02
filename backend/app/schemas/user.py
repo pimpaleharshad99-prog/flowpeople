@@ -32,6 +32,7 @@ class UserCreate(UserBase):
     password: Optional[str] = "FlowPeople2026!" # Default or temporary password if invited
 
 class UserUpdate(BaseModel):
+    company_id: Optional[int] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     avatar_url: Optional[str] = None
@@ -54,6 +55,7 @@ class UserUpdate(BaseModel):
 
 class UserOut(UserBase):
     id: int
+    uuid: Optional[str] = None
     company_id: int
     is_platform_owner: bool = False
     created_at: datetime
