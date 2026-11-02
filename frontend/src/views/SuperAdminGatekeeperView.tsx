@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, Lock, Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Logo } from '../components/brand/Logo';
 import { api, User } from '../services/api';
+import { supabase } from '../lib/supabase';
 
 interface SuperAdminGatekeeperViewProps {
   onSuccess: (user: User) => void;
@@ -32,23 +33,24 @@ export const SuperAdminGatekeeperView: React.FC<SuperAdminGatekeeperViewProps> =
 
     setLoading(true);
     try {
-      const res = await api.login(cleanEmail, cleanPwd);
-      const isOwner = Boolean(
-        res.user.is_platform_owner ||
-        res.user.email?.toLowerCase() === 'pimpaleg80@gmail.com' ||
-        res.user.email?.toLowerCase() === 'pimpaleharshad99@gmail.com' ||
-        res.user.email?.toLowerCase() === 'admin@flowcraft.io' ||
-        res.user.role === 'PLATFORM_OWNER'
-      );
+      // 1. Authenticate using Supabase Auth signInWithPassword
+      const { data: sbData, error: sbError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPwd,
+      });
 
-      if (!isOwner) {
-        setError('Access Denied: Authenticated account does not possess Root Platform Owner privileges.');
+      if (sbError || !sbData.session) {
+        setError(sbError?.message || 'Invalid Platform Owner credentials.');
+        setLoading(false);
         return;
       }
 
+      // 2. Send Supabase access token to backend for server-side verification against public.platform_admins
+      const res = await api.superAdminLogin(sbData.session.access_token);
+
       onSuccess(res.user);
     } catch (err: any) {
-      setError(err.message || 'Invalid Platform Owner credentials.');
+      setError(err.message || 'Access Denied: Account is not authorized as a Root Platform Owner.');
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,7 @@ export const SuperAdminGatekeeperView: React.FC<SuperAdminGatekeeperViewProps> =
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="pimpaleg80@gmail.com"
+                placeholder="owner@flowpeople.io"
                 required
                 className="w-full h-11 px-3.5 rounded-xl bg-[#FAF6F0] border border-[#DFE1D8] text-[#2E3029] text-sm placeholder:text-[#8E9084] focus:outline-none focus:bg-white focus:border-[#590907] focus:ring-2 focus:ring-[#590907]/15 transition"
               />

@@ -625,6 +625,15 @@ export const api = {
     localStorage.setItem('currentUser', JSON.stringify(res.user));
     return res;
   },
+  superAdminLogin: async (supabaseToken: string) => {
+    const res = await fetchJson<{ access_token: string; token_type: string; user: User }>(`${API_BASE}/superadmin/login`, {
+      method: 'POST',
+      body: JSON.stringify({ supabase_token: supabaseToken }),
+    });
+    localStorage.setItem('token', res.access_token);
+    localStorage.setItem('currentUser', JSON.stringify(res.user));
+    return res;
+  },
   getCurrentUser: () => fetchJson<User>(`${API_BASE}/auth/me`),
   getDemoCredentials: () => fetchJson<{ accounts: any[]; universal_fallback_password: string }>(`${API_BASE}/auth/demo-credentials`),
   forgotPassword: (email: string) => fetchJson<{ ok: boolean; message: string }>(`${API_BASE}/auth/forgot-password`, {

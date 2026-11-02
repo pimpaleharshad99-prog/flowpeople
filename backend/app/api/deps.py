@@ -30,28 +30,34 @@ def get_current_user(
         )
 
     # 2. Decode and validate JWT
+    user = None
     try:
         payload = decode_token(raw_token)
         user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication token payload.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session expired or invalid credentials. Please sign in again.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        if user_id is not None:
+            user = db.query(User).filter(User.id == int(user_id)).first()
+    except Exception:
+        pass
 
-    # 3. Fetch user and verify active status
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    # 2b. If local JWT decoding didn't find user, check if raw_token is a verified Supabase access token
+    if user is None:
+        try:
+            from app.services.platform_admin import verify_supabase_token, check_platform_admin_membership
+            user_data = verify_supabase_token(raw_token)
+            user_uuid = user_data.get("id")
+            if user_uuid:
+                membership = check_platform_admin_membership(user_uuid, db)
+                if membership:
+                    user = db.query(User).filter(
+                        (User.auth_user_id == user_uuid) | (User.email.ilike(user_data.get("email")))
+                    ).first()
+        except Exception:
+            pass
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Employee account not found or has been removed.",
+            detail="Session expired or invalid credentials. Please sign in again.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -63,24 +69,37 @@ def get_current_user(
 
     return user
 
-PLATFORM_OWNER_EMAILS = {"pimpaleg80@gmail.com", "pimpaleharshad99@gmail.com", "admin@flowcraft.io"}
-
-def require_platform_owner(current_user: User = Depends(get_current_user)) -> User:
+def require_platform_owner(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> User:
     """
-    Owner-Only Platform Authorization (Phase 3):
-    Restricted strictly to allowlisted platform-owner identities.
+    Owner-Only Platform Authorization:
+    Restricted strictly to verified platform owners registered in public.platform_admins.
     Normal Organization Owners, HR Admins, Managers, and Employees are unconditionally blocked.
     """
     is_owner = (
         bool(current_user.is_platform_owner) or
-        current_user.email.strip().lower() in PLATFORM_OWNER_EMAILS or
         current_user.role == UserRole.PLATFORM_OWNER.value
     )
     if not is_owner:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Forbidden: Super Admin access is restricted exclusively to the authorized platform owner."
+            detail="Forbidden: Super Admin access is restricted exclusively to authorized platform admins."
         )
+
+    # Server-side verification against platform_admins
+    if current_user.auth_user_id:
+        from app.models.platform_admin import PlatformAdmin
+        membership = db.query(PlatformAdmin).filter(
+            PlatformAdmin.user_id == current_user.auth_user_id
+        ).first()
+        if not membership and not current_user.is_platform_owner:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden: Account is not registered in platform_admins."
+            )
+
     return current_user
 
 # Alias require_super_admin to require_platform_owner for strict platform security

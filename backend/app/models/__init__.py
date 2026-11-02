@@ -33,9 +33,11 @@ from app.models.integration import (
     ConnectionStatus,
     UploadStatus
 )
+from app.models.platform_admin import PlatformAdmin
 
 __all__ = [
     "Base",
+    "PlatformAdmin",
     "Company",
     "Branch",
     "Department",

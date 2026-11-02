@@ -73,7 +73,26 @@ def test_super_admin_owner_only_isolation():
     """Verify Super Admin portal is strictly owner-only and denies customer tenants."""
     db = SessionLocal()
     # 1. Owner account
-    owner = db.query(User).filter(User.email == "pimpaleharshad99@gmail.com").first()
+    owner = db.query(User).filter(User.is_platform_owner == True).first()
+    if not owner:
+        company = db.query(Company).first()
+        cid = company.id if company else 1
+        owner = User(
+            company_id=cid,
+            email="pimpaleharshad99@gmail.com",
+            first_name="Harshad",
+            last_name="Pimpale",
+            employee_code="ROOT-OWNER",
+            hashed_password=get_password_hash("Password123!"),
+            role=UserRole.PLATFORM_OWNER.value,
+            is_platform_owner=True,
+            status="ACTIVE",
+            employment_type="FULL_TIME",
+            date_of_joining="2026-01-01"
+        )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
     assert owner is not None
     assert owner.is_platform_owner is True
     token_owner = create_access_token(subject=owner.id, role=owner.role)

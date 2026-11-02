@@ -122,3 +122,6 @@ class ResetPasswordRequest(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: str
+
+class SuperAdminLoginRequest(BaseModel):
+    supabase_token: str

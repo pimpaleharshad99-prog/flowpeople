@@ -18,6 +18,88 @@ from app.api.deps import get_current_user, require_admin
 
 router = APIRouter()
 
+DEFAULT_PLANS = [
+    {
+        "id": "trial",
+        "name": "Free Trial (14 Days)",
+        "tier": PlanTier.FREE_TRIAL.value,
+        "description": "Full access to FlowPeople Face Attendance & HR features for 14 days.",
+        "price_monthly_inr": 0,
+        "price_annual_inr": 0,
+        "price_monthly_usd": 0.0,
+        "price_annual_usd": 0.0,
+        "max_employees": 15,
+        "max_hr_admins": 2,
+        "face_attendance_enabled": True,
+        "fingerprint_enabled": True,
+        "payroll_enabled": True,
+        "advanced_reports_enabled": True,
+        "storage_limit_gb": 5,
+        "support_level": "Standard Community"
+    },
+    {
+        "id": "starter",
+        "name": "Starter Plan",
+        "tier": PlanTier.STARTER.value,
+        "description": "Essential workforce management for growing businesses and modern offices.",
+        "price_monthly_inr": 2499,
+        "price_annual_inr": 24990,
+        "price_monthly_usd": 29.0,
+        "price_annual_usd": 290.0,
+        "max_employees": 30,
+        "max_hr_admins": 2,
+        "face_attendance_enabled": True,
+        "fingerprint_enabled": True,
+        "payroll_enabled": False,
+        "advanced_reports_enabled": True,
+        "storage_limit_gb": 15,
+        "support_level": "Standard Email"
+    },
+    {
+        "id": "professional",
+        "name": "Professional Plan",
+        "tier": PlanTier.PROFESSIONAL.value,
+        "description": "Complete all-in-one HRMS, Optical Face Attendance, USB Fingerprint & Payroll.",
+        "price_monthly_inr": 6999,
+        "price_annual_inr": 69990,
+        "price_monthly_usd": 79.0,
+        "price_annual_usd": 790.0,
+        "max_employees": 100,
+        "max_hr_admins": 5,
+        "face_attendance_enabled": True,
+        "fingerprint_enabled": True,
+        "payroll_enabled": True,
+        "advanced_reports_enabled": True,
+        "storage_limit_gb": 50,
+        "support_level": "Priority 24/7"
+    },
+    {
+        "id": "enterprise",
+        "name": "Enterprise Plan",
+        "tier": PlanTier.ENTERPRISE.value,
+        "description": "Unlimited scale, dedicated multi-kiosk hardware integration, and custom compliance.",
+        "price_monthly_inr": 19999,
+        "price_annual_inr": 199990,
+        "price_monthly_usd": 249.0,
+        "price_annual_usd": 2490.0,
+        "max_employees": 1000,
+        "max_hr_admins": 20,
+        "face_attendance_enabled": True,
+        "fingerprint_enabled": True,
+        "payroll_enabled": True,
+        "advanced_reports_enabled": True,
+        "storage_limit_gb": 500,
+        "support_level": "Dedicated Account Manager"
+    }
+]
+
+def ensure_default_plans(db: Session):
+    if db.query(SubscriptionPlan).count() == 0:
+        for p_data in DEFAULT_PLANS:
+            p = SubscriptionPlan(**p_data)
+            db.add(p)
+        db.commit()
+
 class OrganizationRegisterRequest(BaseModel):
     company_name: str
     company_code: str
@@ -51,6 +133,7 @@ class PaymentVerifyRequest(BaseModel):
 @router.get("/plans")
 def get_subscription_plans(db: Session = Depends(get_db)):
     """Public endpoint: returns all active SaaS plans with pricing and features."""
+    ensure_default_plans(db)
     plans = db.query(SubscriptionPlan).filter(SubscriptionPlan.is_active == True).all()
     return [
         {
@@ -103,12 +186,13 @@ def register_organization(
         )
 
     # 2. Resolve Plan
+    ensure_default_plans(db)
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == req.plan_id).first()
     if not plan:
         plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "trial").first()
 
     now = datetime.now(timezone.utc)
-    trial_days = 14 if plan.tier == PlanTier.FREE_TRIAL.value else 0
+    trial_days = 14 if (plan and plan.tier == PlanTier.FREE_TRIAL.value) else 0
     trial_end = now + timedelta(days=trial_days) if trial_days > 0 else None
 
     # 3. Create Tenant (Company)

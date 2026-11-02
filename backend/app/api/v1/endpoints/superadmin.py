@@ -13,8 +13,19 @@ from app.models.biometrics import FaceEnrollment
 from app.models.subscription import SubscriptionPlan, Subscription, PaymentTransaction
 from app.models.common import AuditLog
 from app.api.deps import require_platform_owner
+from app.schemas.user import Token, SuperAdminLoginRequest
+from app.services.platform_admin import verify_and_login_superadmin
 
 router = APIRouter()
+
+@router.post("/login", response_model=Token)
+def superadmin_portal_login(login_data: SuperAdminLoginRequest, db: Session = Depends(get_db)):
+    """
+    Root Platform Gatekeeper login:
+    Accepts verified Supabase access token, checks user's UUID against public.platform_admins
+    via server-side service-role access, and issues Super Admin session JWT.
+    """
+    return verify_and_login_superadmin(login_data.supabase_token, db)
 
 class CompanyCreateRequest(BaseModel):
     name: str

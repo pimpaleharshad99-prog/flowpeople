@@ -176,6 +176,20 @@ def _migrate_columns():
             except Exception:
                 pass
 
+            # Create platform_admins table if not exists
+            try:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS platform_admins (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id VARCHAR(64) UNIQUE NOT NULL,
+                        role VARCHAR(50) NOT NULL DEFAULT 'SUPER_ADMIN',
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                conn.commit()
+            except Exception:
+                pass
+
     except Exception:
         pass
 

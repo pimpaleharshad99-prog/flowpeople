@@ -180,12 +180,9 @@ export function App() {
       );
     }
 
-    // Authenticated: check if platform owner
+    // Authenticated: check if platform owner (server verified)
     const isPlatformOwner = Boolean(
       currentUser.is_platform_owner ||
-      currentUser.email?.toLowerCase() === 'pimpaleg80@gmail.com' ||
-      currentUser.email?.toLowerCase() === 'pimpaleharshad99@gmail.com' ||
-      currentUser.email?.toLowerCase() === 'admin@flowcraft.io' ||
       currentUser.role === 'PLATFORM_OWNER'
     );
 

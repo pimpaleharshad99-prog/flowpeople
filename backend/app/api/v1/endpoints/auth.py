@@ -12,10 +12,11 @@ from app.models.company import Company, Branch, OrganizationMember
 import uuid
 from app.schemas.user import (
     UserOut, Token, LoginRequest, UserUpdate, ActivateInviteRequest,
-    RegisterRequest, SupabaseSyncRequest,
+    RegisterRequest, SupabaseSyncRequest, SuperAdminLoginRequest,
     ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest
 )
 from app.api.deps import get_current_user
+from app.services.platform_admin import verify_and_login_superadmin
 
 router = APIRouter()
 
@@ -409,5 +410,14 @@ def resend_verification(req: ResendVerificationRequest, db: Session = Depends(ge
         "ok": True,
         "message": f"Verification email has been re-sent to {req.email.strip()}."
     }
+
+@router.post("/superadmin/login", response_model=Token)
+def superadmin_login(login_data: SuperAdminLoginRequest, db: Session = Depends(get_db)):
+    """
+    Root Platform Gatekeeper login:
+    Accepts verified Supabase access token, checks user's UUID against public.platform_admins
+    via server-side service-role access, and issues Super Admin session JWT.
+    """
+    return verify_and_login_superadmin(login_data.supabase_token, db)
 
 
