@@ -37,53 +37,67 @@ export function Logo({
       height={size} 
       viewBox="0 0 96 96" 
       aria-hidden="true" 
-      className="shrink-0 transition-transform duration-200 hover:scale-105"
+      className="shrink-0 transition-transform duration-200 hover:scale-105 select-none"
       style={{
-        filter: 'drop-shadow(0 4px 12px rgba(0, 213, 160, 0.3)) drop-shadow(0 2px 6px rgba(99, 102, 241, 0.25))'
+        filter: 'drop-shadow(0 4px 12px rgba(0, 229, 153, 0.35)) drop-shadow(0 2px 6px rgba(255, 51, 102, 0.25)) drop-shadow(0 6px 18px rgba(0, 0, 0, 0.22))'
       }}
     >
       <defs>
-        {/* Rich Multi-Chromatic Gradient: Mint -> Cyan -> Royal Blue -> Neon Purple */}
+        {/* Full Chromatic Spectrum Gradient: Coral Pink -> Electric Amber -> Luminous Mint -> Cyan -> Violet */}
         <linearGradient id={`bg-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#00D5A0" />
-          <stop offset="35%" stopColor="#06B6D4" />
-          <stop offset="70%" stopColor="#3B82F6" />
-          <stop offset="100%" stopColor="#8B5CF6" />
+          <stop offset="0%" stopColor="#FF3366" />
+          <stop offset="25%" stopColor="#FF9100" />
+          <stop offset="50%" stopColor="#00E599" />
+          <stop offset="75%" stopColor="#00D2FF" />
+          <stop offset="100%" stopColor="#7C3AED" />
         </linearGradient>
 
         {/* Luminous Specular Top Sheen */}
         <linearGradient id={`sh-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </linearGradient>
 
         {/* Dual Border Ring for high-contrast separation on both pure black & pure white */}
         <linearGradient id={`br-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
-          <stop offset="50%" stopColor="#A7F3D0" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#C4B5FD" stopOpacity="0.7" />
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.85" />
+          <stop offset="35%" stopColor="#FFE066" stopOpacity="0.6" />
+          <stop offset="70%" stopColor="#67E8F9" stopOpacity="0.7" />
+          <stop offset="100%" stopColor="#E9D5FF" stopOpacity="0.85" />
         </linearGradient>
       </defs>
 
-      {/* Main Gradient Badge */}
+      {/* Main Chromatic Spectrum Badge */}
       <rect width="96" height="96" rx="26" fill={`url(#bg-${id})`} />
       
       {/* Glossy Top Reflection */}
       <rect width="96" height="48" rx="26" fill={`url(#sh-${id})`} />
       
-      {/* High-Definition Contrast Ring */}
+      {/* Precision Hairline Outer Contrast for snow-white backgrounds */}
       <rect 
-        x="1" 
-        y="1" 
-        width="94" 
-        height="94" 
+        x="0.5" 
+        y="0.5" 
+        width="95" 
+        height="95" 
+        rx="26" 
+        fill="none" 
+        stroke="rgba(15, 23, 42, 0.16)" 
+        strokeWidth="1" 
+      />
+
+      {/* Luminous High-Definition Inner Ring for black/dark backgrounds */}
+      <rect 
+        x="1.5" 
+        y="1.5" 
+        width="93" 
+        height="93" 
         rx="25" 
         fill="none" 
         stroke={`url(#br-${id})`} 
-        strokeWidth="2" 
+        strokeWidth="1.5" 
       />
 
-      {/* Stylized 'F' & Connected Human Flow Curves */}
+      {/* Stylized 'F' & Connected Human Flow Curves with 3D depth */}
       <path 
         d="M34 74V52C34 40 42 33 54 33H59" 
         fill="none" 
@@ -91,19 +105,22 @@ export function Logo({
         strokeWidth="9" 
         strokeLinecap="round" 
         strokeLinejoin="round" 
+        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.28))' }}
       />
       <path 
         d="M34 56C44 56 50 52 62 52" 
         fill="none" 
         stroke="#FFFFFF" 
-        strokeOpacity="0.9" 
+        strokeOpacity="0.95" 
         strokeWidth="9" 
         strokeLinecap="round" 
+        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.28))' }}
       />
       
-      {/* Empathic Human / Biometric Eye Node */}
-      <circle cx="71" cy="33" r="8" fill="#FFFFFF" />
-      <circle cx="71" cy="33" r="3.5" fill="#06B6D4" />
+      {/* Biometric Eye & Pulse Node with Multi-Ring Focus */}
+      <circle cx="71" cy="33" r="8" fill="#FFFFFF" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.28))' }} />
+      <circle cx="71" cy="33" r="4" fill="#00D2FF" />
+      <circle cx="71" cy="33" r="1.5" fill="#FFFFFF" />
     </svg>
   );
 
@@ -111,24 +128,24 @@ export function Logo({
   const getTypography = () => {
     if (colorMode === 'dark') {
       return {
-        brandFlow: 'bg-gradient-to-r from-teal-400 via-cyan-300 to-teal-200 bg-clip-text text-transparent font-extrabold',
-        brandPeople: 'text-white font-bold',
+        brandFlow: 'bg-gradient-to-r from-[#00E599] via-[#00D2FF] to-[#A78BFA] bg-clip-text text-transparent font-black',
+        brandPeople: 'text-white font-extrabold',
         tagline: 'text-slate-400',
-        flowCraft: 'text-teal-300 font-bold'
+        flowCraft: 'bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent font-bold'
       };
     }
     if (colorMode === 'light') {
       return {
-        brandFlow: 'bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent font-extrabold',
-        brandPeople: 'text-slate-900 font-bold',
+        brandFlow: 'bg-gradient-to-r from-[#059669] via-[#0284C7] to-[#6366F1] bg-clip-text text-transparent font-black',
+        brandPeople: 'text-slate-950 font-extrabold',
         tagline: 'text-slate-500',
         flowCraft: 'text-teal-700 font-bold'
       };
     }
     // Auto (adaptive to parent dark mode)
     return {
-      brandFlow: 'bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 dark:from-teal-400 dark:via-cyan-300 dark:to-teal-200 bg-clip-text text-transparent font-extrabold',
-      brandPeople: 'text-slate-900 dark:text-white font-bold',
+      brandFlow: 'bg-gradient-to-r from-[#059669] via-[#0284C7] to-[#6366F1] dark:from-[#00E599] dark:via-[#00D2FF] dark:to-[#A78BFA] bg-clip-text text-transparent font-black',
+      brandPeople: 'text-slate-950 dark:text-white font-extrabold',
       tagline: 'text-slate-500 dark:text-slate-400',
       flowCraft: 'text-teal-700 dark:text-teal-300 font-bold'
     };
