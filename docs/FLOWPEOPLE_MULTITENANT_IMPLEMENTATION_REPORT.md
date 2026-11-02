@@ -339,3 +339,4 @@ SUPABASE_KEY=sb_publishable_bEuL6GdEhvU5XlukkZpwng_LUNq3Nrp
 VITE_SUPABASE_URL=https://yzcrifmqwgfkfikkimeu.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_bEuL6GdEhvU5XlukkZpwng_LUNq3Nrp
 ```
+

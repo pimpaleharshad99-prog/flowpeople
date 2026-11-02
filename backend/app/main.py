@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1.router import api_router
+from app.api.v1.endpoints.integrations import router as google_drive_router
 from app.seed.demo_data import seed_database
 from sqlalchemy import text
 import os
@@ -28,6 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(google_drive_router, prefix="/api/integrations/google-drive", tags=["Google Drive Integration"])
 
 @app.on_event("startup")
 def on_startup():

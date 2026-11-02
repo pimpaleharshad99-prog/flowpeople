@@ -101,6 +101,11 @@ export function App() {
           const user = await api.getCurrentUser();
           setCurrentUser(user);
           await Promise.all([loadLiveStatus(), loadApprovalStats()]);
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlTab = urlParams.get('tab') as NavTab | null;
+          if (urlTab) {
+            setActiveTab(urlTab);
+          }
         } catch (err) {
           console.warn('Session expired or invalid token:', err);
           localStorage.removeItem('token');

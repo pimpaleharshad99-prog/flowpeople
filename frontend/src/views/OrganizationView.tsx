@@ -27,6 +27,7 @@ import {
   ScanFace
 } from 'lucide-react';
 import { api, User, Branch, SubscriptionInfo, SubscriptionPlan, InvoiceRecord } from '../services/api';
+import { GoogleDriveIntegrationCard } from '../components/GoogleDriveIntegrationCard';
 import { 
   PageHeader, 
   StatCard, 
@@ -138,6 +139,10 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
 
   useEffect(() => {
     loadOrgData();
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('subtab') === 'integrations' || urlParams.get('google_drive') || urlParams.get('google_drive_error')) {
+      setActiveTab('integrations');
+    }
   }, [currentUser]);
 
   const handleCreateBranch = async (e: React.FormEvent) => {
@@ -456,6 +461,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
           { id: 'holidays', label: 'Holiday Calendar', count: holidays.length },
           { id: 'subscription', label: 'Plan & Subscription', count: subInfo?.usage.employees_count },
           { id: 'branding', label: 'Company Branding & Logo' },
+          { id: 'integrations', label: 'Cloud & Google Drive Integrations' },
         ]}
         activeTab={activeTab}
         onChange={setActiveTab}
@@ -968,6 +974,11 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
             </form>
           </GlassCard>
         </div>
+      )}
+
+      {/* Tab: Google Drive & Cloud Integrations */}
+      {activeTab === 'integrations' && (
+        <GoogleDriveIntegrationCard currentUser={currentUser} />
       )}
 
       {/* SaaS Plan Upgrade / Change Modal */}

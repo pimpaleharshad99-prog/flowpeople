@@ -117,6 +117,65 @@ def _migrate_columns():
             except Exception:
                 pass
 
+            # Create organization_integrations table if not exists
+            try:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS organization_integrations (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        uuid VARCHAR(36) UNIQUE,
+                        company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                        organization_uuid VARCHAR(36),
+                        provider VARCHAR(50) NOT NULL DEFAULT 'google_drive',
+                        connected_account_email VARCHAR(255),
+                        encrypted_refresh_token TEXT,
+                        access_token TEXT,
+                        access_token_expiry DATETIME,
+                        drive_root_folder_id VARCHAR(255),
+                        drive_company_folder_id VARCHAR(255),
+                        drive_attendance_folder_id VARCHAR(255),
+                        drive_employees_folder_id VARCHAR(255),
+                        drive_payroll_folder_id VARCHAR(255),
+                        drive_leave_folder_id VARCHAR(255),
+                        connection_status VARCHAR(50) NOT NULL DEFAULT 'NOT_CONNECTED',
+                        auto_attendance_reports BOOLEAN DEFAULT 1,
+                        auto_monthly_reports BOOLEAN DEFAULT 1,
+                        last_successful_sync DATETIME,
+                        last_error TEXT,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(company_id, provider)
+                    )
+                """))
+                conn.commit()
+            except Exception:
+                pass
+
+            # Create organization_drive_uploads table if not exists
+            try:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS organization_drive_uploads (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        uuid VARCHAR(36) UNIQUE,
+                        company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                        organization_uuid VARCHAR(36),
+                        report_type VARCHAR(100) NOT NULL,
+                        file_name VARCHAR(255) NOT NULL,
+                        file_size_bytes INTEGER DEFAULT 0,
+                        mime_type VARCHAR(100) DEFAULT 'application/pdf',
+                        drive_file_id VARCHAR(255),
+                        drive_folder_id VARCHAR(255),
+                        drive_web_view_link VARCHAR(1000),
+                        upload_status VARCHAR(50) DEFAULT 'PENDING',
+                        retry_count INTEGER DEFAULT 0,
+                        error_message TEXT,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                conn.commit()
+            except Exception:
+                pass
+
     except Exception:
         pass
 

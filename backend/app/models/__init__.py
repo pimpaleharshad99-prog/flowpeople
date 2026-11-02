@@ -26,6 +26,13 @@ from app.models.subscription import (
     SubscriptionStatus,
     BillingCycle
 )
+from app.models.integration import (
+    OrganizationIntegration,
+    OrganizationDriveUpload,
+    IntegrationProvider,
+    ConnectionStatus,
+    UploadStatus
+)
 
 __all__ = [
     "Base",
@@ -95,5 +102,10 @@ __all__ = [
     "PaymentTransaction",
     "PlanTier",
     "SubscriptionStatus",
-    "BillingCycle"
+    "BillingCycle",
+    "OrganizationIntegration",
+    "OrganizationDriveUpload",
+    "IntegrationProvider",
+    "ConnectionStatus",
+    "UploadStatus"
 ]

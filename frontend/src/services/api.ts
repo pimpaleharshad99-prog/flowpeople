@@ -535,6 +535,33 @@ export interface VerificationFailureLog {
   timestamp: string;
 }
 
+export interface GoogleDriveStatus {
+  configured: boolean;
+  connection_status: 'NOT_CONNECTED' | 'CONNECTING' | 'CONNECTED' | 'SYNCING' | 'SYNC_FAILED' | 'REAUTH_REQUIRED' | 'CONFIG_UNAVAILABLE';
+  connected_account_email: string | null;
+  auto_attendance_reports: boolean;
+  auto_monthly_reports: boolean;
+  last_successful_sync: string | null;
+  last_error: string | null;
+  drive_root_folder_id?: string | null;
+  drive_company_folder_id?: string | null;
+  total_uploads_count: number;
+}
+
+export interface DriveUploadItem {
+  id: number;
+  uuid: string;
+  report_type: string;
+  file_name: string;
+  file_size_bytes: number;
+  mime_type: string;
+  drive_file_id: string | null;
+  drive_web_view_link: string | null;
+  upload_status: 'PENDING' | 'UPLOADING' | 'SUCCESS' | 'FAILED' | 'RETRYING';
+  error_message: string | null;
+  created_at: string;
+}
+
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -842,5 +869,35 @@ export const api = {
     fetchJson<any>(`${API_BASE}/superadmin/companies/${id}/status`, { method: 'PUT', body: JSON.stringify({ is_active, reason }) }),
   updateCompanySubscription: (id: number, data: { plan_id: string; max_employees?: number; status?: string; extend_days?: number }) =>
     fetchJson<any>(`${API_BASE}/superadmin/companies/${id}/subscription`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Google Drive Cloud Storage Integration
+  getGoogleDriveStatus: () =>
+    fetchJson<GoogleDriveStatus>(`${API_BASE}/integrations/google-drive/status`),
+  connectGoogleDrive: () =>
+    fetchJson<{ authorization_url: string; state: string }>(`${API_BASE}/integrations/google-drive/connect`),
+  disconnectGoogleDrive: () =>
+    fetchJson<{ success: boolean; message: string }>(`${API_BASE}/integrations/google-drive/disconnect`, { method: 'POST' }),
+  updateGoogleDriveSettings: (data: { auto_attendance_reports?: boolean; auto_monthly_reports?: boolean }) =>
+    fetchJson<{ success: boolean; auto_attendance_reports: boolean; auto_monthly_reports: boolean }>(
+      `${API_BASE}/integrations/google-drive/settings`,
+      { method: 'POST', body: JSON.stringify(data) }
+    ),
+  uploadReportToDrive: (data: {
+    report_type?: string;
+    date?: string;
+    file_name?: string;
+    content_base64?: string;
+    mime_type?: string;
+  }) =>
+    fetchJson<{
+      success: boolean;
+      upload_id?: number;
+      file_id?: string;
+      file_name?: string;
+      web_view_link?: string;
+      uploaded_at?: string;
+    }>(`${API_BASE}/integrations/google-drive/upload`, { method: 'POST', body: JSON.stringify(data) }),
+  getGoogleDriveUploads: (limit: number = 50) =>
+    fetchJson<DriveUploadItem[]>(`${API_BASE}/integrations/google-drive/uploads?limit=${limit}`),
 };
 

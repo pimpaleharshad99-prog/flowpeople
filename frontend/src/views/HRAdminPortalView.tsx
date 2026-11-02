@@ -48,6 +48,7 @@ import { FaceCameraModal } from '../components/FaceCameraModal';
 import { EmployeeAttendanceHistoryModal } from '../components/EmployeeAttendanceHistoryModal';
 import { removeFaceBiometrics } from '../services/kioskService';
 import { generateAttendancePdf, AttendancePdfRecord } from '../utils/pdfGenerator';
+import { GoogleDriveIntegrationCard } from '../components/GoogleDriveIntegrationCard';
 
 interface HRAdminPortalViewProps {
   currentUser?: User | null;
@@ -722,6 +723,7 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
           { id: 'registry', label: 'Face ID Biometrics Registry', count: employees.length },
           { id: 'failures', label: 'Verification Failures Review', count: verificationFailures.length },
           { id: 'audit_logs', label: 'Full Verification Audit Trail', count: logs.length },
+          { id: 'integrations', label: 'Google Drive Cloud Backup' },
         ]}
         activeTab={activeTab}
         onChange={setActiveTab}
@@ -941,6 +943,11 @@ export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUse
           data={logs}
           searchPlaceholder="Search audit events..."
         />
+      )}
+
+      {/* TAB 5: Google Drive Cloud Backup */}
+      {activeTab === 'integrations' && (
+        <GoogleDriveIntegrationCard currentUser={currentUser || null} />
       )}
 
       {/* Confirm Revoke Dialog */}

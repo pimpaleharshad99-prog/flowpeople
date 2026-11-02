@@ -4,7 +4,7 @@ from app.api.v1.endpoints import (
     shifts, leaves, documents,
     announcements, reports, biometrics, superadmin,
     performance, lifecycle, helpdesk, payroll,
-    fingerprint, qr_attendance, billing
+    fingerprint, qr_attendance, billing, integrations
 )
 
 api_router = APIRouter()
@@ -12,6 +12,7 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication & Profile"])
 api_router.include_router(billing.router, prefix="/billing", tags=["SaaS Billing & Subscriptions"])
 api_router.include_router(organization.router, prefix="/organization", tags=["Organization"])
+api_router.include_router(integrations.router, prefix="/integrations/google-drive", tags=["Google Drive Integration"])
 api_router.include_router(employees.router, prefix="/employees", tags=["Employee Master Directory"])
 api_router.include_router(attendance.router, prefix="/attendance", tags=["Attendance & Punches"])
 api_router.include_router(biometrics.router, prefix="/biometrics", tags=["Face ID Biometrics"])

@@ -340,3 +340,4 @@ def test_6_capacity_limit_and_quota_enforcement():
         headers={"Authorization": f"Bearer {token}"}
     )
     assert res_2_retry.status_code == 201
+
