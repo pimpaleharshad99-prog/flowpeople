@@ -16,6 +16,7 @@ from app.api.deps import require_platform_owner
 from app.schemas.user import Token, SuperAdminLoginRequest
 from app.services.platform_admin import verify_and_login_superadmin
 import uuid
+import secrets
 
 router = APIRouter()
 
@@ -39,7 +40,7 @@ class CompanyCreateRequest(BaseModel):
     plan_id: Optional[str] = "trial"
     owner_first_name: Optional[str] = "Admin"
     owner_last_name: Optional[str] = "Owner"
-    owner_password: Optional[str] = "FlowPeople2026!"
+    owner_password: Optional[str] = None
 
 class CreateHrAdminRequest(BaseModel):
     company_id: int
@@ -221,12 +222,13 @@ def provision_organization(
     db.add(settings)
 
     # Organization Owner (Not platform owner)
+    owner_pwd = req.owner_password.strip() if req.owner_password and req.owner_password.strip() else secrets.token_urlsafe(16)
     owner = User(
         company_id=company.id,
         branch_id=branch.id,
         employee_code=f"{clean_code}-001",
         email=clean_email,
-        hashed_password=get_password_hash(req.owner_password.strip()),
+        hashed_password=get_password_hash(owner_pwd),
         first_name=req.owner_first_name.strip(),
         last_name=req.owner_last_name.strip(),
         role=UserRole.ORGANIZATION_OWNER.value,

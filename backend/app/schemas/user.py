@@ -29,7 +29,7 @@ class UserBase(BaseModel):
     emergency_contact_phone: Optional[str] = None
 
 class UserCreate(UserBase):
-    password: Optional[str] = "FlowPeople2026!" # Default or temporary password if invited
+    password: Optional[str] = None
 
 class UserUpdate(BaseModel):
     company_id: Optional[int] = None

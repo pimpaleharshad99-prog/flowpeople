@@ -206,7 +206,8 @@ def create_employee(
         if def_shift:
             shift_id = def_shift.id
 
-    hashed_password = get_password_hash(employee_in.password or "FlowPeople2026!")
+    raw_pwd = employee_in.password or secrets.token_urlsafe(16)
+    hashed_password = get_password_hash(raw_pwd)
 
     user = User(
         company_id=current_user.company_id,

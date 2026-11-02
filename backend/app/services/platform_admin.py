@@ -13,8 +13,37 @@ from app.models.platform_admin import PlatformAdmin
 from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
 from app.models.company import Company
 
-def get_supabase_jwks() -> Optional[Dict[str, Any]]:
-    """Loads Supabase JWKS from environment variable or bundled supabase_jwks.json file."""
+_REMOTE_JWKS_CACHE: Optional[Dict[str, Any]] = None
+
+def fetch_remote_jwks() -> Optional[Dict[str, Any]]:
+    """Fetches the latest official JWKS from Supabase Auth .well-known endpoint to support key rotation."""
+    global _REMOTE_JWKS_CACHE
+    if not settings.SUPABASE_URL:
+        return None
+    try:
+        url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/.well-known/jwks.json"
+        headers = {}
+        if settings.SUPABASE_KEY:
+            headers["apikey"] = settings.SUPABASE_KEY
+        with httpx.Client(timeout=4.0) as client:
+            resp = client.get(url, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, dict) and "keys" in data and len(data["keys"]) > 0:
+                    _REMOTE_JWKS_CACHE = data
+                    return data
+    except Exception:
+        pass
+    return None
+
+def get_supabase_jwks(refresh: bool = False) -> Optional[Dict[str, Any]]:
+    """Loads Supabase JWKS from environment variable, bundled file, or dynamic remote endpoint."""
+    global _REMOTE_JWKS_CACHE
+    if refresh:
+        remote = fetch_remote_jwks()
+        if remote:
+            return remote
+
     if settings.SUPABASE_JWKS and settings.SUPABASE_JWKS.strip():
         try:
             return json.loads(settings.SUPABASE_JWKS)
@@ -31,12 +60,17 @@ def get_supabase_jwks() -> Optional[Dict[str, Any]]:
                 return json.load(f)
         except Exception:
             pass
-    return None
+
+    if _REMOTE_JWKS_CACHE:
+        return _REMOTE_JWKS_CACHE
+
+    return fetch_remote_jwks()
 
 def verify_token_with_jwks(token: str) -> Optional[Dict[str, Any]]:
     """
     Cryptographically verifies a Supabase JWT locally using the project's official ES256 JWKS public key.
-    Enforces asymmetric elliptic-curve validation (P-256).
+    Enforces asymmetric elliptic-curve validation (P-256), strict kid matching, key rotation,
+    audience validation ('authenticated'), project issuer matching, and expiration.
     """
     jwks = get_supabase_jwks()
     if not jwks or "keys" not in jwks:
@@ -51,7 +85,18 @@ def verify_token_with_jwks(token: str) -> Optional[Dict[str, Any]]:
             if target_kid and k.get("kid") == target_kid:
                 matching_key = k
                 break
-        if not matching_key and jwks["keys"]:
+
+        # If kid is specified but not in current JWKS, attempt key-rotation refresh
+        if not matching_key and target_kid:
+            refreshed_jwks = get_supabase_jwks(refresh=True)
+            if refreshed_jwks and "keys" in refreshed_jwks:
+                for k in refreshed_jwks["keys"]:
+                    if k.get("kid") == target_kid:
+                        matching_key = k
+                        break
+
+        # If kid is absent and there is exactly one key, allow it
+        if not matching_key and not target_kid and len(jwks["keys"]) == 1:
             matching_key = jwks["keys"][0]
 
         if not matching_key:
@@ -62,16 +107,41 @@ def verify_token_with_jwks(token: str) -> Optional[Dict[str, Any]]:
             token,
             key,
             algorithms=["ES256"],
-            options={"verify_aud": False, "verify_sub": True}
+            options={
+                "verify_aud": False,  # Verified manually below to support list/string formats
+                "verify_sub": True,
+                "verify_exp": True
+            }
         )
+
         user_id = claims.get("sub")
         email = claims.get("email")
-        if not user_id:
+        if not user_id or not isinstance(user_id, str) or not user_id.strip():
             return None
+        if not email or not isinstance(email, str) or not email.strip():
+            return None
+
+        # Verify Audience: Supabase user access tokens must have audience 'authenticated'
+        aud = claims.get("aud")
+        if isinstance(aud, list):
+            if "authenticated" not in aud:
+                return None
+        elif isinstance(aud, str):
+            if aud != "authenticated":
+                return None
+        else:
+            return None
+
+        # Verify Issuer: Reject tokens from other Supabase projects
+        if settings.SUPABASE_URL:
+            expected_iss = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1"
+            token_iss = claims.get("iss", "").rstrip("/")
+            if token_iss and token_iss != expected_iss:
+                return None
 
         return {
             "id": user_id,
-            "email": email or "",
+            "email": email,
             "user_metadata": claims.get("user_metadata", {}),
             "app_metadata": claims.get("app_metadata", {}),
             "claims": claims

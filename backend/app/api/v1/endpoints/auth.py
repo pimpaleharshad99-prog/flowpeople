@@ -289,9 +289,19 @@ def supabase_auth_sync(
                 detail=f"Invalid Supabase authorization: {str(e)}"
             )
 
-    user = db.query(User).filter(
-        (User.email.ilike(clean_email)) | (User.auth_user_id == target_uuid)
-    ).first()
+    user = db.query(User).filter(User.auth_user_id == target_uuid).first()
+    if not user:
+        candidate = db.query(User).filter(User.email.ilike(clean_email)).first()
+        if candidate:
+            if candidate.auth_user_id and candidate.auth_user_id != target_uuid:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Security violation: Local account is already linked to another identity."
+                )
+            candidate.auth_user_id = target_uuid
+            db.commit()
+            db.refresh(candidate)
+            user = candidate
 
     company = db.query(Company).first()
     if not company:

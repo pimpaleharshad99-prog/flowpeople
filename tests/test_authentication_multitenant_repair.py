@@ -142,3 +142,4 @@ def test_6_platform_admin_strict_authorization():
         res = client.get("/api/v1/superadmin/overview", headers={"Authorization": f"Bearer {owner_token}"})
         assert res.status_code == 403, "Organization Owner must not access platform Super Admin overview"
         assert "Forbidden" in res.json()["detail"] or "restricted" in res.json()["detail"].lower()
+

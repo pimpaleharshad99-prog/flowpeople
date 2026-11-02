@@ -99,3 +99,4 @@ def create_timelog(
         description=new_log.description,
         is_billable=new_log.is_billable
     )
+

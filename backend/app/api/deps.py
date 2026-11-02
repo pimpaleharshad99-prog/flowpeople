@@ -51,9 +51,16 @@ def get_current_user(
                 # 1. Check platform admin membership
                 membership = check_platform_admin_membership(user_uuid, db)
                 if membership:
-                    user = db.query(User).filter(
-                        (User.auth_user_id == user_uuid) | (User.email.ilike(user_email))
-                    ).first()
+                    user = db.query(User).filter(User.auth_user_id == user_uuid).first()
+                    if not user and user_email:
+                        candidate = db.query(User).filter(User.email.ilike(user_email.strip())).first()
+                        if candidate:
+                            if candidate.auth_user_id and candidate.auth_user_id != user_uuid:
+                                raise HTTPException(
+                                    status_code=status.HTTP_403_FORBIDDEN,
+                                    detail="Security violation: Account is already linked to another identity."
+                                )
+                            user = candidate
                     if not user:
                         # Auto-provision platform owner without fake employee data
                         from app.models.company import Company
@@ -81,7 +88,7 @@ def get_current_user(
                         db.commit()
                         db.refresh(user)
                     else:
-                        if not user.is_platform_owner:
+                        if not user.is_platform_owner or user.auth_user_id != user_uuid:
                             user.is_platform_owner = True
                             user.role = UserRole.PLATFORM_OWNER.value
                             user.auth_user_id = user_uuid
@@ -89,13 +96,25 @@ def get_current_user(
                             db.refresh(user)
                 else:
                     # 2. General tenant user lookup (Organization Owner, HR Admin, Manager, Employee)
-                    user = db.query(User).filter(
-                        (User.auth_user_id == user_uuid) | (User.email.ilike(user_email))
-                    ).first()
-                    if user and not user.auth_user_id:
-                        user.auth_user_id = user_uuid
-                        db.commit()
-                        db.refresh(user)
+                    # Primary check: strictly by auth_user_id
+                    user = db.query(User).filter(User.auth_user_id == user_uuid).first()
+                    if not user and user_email:
+                        candidate = db.query(User).filter(User.email.ilike(user_email.strip())).first()
+                        if candidate:
+                            if candidate.auth_user_id and candidate.auth_user_id != user_uuid:
+                                # PREVENT SILENT ACCOUNT TAKEOVER:
+                                # Candidate user is already bound to a different Supabase UUID!
+                                raise HTTPException(
+                                    status_code=status.HTTP_403_FORBIDDEN,
+                                    detail="Security violation: Local account is already linked to another identity."
+                                )
+                            # Unlinked user: link safely to verified Supabase identity
+                            candidate.auth_user_id = user_uuid
+                            db.commit()
+                            db.refresh(candidate)
+                            user = candidate
+        except HTTPException:
+            raise
         except Exception:
             pass
 

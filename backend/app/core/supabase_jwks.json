@@ -1,17 +1,30 @@
 {
   "keys": [
     {
-      "x": "cEKb14v9eMNrKMOlz_vTXQWrkORoKDHEF2hn7nmvWeI",
-      "y": "TZhmgoEU0GoIu_DvegsczAAn4kgUcy5Vj4OxAGnRvFE",
       "alg": "ES256",
       "crv": "P-256",
       "ext": true,
-      "kid": "bb914d94-71d7-4dc7-8d6a-a89e962db62f",
-      "kty": "EC",
       "key_ops": [
         "verify"
-      ]
+      ],
+      "kid": "bb914d94-71d7-4dc7-8d6a-a89e962db62f",
+      "kty": "EC",
+      "use": "sig",
+      "x": "cEKb14v9eMNrKMOlz_vTXQWrkORoKDHEF2hn7nmvWeI",
+      "y": "TZhmgoEU0GoIu_DvegsczAAn4kgUcy5Vj4OxAGnRvFE"
+    },
+    {
+      "alg": "ES256",
+      "crv": "P-256",
+      "ext": true,
+      "key_ops": [
+        "verify"
+      ],
+      "kid": "9c55c8c3-282c-401f-a2dc-e8c072772b7a",
+      "kty": "EC",
+      "use": "sig",
+      "x": "nLECe1hAVprfAD4umoeM00F4IIuP0VlTTfV0NfV3FEM",
+      "y": "cK0KK5yGrkZ8v11IMprfM9LZx13JHam_8VXwu94-3bI"
     }
   ]
 }
-
