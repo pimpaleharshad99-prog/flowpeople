@@ -108,7 +108,7 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
       role: 'HR Administrator',
       name: 'David Vance',
       email: 'hr@acme.corp',
-      password: 'password123',
+      password: 'HR@EMP002',
       icon: UserCheck,
       color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
     },
@@ -116,7 +116,7 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
       role: 'Operations Manager',
       name: 'Elena Rostova',
       email: 'manager@acme.corp',
-      password: 'password123',
+      password: 'Manager@EMP003',
       icon: Users,
       color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
     },
@@ -124,7 +124,7 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
       role: 'Employee',
       name: 'Alex Mercer',
       email: 'alex@acme.corp',
-      password: 'password123',
+      password: 'Alex@EMP004',
       icon: Briefcase,
       color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
     }
@@ -158,31 +158,39 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
 
     setLoading(true);
     try {
-      // 1. Primary: backend authentication
-      try {
-        const res = await api.login(cleanEmail, cleanPwd);
-        onSuccess(res.user);
-        return;
-      } catch (backendErr: any) {
-        // 2. Secondary: Supabase fallback if backend direct match fails
-        if (cleanEmail.includes('@')) {
+      // 1. If email identifier, authenticate against Supabase Auth as authoritative IDP
+      if (cleanEmail.includes('@')) {
+        try {
           const { data: sbData, error: sbErr } = await supabase.auth.signInWithPassword({
-            email: cleanEmail,
+            email: cleanEmail.toLowerCase(),
             password: cleanPwd
           });
-          if (!sbErr && sbData.user) {
-            const synced = await api.supabaseSync({
-              email: sbData.user.email || cleanEmail,
-              auth_user_id: sbData.user.id,
-              first_name: sbData.user.user_metadata?.first_name || cleanEmail.split('@')[0],
-              last_name: sbData.user.user_metadata?.last_name || 'User'
-            });
-            onSuccess(synced.user);
-            return;
+
+          if (!sbErr && sbData.session && sbData.user) {
+            localStorage.setItem('token', sbData.session.access_token);
+            try {
+              const user = await api.getCurrentUser();
+              onSuccess(user);
+              return;
+            } catch (syncErr) {
+              const synced = await api.supabaseSync({
+                email: sbData.user.email || cleanEmail,
+                auth_user_id: sbData.user.id,
+                first_name: sbData.user.user_metadata?.first_name || cleanEmail.split('@')[0],
+                last_name: sbData.user.user_metadata?.last_name || 'User'
+              });
+              onSuccess(synced.user);
+              return;
+            }
           }
+        } catch (sbEx) {
+          console.warn('Supabase authentication notice:', sbEx);
         }
-        throw backendErr;
       }
+
+      // 2. Authenticate against local backend (employee code or local credentials)
+      const res = await api.login(cleanEmail, cleanPwd);
+      onSuccess(res.user);
     } catch (err: any) {
       setAlert({
         type: 'error',

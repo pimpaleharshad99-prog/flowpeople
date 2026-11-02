@@ -13,7 +13,7 @@ def test_health():
 def test_login_success():
     res = client.post("/api/v1/auth/login", json={
         "email": "admin@acme.corp",
-        "password": "password123"
+        "password": "Admin@EMP001"
     })
     assert res.status_code == 200
     data = res.json()
@@ -25,7 +25,7 @@ def test_attendance_status():
     # Login as Alex
     login_res = client.post("/api/v1/auth/login", json={
         "email": "alex@acme.corp",
-        "password": "password123"
+        "password": "Alex@EMP004"
     })
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -39,7 +39,7 @@ def test_attendance_status():
 def test_leave_balances():
     login_res = client.post("/api/v1/auth/login", json={
         "email": "alex@acme.corp",
-        "password": "password123"
+        "password": "Alex@EMP004"
     })
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -55,7 +55,7 @@ def test_leave_balances():
 def test_projects_and_timetracker():
     login_res = client.post("/api/v1/auth/login", json={
         "email": "alex@acme.corp",
-        "password": "password123"
+        "password": "Alex@EMP004"
     })
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}

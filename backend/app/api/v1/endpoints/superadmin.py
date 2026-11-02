@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.core.security import get_password_hash
-from app.models.company import Company, Department, Designation, Branch, CompanySettings
+from app.models.company import Company, Department, Designation, Branch, CompanySettings, OrganizationMember
 from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
 from app.models.attendance import AttendanceRecord
 from app.models.biometrics import FaceEnrollment
@@ -15,6 +15,7 @@ from app.models.common import AuditLog
 from app.api.deps import require_platform_owner
 from app.schemas.user import Token, SuperAdminLoginRequest
 from app.services.platform_admin import verify_and_login_superadmin
+import uuid
 
 router = APIRouter()
 
@@ -36,9 +37,18 @@ class CompanyCreateRequest(BaseModel):
     currency: Optional[str] = "INR"
     timezone: Optional[str] = "Asia/Kolkata"
     plan_id: Optional[str] = "trial"
-    owner_first_name: str
-    owner_last_name: str
-    owner_password: str
+    owner_first_name: Optional[str] = "Admin"
+    owner_last_name: Optional[str] = "Owner"
+    owner_password: Optional[str] = "FlowPeople2026!"
+
+class CreateHrAdminRequest(BaseModel):
+    company_id: int
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+    employee_code: Optional[str] = None
+    phone: Optional[str] = None
 
 class OrganizationStatusUpdateRequest(BaseModel):
     is_active: bool
@@ -256,9 +266,71 @@ def provision_organization(
     return {
         "success": True,
         "message": f"Organization '{company.name}' successfully provisioned.",
+        "company_id": company.id,
         "organization_id": company.id,
         "owner_id": owner.id,
         "owner_email": owner.email
+    }
+
+@router.post("/create-hr-admin")
+def create_tenant_hr_admin(
+    req: CreateHrAdminRequest,
+    admin: User = Depends(require_platform_owner),
+    db: Session = Depends(get_db)
+):
+    company = db.query(Company).filter(Company.id == req.company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    clean_email = req.email.strip().lower()
+    if db.query(User).filter(User.email.ilike(clean_email)).first():
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+
+    branch = db.query(Branch).filter(Branch.company_id == company.id).first()
+    branch_id = branch.id if branch else None
+
+    code = req.employee_code.strip() if req.employee_code else f"{company.code}-HR-01"
+    hashed_pwd = get_password_hash(req.password.strip())
+
+    hr_user = User(
+        company_id=company.id,
+        branch_id=branch_id,
+        uuid=str(uuid.uuid4()),
+        employee_code=code,
+        email=clean_email,
+        hashed_password=hashed_pwd,
+        first_name=req.first_name.strip(),
+        last_name=req.last_name.strip(),
+        phone=req.phone,
+        role=UserRole.HR_ADMIN.value,
+        is_platform_owner=False,
+        status=EmploymentStatus.ACTIVE.value,
+        employment_type=EmploymentType.FULL_TIME.value,
+        date_of_joining=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        work_location="Headquarters"
+    )
+    db.add(hr_user)
+    db.flush()
+
+    member = OrganizationMember(
+        uuid=str(uuid.uuid4()),
+        company_id=company.id,
+        user_id=hr_user.id,
+        role=UserRole.HR_ADMIN.value,
+        status="ACTIVE",
+        joined_at=datetime.now(timezone.utc),
+        created_at=datetime.now(timezone.utc)
+    )
+    db.add(member)
+    db.commit()
+    db.refresh(hr_user)
+
+    return {
+        "success": True,
+        "message": f"HR Admin '{hr_user.full_name}' provisioned for '{company.name}'",
+        "user_id": hr_user.id,
+        "company_id": company.id,
+        "email": hr_user.email
     }
 
 @router.put("/companies/{company_id}/status")

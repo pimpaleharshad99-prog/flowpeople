@@ -98,7 +98,10 @@ def test_super_admin_owner_only_isolation():
     token_owner = create_access_token(subject=owner.id, role=owner.role)
 
     # 2. Customer user (e.g. User 57 or an organization owner)
-    customer = db.query(User).filter(User.is_platform_owner == False).first()
+    customer = db.query(User).filter(
+        User.is_platform_owner == False,
+        User.role != UserRole.SUPER_ADMIN.value
+    ).first()
     assert customer is not None
     token_customer = create_access_token(subject=customer.id, role=customer.role)
     db.close()

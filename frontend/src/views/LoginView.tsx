@@ -20,7 +20,7 @@ const CLEAN_ROLES = [
     label: 'Harshad Pimpale',
     identifier: 'pimpaleharshad99@gmail.com',
     altCode: 'admin',
-    password: 'password123',
+    password: '',
     icon: Shield,
     color: 'text-amber-500 bg-amber-500/10 border-amber-500/20'
   },
@@ -29,7 +29,7 @@ const CLEAN_ROLES = [
     label: 'Harsh Pimpale',
     identifier: 'pimpaleg80@gmail.com',
     altCode: 'harsh',
-    password: 'password123',
+    password: '',
     icon: Briefcase,
     color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
   }
@@ -62,7 +62,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     setPassword(roleObj.password);
     addToast({
       title: `${roleObj.label} Selected`,
-      description: `Loaded ${roleObj.identifier} with universal password.`,
+      description: `Loaded ${roleObj.identifier}.`,
       type: 'info'
     });
   };
@@ -74,26 +74,25 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     const cleanPwd = password.trim();
 
     try {
-      // 1. Primary: Authenticate against FlowPeople HRMS backend
-      try {
-        const data = await api.login(cleanId, cleanPwd);
-        addToast({
-          title: 'Welcome back',
-          description: `Signed in as ${data.user.first_name} ${data.user.last_name} (${data.user.role})`,
-          type: 'success'
-        });
-        onLoginSuccess(data.user);
-        return;
-      } catch (backendErr: any) {
-        // 2. Secondary: If backend lookup fails and identifier is an email, try Supabase Auth
-        if (cleanId.includes('@')) {
-          try {
-            const { data: sbData, error: sbErr } = await supabase.auth.signInWithPassword({
-              email: cleanId,
-              password: cleanPwd
-            });
-            if (!sbErr && sbData.user) {
-              // Sync Supabase user into backend
+      // 1. Supabase Auth (Primary identity provider for email logins)
+      if (cleanId.includes('@')) {
+        try {
+          const { data: sbData, error: sbErr } = await supabase.auth.signInWithPassword({
+            email: cleanId.toLowerCase(),
+            password: cleanPwd
+          });
+          if (!sbErr && sbData.session && sbData.user) {
+            localStorage.setItem('token', sbData.session.access_token);
+            try {
+              const user = await api.getCurrentUser();
+              addToast({
+                title: 'Welcome back',
+                description: `Signed in as ${user.first_name} ${user.last_name} (${user.role})`,
+                type: 'success'
+              });
+              onLoginSuccess(user);
+              return;
+            } catch (curErr) {
               const synced = await api.supabaseSync({
                 email: sbData.user.email || cleanId,
                 auth_user_id: sbData.user.id,
@@ -108,12 +107,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
               onLoginSuccess(synced.user);
               return;
             }
-          } catch (sbCatchErr) {
-            console.warn('Supabase auth fallback attempt:', sbCatchErr);
           }
+        } catch (sbCatchErr) {
+          console.warn('Supabase auth attempt:', sbCatchErr);
         }
-        throw backendErr;
       }
+
+      // 2. Local Backend Login (Employee Code e.g. EMP-001 or fallback)
+      const data = await api.login(cleanId, cleanPwd);
+      addToast({
+        title: 'Welcome back',
+        description: `Signed in as ${data.user.first_name} ${data.user.last_name} (${data.user.role})`,
+        type: 'success'
+      });
+      onLoginSuccess(data.user);
     } catch (err: any) {
       addToast({
         title: 'Authentication Failed',

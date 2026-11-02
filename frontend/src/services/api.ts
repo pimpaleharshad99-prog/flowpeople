@@ -864,11 +864,19 @@ export const api = {
   getSubscriptionPlans: () => fetchJson<SubscriptionPlan[]>(`${API_BASE}/billing/plans`),
   getSubscriptionInfo: () => fetchJson<SubscriptionInfo>(`${API_BASE}/billing/subscription`),
   registerCompanySupabase: registerCompanyWithSupabase,
-  registerOrganization: (data: any) =>
-    fetchJson<{ success: boolean; access_token: string; organization: any; user: any }>(
+  registerOrganization: async (data: any) => {
+    const res = await fetchJson<{ success: boolean; access_token: string; organization: any; user: any }>(
       `${API_BASE}/billing/register-organization`,
       { method: 'POST', body: JSON.stringify(data) }
-    ),
+    );
+    if (res.access_token) {
+      localStorage.setItem('token', res.access_token);
+    }
+    if (res.user) {
+      localStorage.setItem('currentUser', JSON.stringify(res.user));
+    }
+    return res;
+  },
   verifyPayment: (data: { plan_id: string; billing_cycle: string; transaction_reference: string; amount: number; currency?: string; billing_name?: string; billing_email?: string }) =>
     fetchJson<any>(`${API_BASE}/billing/verify-payment`, { method: 'POST', body: JSON.stringify(data) }),
   getInvoices: () => fetchJson<InvoiceRecord[]>(`${API_BASE}/billing/invoices`),

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
@@ -16,7 +16,7 @@ from app.schemas.user import (
     ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest
 )
 from app.api.deps import get_current_user
-from app.services.platform_admin import verify_and_login_superadmin
+from app.services.platform_admin import verify_and_login_superadmin, is_supabase_configured, verify_supabase_token
 
 router = APIRouter()
 
@@ -73,15 +73,14 @@ def get_demo_credentials(db: Session = Depends(get_db)):
     Returns verified clean role credentials for instant sign-in.
     """
     role_accounts = [
-        {"role": "SUPER_ADMIN", "role_title": "Super Admin", "email": "admin@flowcraft.io", "alias_email": "admin@acme.corp", "code": "EMP-001", "password": "Admin@EMP001", "name": "Sarah Connor", "description": "Full platform management & configuration"},
-        {"role": "HR_ADMIN", "role_title": "HR Administrator", "email": "hr@flowcraft.io", "alias_email": "hr@acme.corp", "code": "EMP-002", "password": "HR@EMP002", "name": "David Vance", "description": "Employee onboarding & attendance oversight"},
-        {"role": "MANAGER", "role_title": "Operations Manager", "email": "manager@flowcraft.io", "alias_email": "manager@acme.corp", "code": "EMP-003", "password": "Manager@EMP003", "name": "Elena Rostova", "description": "Team shift oversight & approvals"},
-        {"role": "EMPLOYEE", "role_title": "Employee", "email": "alex@flowcraft.io", "alias_email": "alex@acme.corp", "code": "EMP-004", "password": "Alex@EMP004", "name": "Alex Mercer", "description": "Face / Fingerprint / QR check-in & time logs"},
+        {"role": "SUPER_ADMIN", "role_title": "Super Admin", "email": "admin@flowcraft.io", "alias_email": "admin@acme.corp", "code": "EMP-001", "name": "Sarah Connor", "description": "Full platform management & configuration"},
+        {"role": "HR_ADMIN", "role_title": "HR Administrator", "email": "hr@flowcraft.io", "alias_email": "hr@acme.corp", "code": "EMP-002", "name": "David Vance", "description": "Employee onboarding & attendance oversight"},
+        {"role": "MANAGER", "role_title": "Operations Manager", "email": "manager@flowcraft.io", "alias_email": "manager@acme.corp", "code": "EMP-003", "name": "Elena Rostova", "description": "Team shift oversight & approvals"},
+        {"role": "EMPLOYEE", "role_title": "Employee", "email": "alex@flowcraft.io", "alias_email": "alex@acme.corp", "code": "EMP-004", "name": "Alex Mercer", "description": "Face / Fingerprint / QR check-in & time logs"},
     ]
     return {
         "accounts": role_accounts,
-        "universal_passwords": ["password123", "admin123", "hr123", "manager123", "employee123"],
-        "instructions": "You can sign in using Email (admin@flowcraft.io, admin@acme.corp), Employee Code (EMP-001, EMP001), or quick shortcuts (admin, hr, manager, employee)."
+        "instructions": "You can sign in using your official work email or assigned Employee Code (e.g. EMP-001) with your registered password."
     }
 
 @router.post("/login", response_model=Token)
@@ -103,18 +102,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
             flow_alias = id_lower.replace("@acme.corp", "@flowcraft.io")
             user = db.query(User).filter(User.email.ilike(flow_alias)).first()
 
-    # 3. Simple role shortcuts (e.g. 'admin', 'hr', 'manager', 'employee')
-    if not user:
-        if id_lower in ["admin", "superadmin", "super_admin"]:
-            user = db.query(User).filter(User.role.in_([UserRole.SUPER_ADMIN.value, UserRole.ADMIN.value])).first()
-        elif id_lower in ["hr", "hradmin", "hr_admin"]:
-            user = db.query(User).filter(User.role == UserRole.HR_ADMIN.value).first()
-        elif id_lower in ["manager"]:
-            user = db.query(User).filter(User.role == UserRole.MANAGER.value).first()
-        elif id_lower in ["employee", "alex", "emp"]:
-            user = db.query(User).filter(User.role == UserRole.EMPLOYEE.value).first()
-
-    # 4. Alphanumeric normalization fallback (e.g. EMP001 -> EMP-001)
+    # 3. Alphanumeric normalization fallback (e.g. EMP001 -> EMP-001)
     if not user:
         clean_id = re.sub(r'[^a-zA-Z0-9]', '', raw_id).upper()
         candidates = db.query(User).all()
@@ -132,18 +120,27 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         is_valid_pwd = verify_password(login_data.password, user.hashed_password)
         if not is_valid_pwd:
             is_valid_pwd = verify_password(pwd, user.hashed_password)
-        # Role-based quick password shortcuts
-        if not is_valid_pwd:
-            if pwd in ["password123", "FlowPeople2026!"]:
-                is_valid_pwd = True
-            elif user.role in [UserRole.SUPER_ADMIN.value, UserRole.ADMIN.value] and pwd in ["admin123", "Admin@2026", "Admin@EMP001"]:
-                is_valid_pwd = True
-            elif user.role == UserRole.HR_ADMIN.value and pwd in ["hr123", "HR@2026", "HR@EMP002"]:
-                is_valid_pwd = True
-            elif user.role == UserRole.MANAGER.value and pwd in ["manager123", "Manager@2026", "Manager@EMP003"]:
-                is_valid_pwd = True
-            elif user.role == UserRole.EMPLOYEE.value and pwd in ["employee123", "Employee@2026", "Alex@EMP004"]:
-                is_valid_pwd = True
+
+        # Authenticate against Supabase Auth server if local hash doesn't match
+        if not is_valid_pwd and user.email and is_supabase_configured():
+            try:
+                import httpx
+                from app.core.config import settings
+                auth_url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/token?grant_type=password"
+                headers = {"apikey": settings.SUPABASE_KEY}
+                with httpx.Client(timeout=5.0) as client:
+                    sb_resp = client.post(auth_url, json={"email": user.email, "password": pwd}, headers=headers)
+                    if sb_resp.status_code == 200:
+                        sb_json = sb_resp.json()
+                        is_valid_pwd = True
+                        sb_user_id = sb_json.get("user", {}).get("id")
+                        if sb_user_id:
+                            user.auth_user_id = sb_user_id
+                        user.hashed_password = get_password_hash(pwd)
+                        db.commit()
+                        db.refresh(user)
+            except Exception:
+                pass
 
     if not user or not is_valid_pwd:
         raise HTTPException(
@@ -157,6 +154,21 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is inactive or suspended. Please contact HR administration."
         )
+
+    if user.status in [EmploymentStatus.DRAFT.value, EmploymentStatus.PENDING_INVITATION.value]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account registration is pending activation. Please use your invitation link."
+        )
+    
+    access_token = create_access_token(subject=user.id, role=user.role)
+    user_out = serialize_user_out(user)
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_out
+    }
 
     if user.status in [EmploymentStatus.DRAFT.value, EmploymentStatus.PENDING_INVITATION.value]:
         raise HTTPException(
@@ -237,13 +249,48 @@ def register(reg_data: RegisterRequest, db: Session = Depends(get_db)):
     }
 
 @router.post("/supabase-sync", response_model=Token)
-def supabase_auth_sync(sync_data: SupabaseSyncRequest, db: Session = Depends(get_db)):
+def supabase_auth_sync(
+    sync_data: SupabaseSyncRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     """
     Syncs or provisions an authenticated Supabase user into the local database.
+    Requires verified cryptographic identity when Supabase is configured.
     """
+    auth_hdr = request.headers.get("Authorization") or request.headers.get("authorization")
+    raw_token = None
+    if auth_hdr and auth_hdr.lower().startswith("bearer "):
+        raw_token = auth_hdr[7:].strip()
+
     clean_email = sync_data.email.strip().lower()
+    target_uuid = sync_data.auth_user_id
+
+    # If Supabase is configured, verify cryptographic identity via Bearer token
+    if is_supabase_configured():
+        if not raw_token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Valid Supabase authorization Bearer token is required to synchronize account."
+            )
+        try:
+            s_data = verify_supabase_token(raw_token)
+            verified_id = s_data.get("id")
+            verified_email = s_data.get("email", "").strip().lower()
+            if verified_id:
+                target_uuid = verified_id
+            if verified_email:
+                clean_email = verified_email
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid Supabase authorization: {str(e)}"
+            )
+
     user = db.query(User).filter(
-        (User.email.ilike(clean_email)) | (User.auth_user_id == sync_data.auth_user_id)
+        (User.email.ilike(clean_email)) | (User.auth_user_id == target_uuid)
     ).first()
 
     company = db.query(Company).first()
@@ -269,7 +316,7 @@ def supabase_auth_sync(sync_data: SupabaseSyncRequest, db: Session = Depends(get
             company_id=company.id,
             employee_code=f"FP-{current_year}-{count:04d}",
             email=clean_email,
-            auth_user_id=sync_data.auth_user_id,
+            auth_user_id=target_uuid,
             hashed_password=get_password_hash("SupabaseAuthLinked!"),
             first_name=first_name,
             last_name=last_name,
@@ -284,8 +331,8 @@ def supabase_auth_sync(sync_data: SupabaseSyncRequest, db: Session = Depends(get
         db.commit()
         db.refresh(user)
     else:
-        if not user.auth_user_id:
-            user.auth_user_id = sync_data.auth_user_id
+        if not user.auth_user_id and target_uuid:
+            user.auth_user_id = target_uuid
             user.status = EmploymentStatus.ACTIVE.value
             db.commit()
             db.refresh(user)

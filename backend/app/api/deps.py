@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from typing import Optional
+from datetime import datetime, timezone
 from app.core.database import get_db
 from app.core.security import decode_token
 from app.models.user import User, UserRole
@@ -45,12 +46,56 @@ def get_current_user(
             from app.services.platform_admin import verify_supabase_token, check_platform_admin_membership
             user_data = verify_supabase_token(raw_token)
             user_uuid = user_data.get("id")
+            user_email = user_data.get("email")
             if user_uuid:
+                # 1. Check platform admin membership
                 membership = check_platform_admin_membership(user_uuid, db)
                 if membership:
                     user = db.query(User).filter(
-                        (User.auth_user_id == user_uuid) | (User.email.ilike(user_data.get("email")))
+                        (User.auth_user_id == user_uuid) | (User.email.ilike(user_email))
                     ).first()
+                    if not user:
+                        # Auto-provision platform owner without fake employee data
+                        from app.models.company import Company
+                        company = db.query(Company).first()
+                        company_id = company.id if company else 1
+                        meta = user_data.get("user_metadata") or {}
+                        first_name = meta.get("first_name") or meta.get("full_name", "").split(" ")[0] or "Platform"
+                        last_name = meta.get("last_name") or "Owner"
+                        user = User(
+                            company_id=company_id,
+                            employee_code="ROOT-PLATFORM-OWNER",
+                            email=user_email,
+                            auth_user_id=user_uuid,
+                            hashed_password="SupabaseServiceLinked!",
+                            first_name=first_name,
+                            last_name=last_name,
+                            role=UserRole.PLATFORM_OWNER.value,
+                            is_platform_owner=True,
+                            status="ACTIVE",
+                            employment_type="FULL_TIME",
+                            date_of_joining=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                            work_location="Platform Control Center"
+                        )
+                        db.add(user)
+                        db.commit()
+                        db.refresh(user)
+                    else:
+                        if not user.is_platform_owner:
+                            user.is_platform_owner = True
+                            user.role = UserRole.PLATFORM_OWNER.value
+                            user.auth_user_id = user_uuid
+                            db.commit()
+                            db.refresh(user)
+                else:
+                    # 2. General tenant user lookup (Organization Owner, HR Admin, Manager, Employee)
+                    user = db.query(User).filter(
+                        (User.auth_user_id == user_uuid) | (User.email.ilike(user_email))
+                    ).first()
+                    if user and not user.auth_user_id:
+                        user.auth_user_id = user_uuid
+                        db.commit()
+                        db.refresh(user)
         except Exception:
             pass
 
@@ -80,7 +125,7 @@ def require_platform_owner(
     """
     is_owner = (
         bool(current_user.is_platform_owner) or
-        current_user.role == UserRole.PLATFORM_OWNER.value
+        current_user.role in [UserRole.PLATFORM_OWNER.value, UserRole.SUPER_ADMIN.value]
     )
     if not is_owner:
         raise HTTPException(

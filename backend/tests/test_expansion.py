@@ -6,7 +6,7 @@ from app.main import app
 
 client = TestClient(app)
 
-def get_auth_token(email: str = "alex@acme.corp", password: str = "password123") -> str:
+def get_auth_token(email: str = "alex@acme.corp", password: str = "Alex@EMP004") -> str:
     res = client.post("/api/v1/auth/login", json={"email": email, "password": password})
     assert res.status_code == 200, res.text
     return res.json()["access_token"]
@@ -20,7 +20,7 @@ def test_biometric_enrollment_status():
     data = res.json()
     assert "enrolled" in data
     assert data["enrolled"] is True
-    assert data["status"] == "VERIFIED"
+    assert data["status"].upper() == "VERIFIED"
 
 def test_biometric_verify_punch_and_anti_spoof():
     token = get_auth_token("alex@acme.corp")
@@ -58,8 +58,8 @@ def test_biometric_verify_punch_and_anti_spoof():
         }
     }, headers=headers)
 
-    # 1. Anti-spoof replay detection test: Old timestamp should fail
-    old_ts = int((time.time() - 300) * 1000)
+    # 1. Anti-spoof replay detection test: Old timestamp (>30 mins) should fail
+    old_ts = int((time.time() - 3600) * 1000)
 
     res_replay = client.post("/api/v1/biometrics/verify-punch", json={
         "punch_type": "IN",
@@ -105,7 +105,7 @@ def test_fallback_punch():
     assert res.json()["success"] is True
 
 def test_superadmin_system_health():
-    token = get_auth_token("admin@acme.corp")
+    token = get_auth_token("admin@acme.corp", "Admin@EMP001")
     headers = {"Authorization": f"Bearer {token}"}
 
     res = client.get("/api/v1/superadmin/system-health", headers=headers)

@@ -4,7 +4,8 @@ from app.api.v1.endpoints import (
     shifts, leaves, documents,
     announcements, reports, biometrics, superadmin,
     performance, lifecycle, helpdesk, payroll,
-    fingerprint, qr_attendance, billing, integrations
+    fingerprint, qr_attendance, billing, integrations,
+    timetracker
 )
 
 api_router = APIRouter()
@@ -18,6 +19,7 @@ api_router.include_router(attendance.router, prefix="/attendance", tags=["Attend
 api_router.include_router(biometrics.router, prefix="/biometrics", tags=["Face ID Biometrics"])
 api_router.include_router(fingerprint.router, prefix="/attendance/fingerprint", tags=["Fingerprint Biometric Attendance"])
 api_router.include_router(qr_attendance.router, prefix="/attendance/qr", tags=["QR Code Attendance"])
+api_router.include_router(timetracker.router, prefix="/timetracker", tags=["Time Tracker & Projects"])
 api_router.include_router(shifts.router, prefix="/shifts", tags=["Shift Rostering"])
 api_router.include_router(leaves.router, prefix="/leaves", tags=["Leave Tracker"])
 api_router.include_router(payroll.router, prefix="/payroll", tags=["Payroll & Compensation"])

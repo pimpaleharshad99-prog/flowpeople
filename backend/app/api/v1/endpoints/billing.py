@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
@@ -163,6 +163,8 @@ def get_subscription_plans(db: Session = Depends(get_db)):
 @router.post("/register-organization", status_code=status.HTTP_201_CREATED)
 def register_organization(
     req: OrganizationRegisterRequest,
+    request: Request,
+    response: Response,
     db: Session = Depends(get_db)
 ):
     """
@@ -174,12 +176,31 @@ def register_organization(
     """
     clean_email = req.contact_email.strip().lower()
     clean_code = req.company_code.strip().upper()
+
+    # Optional: Resolve Supabase Auth User ID from Authorization Bearer token
+    auth_user_id = None
+    auth_hdr = request.headers.get("Authorization") or request.headers.get("authorization")
+    if auth_hdr and auth_hdr.lower().startswith("bearer "):
+        raw_token = auth_hdr[7:].strip()
+        try:
+            from app.services.platform_admin import verify_supabase_token
+            s_data = verify_supabase_token(raw_token)
+            if s_data and s_data.get("id"):
+                auth_user_id = s_data["id"]
+        except Exception:
+            pass
     
     # 1. Idempotency Check: Duplicate retry with matching company & user
     existing_user = db.query(User).filter(User.email.ilike(clean_email)).first()
     existing_company = db.query(Company).filter(Company.code == clean_code).first()
 
     if existing_user and existing_company and existing_user.company_id == existing_company.id:
+        response.status_code = status.HTTP_200_OK
+        if auth_user_id and not existing_user.auth_user_id:
+            existing_user.auth_user_id = auth_user_id
+            db.commit()
+            db.refresh(existing_user)
+
         token = create_access_token(
             subject=existing_user.id,
             role=existing_user.role
@@ -194,17 +215,27 @@ def register_organization(
                 "uuid": existing_company.uuid,
                 "name": existing_company.name,
                 "code": existing_company.code,
+                "slug": existing_company.slug,
                 "brand_name": existing_company.brand_name
             },
             "user": {
                 "id": existing_user.id,
+                "uuid": existing_user.uuid,
                 "company_id": existing_company.id,
+                "company_name": existing_company.name,
+                "brand_name": existing_company.brand_name,
                 "email": existing_user.email,
                 "first_name": existing_user.first_name,
                 "last_name": existing_user.last_name,
+                "full_name": f"{existing_user.first_name} {existing_user.last_name}",
                 "role": existing_user.role,
                 "employee_code": existing_user.employee_code,
-                "is_platform_owner": existing_user.is_platform_owner
+                "is_platform_owner": existing_user.is_platform_owner,
+                "status": existing_user.status,
+                "employment_type": existing_user.employment_type,
+                "date_of_joining": existing_user.date_of_joining,
+                "branch_id": existing_user.branch_id,
+                "created_at": existing_user.created_at.isoformat() if existing_user.created_at else None
             }
         }
 
@@ -233,9 +264,10 @@ def register_organization(
 
     # 3. Create Tenant (Company)
     company = Company(
-        uuid=str(uuid.uuid4()),
+        uuid=req.supabase_company_id or str(uuid.uuid4()),
         name=req.company_name.strip(),
         code=clean_code,
+        slug=req.supabase_slug,
         brand_name=req.brand_name.strip() if req.brand_name else req.company_name.strip(),
         logo_url=req.logo_url.strip() if req.logo_url else None,
         contact_email=clean_email,
@@ -282,6 +314,7 @@ def register_organization(
         uuid=str(uuid.uuid4()),
         employee_code=f"{clean_code}-001",
         email=clean_email,
+        auth_user_id=auth_user_id,
         hashed_password=hashed_pwd,
         first_name=req.owner_first_name.strip(),
         last_name=req.owner_last_name.strip(),
@@ -338,6 +371,8 @@ def register_organization(
             "uuid": company.uuid,
             "name": company.name,
             "code": company.code,
+            "slug": company.slug,
+            "brand_name": company.brand_name,
             "plan_id": plan.id,
             "plan_name": plan.name,
             "trial_ends_at": trial_end.isoformat() if trial_end else None
@@ -345,9 +380,21 @@ def register_organization(
         "user": {
             "id": owner_user.id,
             "uuid": owner_user.uuid,
+            "company_id": company.id,
+            "company_name": company.name,
+            "brand_name": company.brand_name,
             "email": owner_user.email,
+            "first_name": owner_user.first_name,
+            "last_name": owner_user.last_name,
             "full_name": f"{owner_user.first_name} {owner_user.last_name}",
-            "role": owner_user.role
+            "role": owner_user.role,
+            "employee_code": owner_user.employee_code,
+            "is_platform_owner": False,
+            "status": owner_user.status,
+            "employment_type": owner_user.employment_type,
+            "date_of_joining": owner_user.date_of_joining,
+            "branch_id": branch.id,
+            "created_at": owner_user.created_at.isoformat() if owner_user.created_at else None
         }
     }
 

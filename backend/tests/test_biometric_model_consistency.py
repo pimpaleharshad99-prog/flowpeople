@@ -207,7 +207,11 @@ def test_kiosk_1_to_n_filters_only_compatible_templates(test_employee):
 
 def test_biometric_audit_logs_casing_and_sanitization():
     """Test 6: Audit logs return lowercase status and authentic device strings without fake IPs."""
-    hr_token = create_access_token(9, "SUPER_ADMIN")
+    db = SessionLocal()
+    admin = db.query(User).filter(User.role.in_(["SUPER_ADMIN", "HR_ADMIN"])).first()
+    admin_id = admin.id if admin else 1
+    db.close()
+    hr_token = create_access_token(admin_id, "SUPER_ADMIN")
     hr_headers = {"Authorization": f"Bearer {hr_token}"}
 
     res = client.get("/api/v1/biometrics/logs", headers=hr_headers)
