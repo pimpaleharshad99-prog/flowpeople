@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Clock, 
-  Calendar, 
-  Timer, 
-  CheckSquare, 
-  Building2, 
+import {
+  LayoutDashboard,
+  Users,
+  Clock,
+  Calendar,
+  Timer,
+  CheckSquare,
+  Building2,
   BellRing,
   ShieldCheck,
   UserCheck,
@@ -22,15 +22,15 @@ import type { User } from '../services/api';
 import { Avatar } from './ui';
 import { Logo } from './brand/Logo';
 
-export type NavTab = 
-  | 'dashboard' 
+export type NavTab =
+  | 'dashboard'
   | 'hradmin'
   | 'manager'
-  | 'directory' 
-  | 'attendance' 
-  | 'leaves' 
+  | 'directory'
+  | 'attendance'
+  | 'leaves'
   | 'payroll'
-  | 'approvals' 
+  | 'approvals'
   | 'performance'
   | 'lifecycle'
   | 'helpdesk'
@@ -96,11 +96,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             key={item.id}
             onClick={() => setActiveTab(item.id)}
             title={isCollapsed ? item.label : undefined}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-[var(--radius-button)] text-xs font-medium transition-all ${
-              isActive
-                ? 'bg-[var(--accent)] text-white shadow-xs'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-glass-hover)]'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-[var(--radius-button)] text-xs font-medium transition-all ${isActive
+              ? 'bg-[var(--accent)] text-white shadow-xs'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-glass-hover)]'
+              }`}
           >
             <div className={`flex items-center gap-3 ${isCollapsed ? 'mx-auto' : 'truncate'}`}>
               <Icon className={`w-4 h-4 shrink-0 stroke-[1.5] ${isActive ? 'text-white' : 'text-[var(--text-muted)]'}`} />
@@ -108,9 +107,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
               <span
-                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-[var(--accent-subtle)] text-[var(--accent)]'
-                }`}
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--accent-subtle)] text-[var(--accent)]'
+                  }`}
               >
                 {item.badge}
               </span>
@@ -123,9 +121,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`glass-panel rounded-none border-y-0 border-l-0 border-r border-[var(--border-glass)] bg-[var(--surface-glass)] flex flex-col shrink-0 min-h-screen transition-all duration-200 select-none ${
-        isCollapsed ? 'w-[72px]' : 'w-[240px]'
-      }`}
+      className={`glass-panel rounded-none border-y-0 border-l-0 border-r border-[var(--border-glass)] bg-[var(--surface-glass)] flex flex-col shrink-0 min-h-screen transition-all duration-200 select-none ${isCollapsed ? 'w-[72px]' : 'w-[240px]'
+        }`}
     >
       {/* Brand Header */}
       <div className="h-16 px-3.5 flex items-center justify-between border-b border-[var(--border-glass)]">

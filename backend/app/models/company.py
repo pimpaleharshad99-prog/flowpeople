@@ -19,7 +19,7 @@ class Company(Base):
     currency = Column(String(10), default="USD")
     contact_email = Column(String(150), nullable=True)
     is_active = Column(Boolean, default=True)
-    subscription_plan_id = Column(String(50), default="trial")
+    subscription_plan_id = Column(String(50), default="free_trial")
     subscription_status = Column(String(50), default="TRIALING")
     max_employees = Column(Integer, default=10)
     max_admins = Column(Integer, default=1)

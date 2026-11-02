@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Building2, 
-  User, 
-  Lock, 
-  Mail, 
-  Phone, 
-  CheckCircle2, 
-  ArrowRight, 
-  ArrowLeft, 
-  Sparkles, 
-  CreditCard, 
-  ShieldCheck, 
+import {
+  Building2,
+  User,
+  Lock,
+  Mail,
+  Phone,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  CreditCard,
+  ShieldCheck,
   AlertCircle,
   Clock,
   Layers
@@ -35,7 +35,7 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId);
   const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('MONTHLY');
-  
+
   // Organization Form State
   const [companyName, setCompanyName] = useState('');
   const [companyCode, setCompanyCode] = useState('');
@@ -58,7 +58,7 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
   useEffect(() => {
     api.getSubscriptionPlans()
       .then(setPlans)
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleCompanyNameChange = (val: string) => {
@@ -416,11 +416,10 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
                         type="button"
                         key={p.id}
                         onClick={() => setSelectedPlanId(p.id)}
-                        className={`p-3 rounded-xl border text-left transition ${
-                          active 
-                            ? 'bg-teal-500/10 border-teal-500 ring-1 ring-teal-500' 
-                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
-                        }`}
+                        className={`p-3 rounded-xl border text-left transition ${active
+                          ? 'bg-teal-500/10 border-teal-500 ring-1 ring-teal-500'
+                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                          }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className={`font-bold text-xs ${active ? 'text-teal-400' : 'text-white'}`}>{p.name}</span>

@@ -600,6 +600,18 @@ export const api = {
   },
   getCurrentUser: () => fetchJson<User>(`${API_BASE}/auth/me`),
   getDemoCredentials: () => fetchJson<{ accounts: any[]; universal_fallback_password: string }>(`${API_BASE}/auth/demo-credentials`),
+  forgotPassword: (email: string) => fetchJson<{ ok: boolean; message: string }>(`${API_BASE}/auth/forgot-password`, {
+    method: 'POST',
+    body: JSON.stringify({ email })
+  }),
+  resetPassword: (token: string, password: string) => fetchJson<{ ok: boolean; message: string }>(`${API_BASE}/auth/reset-password`, {
+    method: 'POST',
+    body: JSON.stringify({ token, password })
+  }),
+  resendVerification: (email: string) => fetchJson<{ ok: boolean; message: string }>(`${API_BASE}/auth/resend-verification`, {
+    method: 'POST',
+    body: JSON.stringify({ email })
+  }),
 
   // Dashboard & Reports
   getDashboardStats: () => fetchJson<DashboardStats>(`${API_BASE}/reports/dashboard-stats`),

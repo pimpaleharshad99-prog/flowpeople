@@ -110,3 +110,13 @@ class SupabaseSyncRequest(BaseModel):
     auth_user_id: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
+
+class ResendVerificationRequest(BaseModel):
+    email: str

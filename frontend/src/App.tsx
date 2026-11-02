@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { Logo } from './components/brand/Logo';
 import { LoginView } from './views/LoginView';
+import { FlowPeopleAuthView, AuthMode } from './views/FlowPeopleAuthView';
 import { LandingPageView } from './views/LandingPageView';
 import { RegisterOrganizationView } from './views/RegisterOrganizationView';
 import { AttendanceKioskView } from './views/AttendanceKioskView';
@@ -159,36 +160,29 @@ export function App() {
       return (
         <ThemeProvider>
           <ToastProvider>
-            <div className="min-h-screen bg-slate-950 flex flex-col justify-between">
-              <header className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                <button onClick={() => navigateTo('/')} className="flex items-center gap-2 cursor-pointer">
-                  <Logo variant="icon" size={28} />
-                  <span className="font-bold text-white text-sm">FlowPeople &bull; Platform Owner</span>
-                </button>
-                <button
-                  onClick={() => navigateTo('/')}
-                  className="px-3 py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300 hover:text-white"
-                >
-                  Return to Home
-                </button>
-              </header>
-
-              <main className="flex-1 flex items-center justify-center p-4">
-                <div className="w-full max-w-md">
-                  <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs flex items-center gap-2">
-                    <Lock className="w-4 h-4 shrink-0" />
-                    <span>Root Platform Owner credentials required to access /superadmin.</span>
-                  </div>
-                  <LoginView onLoginSuccess={(u) => {
-                    setCurrentUser(u);
-                  }} />
-                </div>
-              </main>
-
-              <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-900">
-                FlowCraft Super Admin Security Gatekeeper
-              </footer>
-            </div>
+            <FlowPeopleAuthView
+              initialMode="login"
+              onSuccess={(user) => {
+                setCurrentUser(user);
+                loadLiveStatus();
+                loadApprovalStats();
+              }}
+              onNavigateHome={() => navigateTo('/')}
+              onNavigateMode={(m) => {
+                const targetPath = (
+                  m === 'login'
+                    ? '/login'
+                    : m === 'signup'
+                    ? '/signup'
+                    : m === 'forgot'
+                    ? '/forgot-password'
+                    : m === 'reset'
+                    ? '/reset-password'
+                    : '/verify-email'
+                );
+                navigateTo(targetPath);
+              }}
+            />
           </ToastProvider>
         </ThemeProvider>
       );
@@ -279,70 +273,53 @@ export function App() {
 
   // 3. UNAUTHENTICATED PUBLIC WORKFLOWS
   if (!currentUser) {
-    if (currentPath === '/register') {
+    if (
+      currentPath === '/login' ||
+      currentPath === '/signup' ||
+      currentPath === '/register' ||
+      currentPath === '/forgot-password' ||
+      currentPath === '/reset-password' ||
+      currentPath === '/verify-email'
+    ) {
+      const authMode: AuthMode = (
+        currentPath === '/signup' || currentPath === '/register'
+          ? 'signup'
+          : currentPath === '/forgot-password'
+          ? 'forgot'
+          : currentPath === '/reset-password'
+          ? 'reset'
+          : currentPath === '/verify-email'
+          ? 'verify'
+          : 'login'
+      );
+
       return (
         <ThemeProvider>
           <ToastProvider>
-            <RegisterOrganizationView
-              initialPlanId={selectedPlanForRegister}
+            <FlowPeopleAuthView
+              initialMode={authMode}
               onSuccess={(user) => {
                 setCurrentUser(user);
-                navigateTo('/app');
+                navigateTo(user.is_platform_owner ? '/superadmin' : '/app');
                 loadLiveStatus();
                 loadApprovalStats();
               }}
-              onNavigateLogin={() => navigateTo('/login')}
               onNavigateHome={() => navigateTo('/')}
+              onNavigateMode={(m) => {
+                const targetPath = (
+                  m === 'login'
+                    ? '/login'
+                    : m === 'signup'
+                    ? '/signup'
+                    : m === 'forgot'
+                    ? '/forgot-password'
+                    : m === 'reset'
+                    ? '/reset-password'
+                    : '/verify-email'
+                );
+                navigateTo(targetPath);
+              }}
             />
-          </ToastProvider>
-        </ThemeProvider>
-      );
-    }
-
-    if (currentPath === '/login') {
-      return (
-        <ThemeProvider>
-          <ToastProvider>
-            <div className="min-h-screen bg-slate-950 flex flex-col justify-between">
-              <header className="px-6 py-4 border-b border-slate-800/80 flex items-center justify-between">
-                <button onClick={() => navigateTo('/')} className="flex items-center gap-2.5 cursor-pointer">
-                  <Logo variant="icon" size={30} />
-                  <div className="text-left">
-                    <span className="font-extrabold text-sm text-white block">FlowPeople</span>
-                    <span className="text-[9px] text-slate-400 block -mt-1 font-medium">by FlowCraft</span>
-                  </div>
-                </button>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => navigateTo('/attendance/kiosk')}
-                    className="px-3 py-1.5 rounded-lg border border-teal-500/30 text-teal-300 hover:bg-teal-500/10 text-xs font-semibold"
-                  >
-                    Attendance Kiosk
-                  </button>
-                  <button
-                    onClick={() => navigateTo('/register')}
-                    className="px-3.5 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs"
-                  >
-                    Start Free Trial
-                  </button>
-                </div>
-              </header>
-
-              <main className="flex-1 flex items-center justify-center p-4 my-6">
-                <div className="w-full max-w-md">
-                  <LoginView onLoginSuccess={(u) => {
-                    setCurrentUser(u);
-                    navigateTo('/app');
-                    loadLiveStatus();
-                    loadApprovalStats();
-                  }} />
-                </div>
-              </main>
-
-              <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-900">
-                FlowPeople by FlowCraft &bull; Secure Multi-Tenant Enterprise HRMS
-              </footer>
-            </div>
           </ToastProvider>
         </ThemeProvider>
       );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Logo } from '../components/brand/Logo';
 
 interface LandingPageViewProps {
   onNavigateLogin: () => void;
@@ -1386,13 +1387,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
       {/* STICKY HEADER NAVIGATION */}
       <header className={isScrolled ? 'scrolled' : ''}>
         <div className="wrap nav">
-          <div className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <svg className="logo-mark" viewBox="0 0 40 40" aria-hidden="true">
-              <rect width="40" height="40" rx="11" fill="#0d8a7f"/>
-              <path d="M11 24c3 0 3-8 7-8s3 8 7 8 3-5 4-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="29" cy="12" r="3" fill="#7fe0d3"/>
-            </svg>
-            <span>Flow<small>People</small></span>
+          <div className="logo cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <Logo variant="full" size={36} colorMode="dark" />
           </div>
 
           <nav className="nav-links">
@@ -2118,13 +2114,8 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         <div className="wrap">
           <div className="foot-grid">
             <div>
-              <div className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                <svg className="logo-mark" viewBox="0 0 40 40" aria-hidden="true">
-                  <rect width="40" height="40" rx="11" fill="#14a89a"/>
-                  <path d="M11 24c3 0 3-8 7-8s3 8 7 8 3-5 4-5" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
-                  <circle cx="29" cy="12" r="3" fill="#fff"/>
-                </svg>
-                <span>Flow<small style={{ color: '#7fe0d3' }}>People</small></span>
+              <div className="logo cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                <Logo variant="full" size={36} colorMode="dark" />
               </div>
               <p>Intelligent HR management and biometric attendance, by FlowCraft.</p>
             </div>

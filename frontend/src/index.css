@@ -2,33 +2,51 @@
 
 @layer base {
   :root {
-    --bg-base: #f8fafc;
-    --bg-gradient-start: #f8fafc;
-    --bg-gradient-end: #e2e8f0;
+    /* FlowPeople Brand & Landing Design Tokens */
+    --teal-400: #1ee3b0;
+    --teal-500: #00d5a0;
+    --teal-600: #00b386;
+    --teal-glow: rgba(0, 213, 160, 0.25);
+    --ink-950: #060b11;
+    --ink-900: #0a111a;
+    --ink-800: #0f1a26;
+    --ink-700: #162436;
+    --ink-600: #223449;
+    --ink-400: #627d98;
+    --ink-300: #829ab1;
+    --ink-200: #bcccdc;
+    --ink-100: #e2e8f0;
+    --ink-50:  #f8fafc;
 
-    --surface-glass: rgba(255, 255, 255, 0.68);
-    --surface-glass-hover: rgba(255, 255, 255, 0.85);
-    --surface-glass-active: rgba(255, 255, 255, 0.95);
-    --surface-glass-solid: #ffffff;
+    --bg-base: #060b11;
+    --bg-gradient-start: #060b11;
+    --bg-gradient-end: #0a111a;
+    --surface-canvas: #060b11;
+
+    --surface-glass: rgba(10, 17, 26, 0.78);
+    --surface-glass-hover: rgba(15, 26, 38, 0.88);
+    --surface-glass-active: rgba(22, 36, 54, 0.95);
+    --surface-glass-solid: #0a111a;
     
-    --border-glass: rgba(255, 255, 255, 0.65);
-    --border-subtle: rgba(226, 232, 240, 0.8);
-    --border-strong: #cbd5e1;
+    --border-glass: rgba(22, 36, 54, 0.85);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: #162436;
     
-    --shadow-glass: 0 8px 32px rgba(20, 30, 60, 0.07);
-    --shadow-sm: 0 2px 8px rgba(20, 30, 60, 0.04);
-    --shadow-lg: 0 16px 48px rgba(20, 30, 60, 0.12);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
 
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --text-subtle: #94a3b8;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #829ab1;
+    --text-subtle: #627d98;
+    --text-main: #f8fafc;
 
-    --accent: #0f766e;
-    --accent-hover: #115e59;
-    --accent-subtle: rgba(15, 118, 110, 0.08);
-    --accent-border: rgba(15, 118, 110, 0.2);
-    --accent-foreground: #ffffff;
+    --accent: #00d5a0;
+    --accent-hover: #1ee3b0;
+    --accent-subtle: rgba(0, 213, 160, 0.15);
+    --accent-border: rgba(0, 213, 160, 0.35);
+    --accent-foreground: #060b11;
 
     --status-success: #15803d;
     --status-success-bg: rgba(22, 163, 74, 0.1);
@@ -52,18 +70,19 @@
   }
 
   .dark {
-    --bg-base: #0b0f19;
-    --bg-gradient-start: #0b0f19;
-    --bg-gradient-end: #070a10;
+    --bg-base: #060b11;
+    --bg-gradient-start: #060b11;
+    --bg-gradient-end: #0a111a;
+    --surface-canvas: #060b11;
 
-    --surface-glass: rgba(20, 24, 38, 0.65);
-    --surface-glass-hover: rgba(30, 36, 56, 0.75);
-    --surface-glass-active: rgba(36, 44, 68, 0.85);
-    --surface-glass-solid: #141826;
+    --surface-glass: rgba(10, 17, 26, 0.78);
+    --surface-glass-hover: rgba(15, 26, 38, 0.88);
+    --surface-glass-active: rgba(22, 36, 54, 0.95);
+    --surface-glass-solid: #0a111a;
 
-    --border-glass: rgba(255, 255, 255, 0.08);
-    --border-subtle: rgba(255, 255, 255, 0.06);
-    --border-strong: rgba(255, 255, 255, 0.14);
+    --border-glass: rgba(22, 36, 54, 0.85);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: #162436;
 
     --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.45);
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -71,14 +90,15 @@
 
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-subtle: #64748b;
+    --text-muted: #829ab1;
+    --text-subtle: #627d98;
+    --text-main: #f8fafc;
 
-    --accent: #14b8a6;
-    --accent-hover: #2dd4bf;
-    --accent-subtle: rgba(20, 184, 166, 0.14);
-    --accent-border: rgba(20, 184, 166, 0.3);
-    --accent-foreground: #042f2e;
+    --accent: #00d5a0;
+    --accent-hover: #1ee3b0;
+    --accent-subtle: rgba(0, 213, 160, 0.15);
+    --accent-border: rgba(0, 213, 160, 0.35);
+    --accent-foreground: #060b11;
 
     --status-success: #4ade80;
     --status-success-bg: rgba(34, 197, 94, 0.15);

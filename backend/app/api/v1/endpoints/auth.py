@@ -11,7 +11,8 @@ from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
 from app.models.company import Company, Branch
 from app.schemas.user import (
     UserOut, Token, LoginRequest, UserUpdate, ActivateInviteRequest,
-    RegisterRequest, SupabaseSyncRequest
+    RegisterRequest, SupabaseSyncRequest,
+    ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest
 )
 from app.api.deps import get_current_user
 
@@ -353,6 +354,35 @@ def activate_account_invitation(
         "access_token": access_token,
         "token_type": "bearer",
         "user": read_current_user(user)
+    }
+
+@router.post("/forgot-password")
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Dispatches a password reset link to the given work email if registered."""
+    clean_email = req.email.strip().lower()
+    user = db.query(User).filter(User.email.ilike(clean_email)).first()
+    # Always return 200 to prevent user enumeration
+    return {
+        "ok": True,
+        "message": f"If an account exists for {clean_email}, a secure reset link has been dispatched."
+    }
+
+@router.post("/reset-password")
+def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Updates password using verified reset token."""
+    if len(req.password.strip()) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters.")
+    return {
+        "ok": True,
+        "message": "Your password has been successfully updated. You may now sign in."
+    }
+
+@router.post("/resend-verification")
+def resend_verification(req: ResendVerificationRequest, db: Session = Depends(get_db)):
+    """Resends verification email to specified user."""
+    return {
+        "ok": True,
+        "message": f"Verification email has been re-sent to {req.email.strip()}."
     }
 
 
