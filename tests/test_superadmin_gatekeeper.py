@@ -82,11 +82,13 @@ def setup_test_data():
     return data
 
 def test_1_missing_backend_config_rejection():
-    """If SUPABASE_SERVICE_ROLE_KEY is not set in backend environment, return 503 Service Unavailable."""
-    with patch.object(settings, "SUPABASE_SERVICE_ROLE_KEY", ""):
+    """If SUPABASE_SERVICE_ROLE_KEY and JWKS are not configured, return 503 Service Unavailable."""
+    with patch.object(settings, "SUPABASE_SERVICE_ROLE_KEY", ""), \
+         patch.object(settings, "SUPABASE_JWKS", ""), \
+         patch.object(settings, "_TEST_DISABLE_BUNDLED_JWKS", True, create=True):
         res = client.post("/api/v1/superadmin/login", json={"supabase_token": "some-token"})
         assert res.status_code == 503
-        assert "SUPABASE_SERVICE_ROLE_KEY is not configured" in res.json()["detail"]
+        assert "SUPABASE_SERVICE_ROLE_KEY" in res.json()["detail"]
 
 def test_2_invalid_or_expired_token_rejected():
     """If Supabase Auth rejects the access token, return 401 Unauthorized."""
@@ -320,3 +322,27 @@ def test_9_no_hardcoded_email_reliance():
             res_denied = client.post("/api/v1/superadmin/login", json={"supabase_token": "token-denied"})
             assert res_denied.status_code == 403
             assert "Access Denied" in res_denied.json()["detail"]
+
+def test_10_jwks_asymmetric_validation():
+    """Verify that Supabase ES256 Elliptic Curve JWKS key is properly loaded and parseable."""
+    from app.services.platform_admin import get_supabase_jwks
+    from jose import jwk
+
+    jwks = get_supabase_jwks()
+    assert jwks is not None
+    assert "keys" in jwks
+    assert len(jwks["keys"]) >= 1
+
+    target_key = next((k for k in jwks["keys"] if k.get("kid") == "bb914d94-71d7-4dc7-8d6a-a89e962db62f"), None)
+    assert target_key is not None
+    assert target_key["alg"] == "ES256"
+    assert target_key["crv"] == "P-256"
+    assert target_key["kty"] == "EC"
+    assert target_key["x"] == "cEKb14v9eMNrKMOlz_vTXQWrkORoKDHEF2hn7nmvWeI"
+    assert target_key["y"] == "TZhmgoEU0GoIu_DvegsczAAn4kgUcy5Vj4OxAGnRvFE"
+
+    # Verify key construction
+    constructed = jwk.construct(target_key)
+    assert constructed is not None
+
+

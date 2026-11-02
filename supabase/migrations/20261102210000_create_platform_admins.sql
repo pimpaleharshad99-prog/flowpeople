@@ -40,3 +40,4 @@ $$ LANGUAGE sql STABLE SECURITY DEFINER;
 -- 6. Permissions (Data API access)
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.platform_admins TO authenticated;
+

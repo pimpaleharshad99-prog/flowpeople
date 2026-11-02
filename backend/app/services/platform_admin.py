@@ -1,8 +1,11 @@
 import httpx
+import json
+from pathlib import Path
 from typing import Dict, Any, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
+from jose import jwk, jwt
 
 from app.core.config import settings
 from app.core.security import get_password_hash, create_access_token
@@ -10,13 +13,80 @@ from app.models.platform_admin import PlatformAdmin
 from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
 from app.models.company import Company
 
+def get_supabase_jwks() -> Optional[Dict[str, Any]]:
+    """Loads Supabase JWKS from environment variable or bundled supabase_jwks.json file."""
+    if settings.SUPABASE_JWKS and settings.SUPABASE_JWKS.strip():
+        try:
+            return json.loads(settings.SUPABASE_JWKS)
+        except Exception:
+            pass
+
+    if getattr(settings, "_TEST_DISABLE_BUNDLED_JWKS", False):
+        return None
+
+    bundled = Path(__file__).resolve().parent.parent / "core" / "supabase_jwks.json"
+    if bundled.exists():
+        try:
+            with open(bundled, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return None
+
+def verify_token_with_jwks(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Cryptographically verifies a Supabase JWT locally using the project's official ES256 JWKS public key.
+    Enforces asymmetric elliptic-curve validation (P-256).
+    """
+    jwks = get_supabase_jwks()
+    if not jwks or "keys" not in jwks:
+        return None
+
+    try:
+        unverified_header = jwt.get_unverified_header(token)
+        target_kid = unverified_header.get("kid")
+
+        matching_key = None
+        for k in jwks["keys"]:
+            if target_kid and k.get("kid") == target_kid:
+                matching_key = k
+                break
+        if not matching_key and jwks["keys"]:
+            matching_key = jwks["keys"][0]
+
+        if not matching_key:
+            return None
+
+        key = jwk.construct(matching_key)
+        claims = jwt.decode(
+            token,
+            key,
+            algorithms=["ES256"],
+            options={"verify_aud": False, "verify_sub": True}
+        )
+        user_id = claims.get("sub")
+        email = claims.get("email")
+        if not user_id:
+            return None
+
+        return {
+            "id": user_id,
+            "email": email or "",
+            "user_metadata": claims.get("user_metadata", {}),
+            "app_metadata": claims.get("app_metadata", {}),
+            "claims": claims
+        }
+    except Exception:
+        return None
+
 def is_supabase_configured() -> bool:
-    """Returns True if Supabase URL and Service Role Key are configured."""
-    return bool(settings.SUPABASE_URL and settings.SUPABASE_SERVICE_ROLE_KEY)
+    """Returns True if Supabase URL and (Service Role Key or JWKS) are configured."""
+    has_jwks = bool(get_supabase_jwks())
+    return bool(settings.SUPABASE_URL and (settings.SUPABASE_SERVICE_ROLE_KEY or has_jwks))
 
 def verify_supabase_token(supabase_token: str) -> Dict[str, Any]:
     """
-    Cryptographically verifies the Supabase access token via Supabase Auth server.
+    Cryptographically verifies the Supabase access token via ES256 JWKS or Supabase Auth server.
     Ensures that the token is authentic, unexpired, and retrieves the verified user UUID.
     """
     if not supabase_token or not supabase_token.strip():
@@ -25,7 +95,19 @@ def verify_supabase_token(supabase_token: str) -> Dict[str, Any]:
             detail="Supabase authentication access token is required."
         )
 
-    if not is_supabase_configured():
+    if not is_supabase_configured() or (not settings.SUPABASE_SERVICE_ROLE_KEY and not get_supabase_jwks()):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Backend configuration error: SUPABASE_SERVICE_ROLE_KEY is not configured in backend environment."
+        )
+
+    # 1. First attempt: Asymmetric cryptographic verification via Supabase ES256 JWKS
+    jwks_user = verify_token_with_jwks(supabase_token.strip())
+    if jwks_user:
+        return jwks_user
+
+    # 2. Second attempt: Direct verification via Supabase Auth server
+    if not settings.SUPABASE_SERVICE_ROLE_KEY:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Backend configuration error: SUPABASE_SERVICE_ROLE_KEY is not configured in backend environment."
@@ -193,3 +275,4 @@ def verify_and_login_superadmin(supabase_token: str, db: Session) -> Dict[str, A
         "token_type": "bearer",
         "user": serialize_user_out(platform_user)
     }
+

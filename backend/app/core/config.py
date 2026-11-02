@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", os.getenv("SUPABASE_ANON_KEY", ""))
     SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
+    SUPABASE_JWKS: str = os.getenv("SUPABASE_JWKS", "")
 
     model_config = SettingsConfigDict(
         env_file=[(_BASE_DIR / ".env").as_posix(), ".env"],

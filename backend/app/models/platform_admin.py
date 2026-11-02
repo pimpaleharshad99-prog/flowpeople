@@ -12,3 +12,4 @@ class PlatformAdmin(Base):
     user_id = Column(String(64), unique=True, index=True, nullable=False) # Supabase auth user UUID
     role = Column(String(50), default="SUPER_ADMIN", nullable=False)
     created_at = Column(DateTime(timezone=True), default=utcnow)
+
