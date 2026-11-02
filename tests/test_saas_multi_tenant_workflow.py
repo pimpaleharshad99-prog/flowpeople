@@ -9,7 +9,7 @@ from app.models.company import Company
 from app.models.user import User, UserRole
 from app.models.subscription import SubscriptionPlan, Subscription, PaymentTransaction
 from app.models.attendance import AttendanceRecord
-from app.core.security import create_access_token
+from app.core.security import create_access_token, get_password_hash
 
 client = TestClient(app)
 
