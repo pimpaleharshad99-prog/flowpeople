@@ -1,3 +1,5 @@
+import { registerCompanyWithSupabase } from './organizationService';
+
 const API_BASE = '/api/v1';
 
 export interface User {
@@ -861,6 +863,7 @@ export const api = {
   // SaaS Billing & Subscriptions
   getSubscriptionPlans: () => fetchJson<SubscriptionPlan[]>(`${API_BASE}/billing/plans`),
   getSubscriptionInfo: () => fetchJson<SubscriptionInfo>(`${API_BASE}/billing/subscription`),
+  registerCompanySupabase: registerCompanyWithSupabase,
   registerOrganization: (data: any) =>
     fetchJson<{ success: boolean; access_token: string; organization: any; user: any }>(
       `${API_BASE}/billing/register-organization`,

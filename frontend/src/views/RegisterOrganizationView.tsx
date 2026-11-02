@@ -17,6 +17,14 @@ import {
 } from 'lucide-react';
 import { Logo } from '../components/brand/Logo';
 import { api, SubscriptionPlan } from '../services/api';
+import { supabase } from '../lib/supabase';
+import { 
+  registerCompanyWithSupabase, 
+  generateCompanySlug, 
+  generateRegistrationKey, 
+  formatSupabaseError,
+  validateCompanySlug 
+} from '../services/organizationService';
 
 interface RegisterOrganizationViewProps {
   initialPlanId?: string;
@@ -38,12 +46,16 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
 
   // Organization Form State
   const [companyName, setCompanyName] = useState('');
+  const [companySlug, setCompanySlug] = useState('');
   const [companyCode, setCompanyCode] = useState('');
   const [brandName, setBrandName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [timezone, setTimezone] = useState('Asia/Kolkata');
   const [currency, setCurrency] = useState('INR');
+
+  // Idempotency Request Key: initialized per registration attempt; reused across retries of the same attempt
+  const [requestKey, setRequestKey] = useState<string>(() => generateRegistrationKey());
 
   // Owner Form State
   const [firstName, setFirstName] = useState('');
@@ -63,10 +75,21 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
 
   const handleCompanyNameChange = (val: string) => {
     setCompanyName(val);
+    const autoSlug = generateCompanySlug(val);
+    setCompanySlug(autoSlug);
+    // Fresh idempotency key for new organization input
+    setRequestKey(generateRegistrationKey());
+
     if (!companyCode || companyCode.length < 3) {
       const generated = val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
       setCompanyCode(generated);
     }
+  };
+
+  const handleSlugChange = (val: string) => {
+    setCompanySlug(val.toLowerCase().replace(/[^a-z0-9-]/g, ''));
+    // Fresh idempotency key when changing slug
+    setRequestKey(generateRegistrationKey());
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,22 +105,74 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
       return;
     }
 
+    const effectiveSlug = companySlug.trim().toLowerCase() || generateCompanySlug(companyName);
+    const slugCheck = validateCompanySlug(effectiveSlug);
+    if (!slugCheck.valid) {
+      setError(slugCheck.error || 'Invalid organization slug');
+      return;
+    }
+
     try {
       setLoading(true);
+
+      // 1. Establish or verify authenticated Supabase session
+      let session = (await supabase.auth.getSession()).data.session;
+      if (!session) {
+        const cleanEmail = contactEmail.trim().toLowerCase();
+        const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: password.trim(),
+          options: {
+            data: {
+              first_name: firstName.trim(),
+              last_name: lastName.trim()
+            }
+          }
+        });
+
+        if (signUpErr) {
+          // If already registered in auth, attempt sign-in with password
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password: password.trim()
+          });
+
+          if (signInErr) {
+            throw new Error(formatSupabaseError(signUpErr || signInErr));
+          }
+          session = signInData.session;
+        } else {
+          session = signUpData.session;
+        }
+      }
+
+      // 2. Invoke public.register_company RPC with exact parameters: (p_name, p_slug, p_request_key, p_legal_name)
+      // Note: Reuses the same requestKey when retrying the same attempt
+      const rpcResult = await registerCompanyWithSupabase({
+        name: companyName.trim(),
+        slug: effectiveSlug,
+        requestKey: requestKey,
+        legalName: brandName.trim() || companyName.trim()
+      });
+
+      // 3. Complete backend local sync & issue session token
       const res = await api.registerOrganization({
-        company_name: companyName,
-        company_code: companyCode.toUpperCase(),
+        company_name: companyName.trim(),
+        company_code: (companyCode || effectiveSlug.slice(0, 8)).toUpperCase(),
         brand_name: brandName.trim() || companyName.trim(),
         logo_url: logoUrl.trim() || undefined,
-        contact_email: contactEmail,
-        owner_first_name: firstName,
-        owner_last_name: lastName,
-        owner_password: password,
+        contact_email: contactEmail.trim().toLowerCase(),
+        owner_first_name: firstName.trim(),
+        owner_last_name: lastName.trim(),
+        owner_password: password.trim(),
         owner_phone: phone || undefined,
         plan_id: selectedPlanId,
         billing_cycle: billingCycle,
         currency,
-        timezone
+        timezone,
+        supabase_company_id: rpcResult.organization?.id,
+        supabase_slug: effectiveSlug,
+        supabase_request_key: requestKey
       });
 
       if (res.access_token) {
@@ -106,7 +181,8 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
         onSuccess(res.user);
       }
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please check your details.');
+      // Requirement 5: Display real Supabase error message/code instead of generic internal error
+      setError(formatSupabaseError(err));
     } finally {
       setLoading(false);
     }
@@ -198,10 +274,25 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                      Company Code / Slug *
+                      Organization Slug (p_slug) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. acme-corp"
+                      value={companySlug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      className="w-full bg-[#FAF6F0] border border-[#DFE1D8] rounded-xl px-3.5 py-2.5 text-xs text-[#590907] font-mono lowercase focus:outline-none focus:border-[#590907] transition"
+                    />
+                    <span className="text-[10px] text-[#8E9084] mt-1 block">URL-safe tenant slug</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Company Code *
                     </label>
                     <input
                       type="text"
@@ -211,7 +302,7 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
                       onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
                       className="w-full bg-[#FAF6F0] border border-[#DFE1D8] rounded-xl px-3.5 py-2.5 text-xs text-[#590907] font-mono uppercase focus:outline-none focus:border-[#590907] transition"
                     />
-                    <span className="text-[10px] text-[#8E9084] mt-1 block">Used in Employee IDs & Kiosks</span>
+                    <span className="text-[10px] text-[#8E9084] mt-1 block">Staff IDs & terminals</span>
                   </div>
 
                   <div>
@@ -298,7 +389,7 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
                 <div className="pt-4 flex justify-end">
                   <button
                     type="button"
-                    disabled={!companyName || !companyCode || !contactEmail}
+                    disabled={!companyName || !companySlug || !companyCode || !contactEmail}
                     onClick={() => setStep(2)}
                     className="px-6 py-2.5 rounded-xl bg-[#590907] hover:bg-[#450605] text-[#FAF6F0] border border-[#400605] font-bold text-xs flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
                   >

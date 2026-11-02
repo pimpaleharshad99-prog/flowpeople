@@ -20,6 +20,12 @@ import {
 import { Logo } from '../components/brand/Logo';
 import { api, User } from '../services/api';
 import { supabase } from '../lib/supabase';
+import { 
+  registerCompanyWithSupabase, 
+  generateCompanySlug, 
+  generateRegistrationKey, 
+  formatSupabaseError 
+} from '../services/organizationService';
 
 export type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify';
 
@@ -63,6 +69,7 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [signupRequestKey, setSignupRequestKey] = useState<string>(() => generateRegistrationKey());
 
   // Forgot password state
   const [forgotEmail, setForgotEmail] = useState('');
@@ -222,24 +229,68 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
       const firstName = names[0] || 'Admin';
       const lastName = names.slice(1).join(' ') || 'Owner';
       const compCode = orgName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8).toUpperCase() || 'ORG';
+      const targetSlug = generateCompanySlug(orgName);
 
+      // 1. Establish or verify authenticated Supabase session
+      let session = (await supabase.auth.getSession()).data.session;
+      if (!session) {
+        const cleanEmail = signupEmail.trim().toLowerCase();
+        const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: signupPassword.trim(),
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName
+            }
+          }
+        });
+
+        if (signUpErr) {
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password: signupPassword.trim()
+          });
+
+          if (signInErr) {
+            throw new Error(formatSupabaseError(signUpErr || signInErr));
+          }
+          session = signInData.session;
+        } else {
+          session = signUpData.session;
+        }
+      }
+
+      // 2. Invoke public.register_company RPC with exact parameters: (p_name, p_slug, p_request_key, p_legal_name)
+      // Note: Reuses signupRequestKey when retrying the same attempt
+      const rpcResult = await registerCompanyWithSupabase({
+        name: orgName.trim(),
+        slug: targetSlug,
+        requestKey: signupRequestKey,
+        legalName: orgName.trim()
+      });
+
+      // 3. Complete backend local sync & issue session token
       const res = await api.registerOrganization({
         company_name: orgName.trim(),
         company_code: compCode,
-        contact_email: signupEmail.trim(),
+        contact_email: signupEmail.trim().toLowerCase(),
         owner_first_name: firstName,
         owner_last_name: lastName,
-        owner_password: signupPassword,
+        owner_password: signupPassword.trim(),
         owner_phone: phone.trim() || undefined,
         plan_id: 'trial',
-        billing_cycle: 'MONTHLY'
+        billing_cycle: 'MONTHLY',
+        supabase_company_id: rpcResult.organization?.id,
+        supabase_slug: targetSlug,
+        supabase_request_key: signupRequestKey
       });
 
       onSuccess(res.user);
     } catch (err: any) {
       setAlert({
         type: 'error',
-        message: err.message || 'Unable to complete organization registration. Please verify details.'
+        message: formatSupabaseError(err)
       });
     } finally {
       setLoading(false);

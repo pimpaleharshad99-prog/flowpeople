@@ -115,6 +115,9 @@ class OrganizationRegisterRequest(BaseModel):
     timezone: Optional[str] = "Asia/Kolkata"
     brand_name: Optional[str] = None
     logo_url: Optional[str] = None
+    supabase_company_id: Optional[str] = None
+    supabase_slug: Optional[str] = None
+    supabase_request_key: Optional[str] = None
 
 class CheckoutRequest(BaseModel):
     plan_id: str
@@ -172,14 +175,47 @@ def register_organization(
     clean_email = req.contact_email.strip().lower()
     clean_code = req.company_code.strip().upper()
     
-    # 1. Check existing email or company code
-    if db.query(User).filter(User.email.ilike(clean_email)).first():
+    # 1. Idempotency Check: Duplicate retry with matching company & user
+    existing_user = db.query(User).filter(User.email.ilike(clean_email)).first()
+    existing_company = db.query(Company).filter(Company.code == clean_code).first()
+
+    if existing_user and existing_company and existing_user.company_id == existing_company.id:
+        token = create_access_token(
+            subject=existing_user.id,
+            role=existing_user.role
+        )
+        return {
+            "success": True,
+            "message": f"Organization '{existing_company.name}' registration retrieved (idempotent retry).",
+            "access_token": token,
+            "token_type": "bearer",
+            "organization": {
+                "id": existing_company.id,
+                "uuid": existing_company.uuid,
+                "name": existing_company.name,
+                "code": existing_company.code,
+                "brand_name": existing_company.brand_name
+            },
+            "user": {
+                "id": existing_user.id,
+                "company_id": existing_company.id,
+                "email": existing_user.email,
+                "first_name": existing_user.first_name,
+                "last_name": existing_user.last_name,
+                "role": existing_user.role,
+                "employee_code": existing_user.employee_code,
+                "is_platform_owner": existing_user.is_platform_owner
+            }
+        }
+
+    # 2. Check conflicts if either exists separately
+    if existing_user:
         raise HTTPException(
             status_code=400,
             detail=f"An account with email '{clean_email}' already exists. Please login instead."
         )
     
-    if db.query(Company).filter(Company.code == clean_code).first():
+    if existing_company:
         raise HTTPException(
             status_code=400,
             detail=f"Organization code '{clean_code}' is already claimed. Please choose a different code."

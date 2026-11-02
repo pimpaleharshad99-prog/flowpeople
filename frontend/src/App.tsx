@@ -263,16 +263,35 @@ export function App() {
 
   // 3. UNAUTHENTICATED PUBLIC WORKFLOWS
   if (!currentUser) {
+    if (currentPath === '/register') {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <RegisterOrganizationView
+              initialPlanId={selectedPlanForRegister}
+              onSuccess={(user) => {
+                setCurrentUser(user);
+                navigateTo(user.is_platform_owner ? '/superadmin' : '/app');
+                loadLiveStatus();
+                loadApprovalStats();
+              }}
+              onNavigateLogin={() => navigateTo('/login')}
+              onNavigateHome={() => navigateTo('/')}
+            />
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
     if (
       currentPath === '/login' ||
       currentPath === '/signup' ||
-      currentPath === '/register' ||
       currentPath === '/forgot-password' ||
       currentPath === '/reset-password' ||
       currentPath === '/verify-email'
     ) {
       const authMode: AuthMode = (
-        currentPath === '/signup' || currentPath === '/register'
+        currentPath === '/signup'
           ? 'signup'
           : currentPath === '/forgot-password'
           ? 'forgot'
