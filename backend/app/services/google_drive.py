@@ -129,9 +129,22 @@ def get_user_email(access_token: str) -> Optional[str]:
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(GOOGLE_USERINFO_URL, headers=headers)
             if resp.status_code == 200:
-                return resp.json().get("email")
+                email = resp.json().get("email")
+                if email:
+                    return email
     except Exception:
         pass
+
+    # Fallback to Google Drive about API which is always available with drive.file scope
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            resp = client.get("https://www.googleapis.com/drive/v3/about?fields=user", headers=headers)
+            if resp.status_code == 200:
+                user_info = resp.json().get("user", {})
+                return user_info.get("emailAddress") or user_info.get("displayName")
+    except Exception:
+        pass
+
     return None
 
 def revoke_token(token: str) -> bool:
@@ -493,3 +506,4 @@ def process_background_upload(
             pass
     finally:
         db.close()
+

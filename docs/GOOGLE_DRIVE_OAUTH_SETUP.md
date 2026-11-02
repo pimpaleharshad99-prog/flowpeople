@@ -220,3 +220,4 @@ tests/test_google_drive_integration.py::test_12_attendance_independent_of_google
 | **Status shows "Reauthorization Required"** | User revoked access from their Google Account settings, or refresh token expired. | Click **Connect Google Drive** again to re-authorize. |
 | **Uploads show "Sync Failed"** | Organization Google Drive has exceeded storage quota or network timed out. | Check the Google Drive storage quota or verify internet connectivity. Use on-demand upload to retry. |
 | **"Access Denied" on Settings** | Logged in as standard Employee or Manager. | Only Organization Owners and HR Admins can view or manage cloud storage integrations. |
+

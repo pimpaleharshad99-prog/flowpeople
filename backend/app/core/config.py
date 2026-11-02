@@ -1,15 +1,20 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 _BASE_DIR = Path(__file__).resolve().parent.parent.parent
 _DEFAULT_DB_FILE = (_BASE_DIR / "hrms.db").as_posix()
 
+# Explicitly load .env from backend root and workspace root
+load_dotenv(_BASE_DIR / ".env")
+load_dotenv(Path.cwd() / ".env")
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "FlowPeople — Complete Workforce Management (FlowCraft)"
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = "dev-super-secret-jwt-key-flowpeople-flowcraft-2026"
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-super-secret-jwt-key-flowpeople-flowcraft-2026")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 24 hours
     
@@ -27,11 +32,15 @@ class Settings(BaseSettings):
     # Google Drive OAuth 2.0 Integration
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
-    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://127.0.0.1:8000/api/integrations/google-drive/callback")
-    GOOGLE_DRIVE_SCOPES: str = os.getenv("GOOGLE_DRIVE_SCOPES", "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email")
+    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/integrations/google-drive/callback")
+    GOOGLE_DRIVE_SCOPES: str = os.getenv("GOOGLE_DRIVE_SCOPES", "https://www.googleapis.com/auth/drive.file")
     GOOGLE_OAUTH_ENABLED: bool = os.getenv("GOOGLE_OAUTH_ENABLED", "false").lower() in ("true", "1", "yes")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
-    model_config = {"env_file": ".env", "case_sensitive": True, "extra": "ignore"}
+    model_config = SettingsConfigDict(
+        env_file=[(_BASE_DIR / ".env").as_posix(), ".env"],
+        case_sensitive=True,
+        extra="ignore"
+    )
 
 settings = Settings()
