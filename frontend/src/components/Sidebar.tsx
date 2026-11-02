@@ -24,7 +24,6 @@ import { Logo } from './brand/Logo';
 
 export type NavTab = 
   | 'dashboard' 
-  | 'superadmin'
   | 'hradmin'
   | 'manager'
   | 'directory' 
@@ -56,14 +55,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const role = currentUser?.role || 'EMPLOYEE';
-  const isSuperAdmin = role === 'SUPER_ADMIN' || role === 'ADMIN';
-  const isHRAdmin = isSuperAdmin || role === 'HR_ADMIN' || role === 'HR_MANAGER';
-  const isManager = isHRAdmin || role === 'MANAGER';
+  const isOwnerOrHR = role === 'ORGANIZATION_OWNER' || role === 'COMPANY_ADMIN' || role === 'HR_ADMIN' || role === 'ADMIN' || role === 'HR_MANAGER' || role === 'SUPER_ADMIN';
+  const isHRAdmin = isOwnerOrHR;
+  const isManager = isOwnerOrHR || role === 'MANAGER';
 
   const adminPortals = [
-    ...(isSuperAdmin ? [{ id: 'superadmin' as NavTab, label: 'Super Admin', icon: ShieldCheck }] : []),
-    ...(isHRAdmin ? [{ id: 'hradmin' as NavTab, label: 'HR Admin', icon: UserCheck }] : []),
-    ...(isManager ? [{ id: 'manager' as NavTab, label: 'Manager Portal', icon: Users }] : []),
+    ...(isOwnerOrHR ? [{ id: 'hradmin' as NavTab, label: 'HR Admin Portal', icon: UserCheck }] : []),
+    ...(isManager ? [{ id: 'manager' as NavTab, label: 'Manager Workspace', icon: Users }] : []),
   ];
 
   const coreModules = [

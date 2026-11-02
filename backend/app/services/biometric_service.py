@@ -289,10 +289,12 @@ class BiometricService:
         ip_address: Optional[str] = None,
         device_info: Optional[str] = None,
         target_user_id: Optional[int] = None,
-        model_version: Optional[str] = None
+        model_version: Optional[str] = None,
+        company_id: Optional[int] = None
     ) -> Tuple[Optional[User], float, float, Optional[str]]:
         """
         1:N Automatic Identification: Matches incoming camera face against all enrolled employees.
+        Enforces tenant isolation: when company_id is provided, only searches within that organization.
         Enforces strict model version compatibility: only compares embeddings generated
         by identical model architecture (v2.0-facenet-norm / 128-D).
         """
@@ -325,7 +327,10 @@ class BiometricService:
 
         # 4. Target User Direct Match (if specified)
         if target_user_id:
-            user = db.query(User).filter(User.id == target_user_id, User.status == "ACTIVE").first()
+            u_query = db.query(User).filter(User.id == target_user_id, User.status == "ACTIVE")
+            if company_id:
+                u_query = u_query.filter(User.company_id == company_id)
+            user = u_query.first()
             if not user or not user.face_enrollment or user.face_enrollment.status not in [BiometricEnrollmentStatus.VERIFIED.value, "VERIFIED", "ENROLLED"]:
                 return None, 0.0, liveness_score, "Face Registration Pending for this employee."
             
@@ -345,16 +350,19 @@ class BiometricService:
                 return None, confidence, liveness_score, f"Face verification score ({confidence:.2f}) below threshold ({CONFIDENCE_THRESHOLD})"
             return user, confidence, liveness_score, None
 
-        # 5. 1:N Global Scan across all enrolled active employees
-        # ONLY compare against candidate templates whose template_version matches the supported model versions!
-        enrollments = db.query(FaceEnrollment).join(User, FaceEnrollment.user_id == User.id).filter(
+        # 5. 1:N Scoped Scan across enrolled active employees within tenant
+        query = db.query(FaceEnrollment).join(User, FaceEnrollment.user_id == User.id).filter(
             FaceEnrollment.status.in_([BiometricEnrollmentStatus.VERIFIED.value, "VERIFIED", "ENROLLED"]),
             FaceEnrollment.template_version.in_(SUPPORTED_MODEL_VERSIONS),
             User.status == "ACTIVE"
-        ).all()
+        )
+        if company_id:
+            query = query.filter(User.company_id == company_id)
+        enrollments = query.all()
 
         if not enrollments:
-            return None, 0.0, liveness_score, f"No active employee Face ID templates compatible with model '{APPROVED_MODEL_VERSION}' found in database."
+            target_scope = f"in company #{company_id}" if company_id else "in database"
+            return None, 0.0, liveness_score, f"No active employee Face ID templates compatible with model '{APPROVED_MODEL_VERSION}' found {target_scope}."
 
         best_user = None
         best_confidence = 0.0

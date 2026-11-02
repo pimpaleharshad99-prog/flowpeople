@@ -18,6 +18,14 @@ from app.models.payroll import (
     PayslipPaymentStatus,
     SalaryComponentType
 )
+from app.models.subscription import (
+    SubscriptionPlan,
+    Subscription,
+    PaymentTransaction,
+    PlanTier,
+    SubscriptionStatus,
+    BillingCycle
+)
 
 __all__ = [
     "Base",
@@ -80,5 +88,11 @@ __all__ = [
     "Payslip",
     "PayrollPeriodStatus",
     "PayslipPaymentStatus",
-    "SalaryComponentType"
+    "SalaryComponentType",
+    "SubscriptionPlan",
+    "Subscription",
+    "PaymentTransaction",
+    "PlanTier",
+    "SubscriptionStatus",
+    "BillingCycle"
 ]

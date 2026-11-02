@@ -27,6 +27,7 @@ def serialize_user_out(user: User) -> UserOut:
     return UserOut(
         id=user.id,
         company_id=user.company_id,
+        is_platform_owner=bool(user.is_platform_owner),
         employee_code=user.employee_code,
         email=user.email,
         first_name=user.first_name,

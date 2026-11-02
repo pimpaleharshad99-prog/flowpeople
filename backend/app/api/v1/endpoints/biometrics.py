@@ -54,6 +54,8 @@ class KioskScanPunchRequest(BaseModel):
     face_data: str
     liveness_data: Optional[Dict[str, Any]] = None
     target_user_id: Optional[int] = None
+    company_id: Optional[int] = None
+    company_code: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     device: Optional[str] = "Entrance Face Recognition Kiosk"
@@ -404,6 +406,14 @@ def kiosk_scan_face_punch(
     5. Returns recognized employee details, role, department, action, and timestamp.
     """
     client_ip = request.client.host if request.client else None
+    
+    # Resolve tenant company isolation scope
+    tenant_company_id = req.company_id
+    if not tenant_company_id and req.company_code:
+        comp = db.query(Company).filter(Company.code.ilike(req.company_code.strip())).first()
+        if comp:
+            tenant_company_id = comp.id
+
     matched_user, confidence, liveness, err = BiometricService.identify_1_to_n(
         db=db,
         live_face_data=req.face_data,
@@ -411,7 +421,8 @@ def kiosk_scan_face_punch(
         ip_address=client_ip,
         device_info=req.device or "Office Entrance Face Kiosk",
         target_user_id=req.target_user_id,
-        model_version=req.model_version
+        model_version=req.model_version,
+        company_id=tenant_company_id
     )
 
     if not matched_user:

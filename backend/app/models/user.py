@@ -8,7 +8,9 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 class UserRole(str, enum.Enum):
+    PLATFORM_OWNER = "PLATFORM_OWNER"
     SUPER_ADMIN = "SUPER_ADMIN"
+    ORGANIZATION_OWNER = "ORGANIZATION_OWNER"
     HR_ADMIN = "HR_ADMIN"
     ADMIN = "ADMIN"
     HR_MANAGER = "HR_MANAGER"
@@ -56,6 +58,7 @@ class User(Base):
     
     # Employment Info
     role = Column(String(50), default=UserRole.EMPLOYEE.value, nullable=False)
+    is_platform_owner = Column(Boolean, default=False)
     status = Column(String(50), default=EmploymentStatus.ACTIVE.value, nullable=False)
     employment_type = Column(String(50), default=EmploymentType.FULL_TIME.value, nullable=False)
     date_of_joining = Column(String(20), nullable=False)

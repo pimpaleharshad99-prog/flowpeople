@@ -13,8 +13,9 @@ export interface User {
   gender?: string;
   date_of_birth?: string;
   blood_group?: string;
-  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'HR_ADMIN' | 'ADMIN' | 'HR_MANAGER' | 'HR_EXECUTIVE' | 'MANAGER' | 'PAYROLL_ADMIN' | 'EMPLOYEE' | 'AUDITOR';
+  role: 'PLATFORM_OWNER' | 'SUPER_ADMIN' | 'ORGANIZATION_OWNER' | 'COMPANY_ADMIN' | 'HR_ADMIN' | 'ADMIN' | 'HR_MANAGER' | 'HR_EXECUTIVE' | 'MANAGER' | 'PAYROLL_ADMIN' | 'EMPLOYEE' | 'AUDITOR';
   role_title?: string;
+  is_platform_owner?: boolean;
   status: string;
   employment_type: string;
   date_of_joining: string;
@@ -382,7 +383,91 @@ export interface CompanyTenant {
   department_count: number;
   admin_name: string;
   admin_email?: string;
+  subscription?: {
+    plan_id: string;
+    plan_name: string;
+    status: string;
+    billing_cycle: string;
+    expires_at: string | null;
+    max_employees: number;
+  };
   created_at: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  tier: string;
+  description?: string;
+  price_monthly_inr: number;
+  price_annual_inr: number;
+  price_monthly_usd: number;
+  price_annual_usd: number;
+  max_employees: number;
+  max_hr_admins: number;
+  face_attendance_enabled: boolean;
+  fingerprint_enabled: boolean;
+  payroll_enabled: boolean;
+  advanced_reports_enabled: boolean;
+  storage_limit_gb: number;
+  support_level: string;
+}
+
+export interface SubscriptionInfo {
+  company_id: number;
+  company_name: string;
+  company_code: string;
+  is_active: boolean;
+  subscription: {
+    id: number | null;
+    status: string;
+    billing_cycle: string;
+    current_period_start: string | null;
+    current_period_end: string | null;
+    trial_ends_at: string | null;
+    cancel_at_period_end: boolean;
+  };
+  plan: SubscriptionPlan;
+  usage: {
+    employees_count: number;
+    employees_limit: number;
+    employees_remaining: number;
+    admins_count: number;
+    admins_limit: number;
+  };
+}
+
+export interface InvoiceRecord {
+  id: number;
+  invoice_number: string;
+  amount: number;
+  currency: string;
+  status: string;
+  transaction_reference: string;
+  date: string;
+  billing_name?: string;
+  billing_email?: string;
+}
+
+export interface SuperAdminOverview {
+  platform_owner: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  stats: {
+    total_organizations: number;
+    active_organizations: number;
+    total_employees: number;
+    active_users: number;
+    today_attendance_punches: number;
+    face_enrolled_total: number;
+    active_subscriptions: number;
+    trial_organizations: number;
+    expired_subscriptions: number;
+    monthly_recurring_revenue_inr: number;
+    monthly_recurring_revenue_usd: number;
+  };
 }
 
 export interface DashboardStats {
@@ -597,47 +682,6 @@ export const api = {
   // Shifts
   getShifts: () => fetchJson<any[]>(`${API_BASE}/shifts`),
 
-  // Time Tracker
-  getProjects: () => fetchJson<Project[]>(`${API_BASE}/timetracker/projects`),
-  createProject: (data: { name: string; code: string; client_name?: string; budget_hours?: number }) => {
-    const q = new URLSearchParams({
-      name: data.name,
-      code: data.code,
-      client_name: data.client_name || '',
-      budget_hours: (data.budget_hours || 0).toString(),
-    });
-    return fetchJson<Project>(`${API_BASE}/timetracker/projects?${q.toString()}`, { method: 'POST' });
-  },
-  createTask: (data: { project_id: number; name: string; estimated_hours?: number; billable?: boolean }) => {
-    const q = new URLSearchParams({
-      project_id: data.project_id.toString(),
-      name: data.name,
-      estimated_hours: (data.estimated_hours || 0).toString(),
-      billable: (data.billable ?? true).toString(),
-    });
-    return fetchJson<ProjectTask>(`${API_BASE}/timetracker/tasks?${q.toString()}`, { method: 'POST' });
-  },
-  getTimeLogs: (start_date?: string, end_date?: string) => {
-    const q = new URLSearchParams();
-    if (start_date) q.append('start_date', start_date);
-    if (end_date) q.append('end_date', end_date);
-    return fetchJson<TimeLog[]>(`${API_BASE}/timetracker/logs?${q.toString()}`);
-  },
-  createTimeLog: (data: { project_id: number; task_id: number; log_date: string; hours: number; description?: string }) =>
-    fetchJson<TimeLog>(`${API_BASE}/timetracker/logs`, { method: 'POST', body: JSON.stringify(data) }),
-  getMyTimesheets: () => fetchJson<Timesheet[]>(`${API_BASE}/timetracker/timesheets`),
-  submitTimesheet: (period_start: string, period_end: string) =>
-    fetchJson<Timesheet>(`${API_BASE}/timetracker/timesheets/submit`, {
-      method: 'POST',
-      body: JSON.stringify({ period_start, period_end }),
-    }),
-  getPendingTimesheets: () => fetchJson<Timesheet[]>(`${API_BASE}/timetracker/timesheets/pending`),
-  reviewTimesheet: (id: number, status: 'APPROVED' | 'REJECTED', review_comments?: string) =>
-    fetchJson<Timesheet>(`${API_BASE}/timetracker/timesheets/${id}/review`, {
-      method: 'PUT',
-      body: JSON.stringify({ status, review_comments }),
-    }),
-
   // Announcements
   getAnnouncements: () => fetchJson<Announcement[]>(`${API_BASE}/announcements`),
 
@@ -663,6 +707,8 @@ export const api = {
   enrollFingerprint: (data: { credential_id: string; public_key?: string; device_name?: string; target_user_id?: number }) =>
     fetchJson<any>(`${API_BASE}/attendance/fingerprint/enroll`, { method: 'POST', body: JSON.stringify(data) }),
   verifyFingerprintPunch: (data: { punch_type: 'IN' | 'OUT'; credential_id: string; challenge?: string; signature?: string; device?: string; latitude?: number; longitude?: number; target_user_id?: number }) =>
+    fetchJson<any>(`${API_BASE}/attendance/fingerprint/verify-punch`, { method: 'POST', body: JSON.stringify(data) }),
+  punchWithFingerprint: (data: { punch_type: 'IN' | 'OUT'; credential_id: string; challenge?: string; signature?: string; device?: string; latitude?: number; longitude?: number; target_user_id?: number }) =>
     fetchJson<any>(`${API_BASE}/attendance/fingerprint/verify-punch`, { method: 'POST', body: JSON.stringify(data) }),
 
   // QR Attendance
@@ -739,5 +785,26 @@ export const api = {
   // Announcements creation
   createAnnouncement: (data: { title: string; content: string; priority?: string }) =>
     fetchJson<Announcement>(`${API_BASE}/announcements`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // SaaS Billing & Subscriptions
+  getSubscriptionPlans: () => fetchJson<SubscriptionPlan[]>(`${API_BASE}/billing/plans`),
+  getSubscriptionInfo: () => fetchJson<SubscriptionInfo>(`${API_BASE}/billing/subscription`),
+  registerOrganization: (data: any) =>
+    fetchJson<{ success: boolean; access_token: string; organization: any; user: any }>(
+      `${API_BASE}/billing/register-organization`,
+      { method: 'POST', body: JSON.stringify(data) }
+    ),
+  verifyPayment: (data: { plan_id: string; billing_cycle: string; transaction_reference: string; amount: number; currency?: string; billing_name?: string; billing_email?: string }) =>
+    fetchJson<any>(`${API_BASE}/billing/verify-payment`, { method: 'POST', body: JSON.stringify(data) }),
+  getInvoices: () => fetchJson<InvoiceRecord[]>(`${API_BASE}/billing/invoices`),
+
+  // Super Admin Platform Management
+  getSuperAdminOverview: () => fetchJson<SuperAdminOverview>(`${API_BASE}/superadmin/overview`),
+  provisionCompany: (data: any) =>
+    fetchJson<any>(`${API_BASE}/superadmin/companies`, { method: 'POST', body: JSON.stringify(data) }),
+  updateCompanyStatus: (id: number, is_active: boolean, reason?: string) =>
+    fetchJson<any>(`${API_BASE}/superadmin/companies/${id}/status`, { method: 'PUT', body: JSON.stringify({ is_active, reason }) }),
+  updateCompanySubscription: (id: number, data: { plan_id: string; max_employees?: number; status?: string; extend_days?: number }) =>
+    fetchJson<any>(`${API_BASE}/superadmin/companies/${id}/subscription`, { method: 'PUT', body: JSON.stringify(data) }),
 };
 

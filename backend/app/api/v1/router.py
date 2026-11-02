@@ -1,15 +1,16 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, organization, employees, attendance,
-    shifts, leaves, timetracker, documents,
+    shifts, leaves, documents,
     announcements, reports, biometrics, superadmin,
     performance, lifecycle, helpdesk, payroll,
-    fingerprint, qr_attendance
+    fingerprint, qr_attendance, billing
 )
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication & Profile"])
+api_router.include_router(billing.router, prefix="/billing", tags=["SaaS Billing & Subscriptions"])
 api_router.include_router(organization.router, prefix="/organization", tags=["Organization"])
 api_router.include_router(employees.router, prefix="/employees", tags=["Employee Master Directory"])
 api_router.include_router(attendance.router, prefix="/attendance", tags=["Attendance & Punches"])
@@ -18,7 +19,6 @@ api_router.include_router(fingerprint.router, prefix="/attendance/fingerprint", 
 api_router.include_router(qr_attendance.router, prefix="/attendance/qr", tags=["QR Code Attendance"])
 api_router.include_router(shifts.router, prefix="/shifts", tags=["Shift Rostering"])
 api_router.include_router(leaves.router, prefix="/leaves", tags=["Leave Tracker"])
-api_router.include_router(timetracker.router, prefix="/timetracker", tags=["Time Tracker & Timesheets"])
 api_router.include_router(payroll.router, prefix="/payroll", tags=["Payroll & Compensation"])
 api_router.include_router(performance.router, prefix="/performance", tags=["Performance & Goals"])
 api_router.include_router(lifecycle.router, prefix="/lifecycle", tags=["Employee Lifecycle & Onboarding"])

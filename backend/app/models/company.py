@@ -16,9 +16,17 @@ class Company(Base):
     domain = Column(String(100), nullable=True)
     timezone = Column(String(50), default="UTC")
     currency = Column(String(10), default="USD")
+    contact_email = Column(String(150), nullable=True)
+    is_active = Column(Boolean, default=True)
+    subscription_plan_id = Column(String(50), default="free_trial")
+    subscription_status = Column(String(50), default="TRIALING")
+    max_employees = Column(Integer, default=10)
+    max_admins = Column(Integer, default=1)
+    trial_ends_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
 
     # Relationships
+    subscriptions = relationship("Subscription", back_populates="company", cascade="all, delete-orphan")
     branches = relationship("Branch", back_populates="company", cascade="all, delete-orphan")
     departments = relationship("Department", back_populates="company", cascade="all, delete-orphan")
     designations = relationship("Designation", back_populates="company", cascade="all, delete-orphan")

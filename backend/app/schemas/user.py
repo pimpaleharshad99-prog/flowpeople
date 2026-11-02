@@ -55,6 +55,7 @@ class UserUpdate(BaseModel):
 class UserOut(UserBase):
     id: int
     company_id: int
+    is_platform_owner: bool = False
     created_at: datetime
     branch_name: Optional[str] = None
     department_name: Optional[str] = None

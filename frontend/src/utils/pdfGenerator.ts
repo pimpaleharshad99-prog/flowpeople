@@ -422,3 +422,4 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
   printWindow.document.write(html);
   printWindow.document.close();
 }
+

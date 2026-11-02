@@ -63,17 +63,34 @@ def get_current_user(
 
     return user
 
-def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role not in [UserRole.SUPER_ADMIN.value, UserRole.ADMIN.value]:
+PLATFORM_OWNER_EMAILS = {"pimpaleharshad99@gmail.com", "admin@flowcraft.io"}
+
+def require_platform_owner(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Owner-Only Platform Authorization (Phase 3):
+    Restricted strictly to allowlisted platform-owner identities.
+    Normal Organization Owners, HR Admins, Managers, and Employees are unconditionally blocked.
+    """
+    is_owner = (
+        bool(current_user.is_platform_owner) or
+        current_user.email.strip().lower() in PLATFORM_OWNER_EMAILS or
+        current_user.role == UserRole.PLATFORM_OWNER.value
+    )
+    if not is_owner:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Operation requires Super Administrator privileges"
+            detail="Forbidden: Super Admin access is restricted exclusively to the authorized platform owner."
         )
     return current_user
 
+# Alias require_super_admin to require_platform_owner for strict platform security
+require_super_admin = require_platform_owner
+
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     allowed = [
+        UserRole.PLATFORM_OWNER.value,
         UserRole.SUPER_ADMIN.value,
+        UserRole.ORGANIZATION_OWNER.value,
         UserRole.HR_ADMIN.value,
         UserRole.ADMIN.value,
         UserRole.HR_MANAGER.value,
@@ -89,7 +106,9 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 
 def require_manager_or_above(current_user: User = Depends(get_current_user)) -> User:
     allowed = [
+        UserRole.PLATFORM_OWNER.value,
         UserRole.SUPER_ADMIN.value,
+        UserRole.ORGANIZATION_OWNER.value,
         UserRole.HR_ADMIN.value,
         UserRole.ADMIN.value,
         UserRole.HR_MANAGER.value,
