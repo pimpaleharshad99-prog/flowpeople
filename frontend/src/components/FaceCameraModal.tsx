@@ -319,6 +319,7 @@ export const FaceCameraModal: React.FC<FaceCameraModalProps> = ({
           punch_type: punchType,
           face_data: vector,
           liveness_data: liveness,
+          target_user_id: targetUserId,
           device: 'FlowPeople Web Biometric Terminal',
           model_version: ACTIVE_MODEL_VERSION
         });

@@ -36,6 +36,7 @@ class FacePunchRequest(BaseModel):
     punch_type: str # "IN" or "OUT"
     face_data: str
     liveness_data: Dict[str, Any]
+    target_user_id: Optional[int] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     location_note: Optional[str] = None
@@ -216,7 +217,14 @@ def verify_face_and_punch(
             detail="Biometric attendance is restricted to active employee accounts."
         )
 
-    enrollment = BiometricService.get_enrollment(db, current_user.id)
+    effective_user_id = current_user.id
+    if punch_req.target_user_id:
+        if punch_req.target_user_id == current_user.id or current_user.role in ["ADMIN", "SUPER_ADMIN", "HR_ADMIN", "COMPANY_ADMIN", "HR_MANAGER", "HR_EXECUTIVE", "MANAGER"]:
+            target_user = db.query(User).filter(User.id == punch_req.target_user_id, User.company_id == current_user.company_id).first()
+            if target_user:
+                effective_user_id = target_user.id
+
+    enrollment = BiometricService.get_enrollment(db, effective_user_id)
     if not enrollment or enrollment.status not in ["ENROLLED", "VERIFIED"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -231,7 +239,7 @@ def verify_face_and_punch(
     today_str = now.strftime("%Y-%m-%d")
 
     record = db.query(AttendanceRecord).filter(
-        AttendanceRecord.user_id == current_user.id,
+        AttendanceRecord.user_id == effective_user_id,
         AttendanceRecord.date == today_str
     ).first()
 
@@ -258,7 +266,7 @@ def verify_face_and_punch(
     client_ip = request.client.host if request.client else None
     matched, confidence, liveness, err = BiometricService.verify_and_match(
         db=db,
-        user_id=current_user.id,
+        user_id=effective_user_id,
         attempt_type=requested_type,
         live_face_data=punch_req.face_data,
         liveness_data=punch_req.liveness_data,
@@ -275,9 +283,9 @@ def verify_face_and_punch(
 
     # Perform clock punch
     if not record:
-        shift = get_employee_shift_for_date(db, current_user.id, today_str)
+        shift = get_employee_shift_for_date(db, effective_user_id, today_str)
         record = AttendanceRecord(
-            user_id=current_user.id,
+            user_id=effective_user_id,
             date=today_str,
             shift_id=shift.id if shift else None,
             status=AttendanceStatus.PRESENT.value

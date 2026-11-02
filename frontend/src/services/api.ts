@@ -512,7 +512,7 @@ export const api = {
   },
   getCurrentUser: () => fetchJson<User>(`${API_BASE}/auth/me`),
   getDemoCredentials: () => fetchJson<{ accounts: any[]; universal_fallback_password: string }>(`${API_BASE}/auth/demo-credentials`),
-  
+
   // Dashboard & Reports
   getDashboardStats: () => fetchJson<DashboardStats>(`${API_BASE}/reports/dashboard-stats`),
 
@@ -647,7 +647,7 @@ export const api = {
     fetchJson<any>(`${API_BASE}/biometrics/enroll`, { method: 'POST', body: JSON.stringify(data) }),
   testFaceVerification: (data: { face_data: string; liveness_data: any; target_user_id?: number; device?: string; model_version?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/verify-test`, { method: 'POST', body: JSON.stringify(data) }),
-  verifyFacePunch: (data: { punch_type: 'IN' | 'OUT'; face_data: string; liveness_data: any; latitude?: number; longitude?: number; location_note?: string; device?: string; model_version?: string }) =>
+  verifyFacePunch: (data: { punch_type: 'IN' | 'OUT'; face_data: string; liveness_data: any; target_user_id?: number; latitude?: number; longitude?: number; location_note?: string; device?: string; model_version?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/verify-punch`, { method: 'POST', body: JSON.stringify(data) }),
   fallbackPunch: (data: { punch_type: 'IN' | 'OUT'; reason: string; latitude?: number; longitude?: number; device?: string }) =>
     fetchJson<any>(`${API_BASE}/biometrics/fallback-punch`, { method: 'POST', body: JSON.stringify(data) }),

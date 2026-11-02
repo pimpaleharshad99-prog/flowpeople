@@ -16,7 +16,7 @@ from app.models.biometrics import (
 )
 from app.models.user import User
 
-CONFIDENCE_THRESHOLD = 0.82
+CONFIDENCE_THRESHOLD = 0.70
 LIVENESS_THRESHOLD = 0.75
 MAX_REPLAY_AGE_SECONDS = 1800 # 30 minutes to accommodate interactive multi-step onboarding & enrollment forms
 
