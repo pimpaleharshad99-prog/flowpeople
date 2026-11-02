@@ -493,3 +493,4 @@ export const AttendanceKioskView: React.FC<AttendanceKioskViewProps> = ({
     </div>
   );
 };
+

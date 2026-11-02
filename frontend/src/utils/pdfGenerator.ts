@@ -23,6 +23,8 @@ export interface AttendancePdfOptions {
   subtitle?: string;
   date?: string;
   companyName?: string;
+  companyLogoUrl?: string;
+  softwareTitle?: string;
   records: AttendancePdfRecord[];
   summary?: {
     totalEmployees?: number;
@@ -38,7 +40,9 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
     title = 'Official Attendance & In-Out Timesheet Report',
     subtitle = 'Comprehensive Employee Clock-In, Departure & Biometric Verification Record',
     date = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-    companyName = 'FlowPeople by FlowCraft',
+    companyName = 'Organization Workspace',
+    companyLogoUrl,
+    softwareTitle,
     records = [],
     summary
   } = options;
@@ -296,12 +300,16 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
   </div>
 
   <div class="header">
-    <div class="brand">
-      <h1>Flow<span>People</span> &bull; Attendance & Timesheet Ledger</h1>
-      <p>${subtitle}</p>
+    <div class="brand" style="display: flex; align-items: center; gap: 14px;">
+      ${companyLogoUrl ? `<img src="${companyLogoUrl}" alt="${companyName}" style="max-height: 48px; max-width: 150px; object-fit: contain; border-radius: 6px;" />` : ''}
+      <div>
+        <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #0f172a;">${softwareTitle || companyName}</h1>
+        <p style="margin: 3px 0 0; font-size: 11px; color: #64748b;">${title} &bull; ${subtitle}</p>
+      </div>
     </div>
     <div class="meta">
-      <div class="badge">Verified HR Document</div>
+      <div class="badge">Official HR Document</div>
+      <p><strong>Organization:</strong> ${companyName}</p>
       <p><strong>Reporting Period:</strong> ${date}</p>
       <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
     </div>
@@ -401,9 +409,13 @@ export function generateAttendancePdf(options: AttendancePdfOptions): void {
     </div>
   </div>
 
-  <div class="footer">
-    <div>FlowPeople HRMS &bull; Cryptographically Verified Biometric Workforce Intelligence</div>
-    <div>Page 1 of 1 &bull; Confidential & Internal Company Record</div>
+  <div class="footer" style="margin-top: 32px; border-top: 1px solid #cbd5e1; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #64748b;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-weight: 800; color: #0d8a7f; letter-spacing: 0.5px; font-size: 11px;">FlowPeople by FlowCraft</span>
+      <span>&bull;</span>
+      <span>Enterprise Multi-Tenant HRMS & Biometric System</span>
+    </div>
+    <div>Confidential &bull; Generated for <strong>${companyName}</strong> &bull; Page 1 of 1</div>
   </div>
 
   <script>

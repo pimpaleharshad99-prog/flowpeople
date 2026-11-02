@@ -24,6 +24,9 @@ interface EmployeeAttendanceHistoryModalProps {
   userId: number | null;
   employeeName: string;
   employeeCode?: string;
+  companyName?: string;
+  companyLogoUrl?: string;
+  softwareTitle?: string;
 }
 
 export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryModalProps> = ({
@@ -31,7 +34,10 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
   onClose,
   userId,
   employeeName,
-  employeeCode
+  employeeCode,
+  companyName,
+  companyLogoUrl,
+  softwareTitle
 }) => {
   const currentMonthStr = new Date().toISOString().slice(0, 7); // "YYYY-MM"
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthStr);
@@ -137,6 +143,9 @@ export const EmployeeAttendanceHistoryModal: React.FC<EmployeeAttendanceHistoryM
       title: `Employee Monthly Attendance Timesheet`,
       subtitle: `Official In-Out Punch Ledger for ${employeeName} (${employeeCode || `#${userId}`}) — ${selectedMonth}`,
       date: selectedMonth,
+      companyName: companyName || 'Organization Workspace',
+      companyLogoUrl: companyLogoUrl,
+      softwareTitle: softwareTitle || companyName,
       records: pdfRecords,
       summary: {
         totalEmployees: 1,

@@ -30,6 +30,8 @@ class OrganizationRegisterRequest(BaseModel):
     country: Optional[str] = "India"
     currency: Optional[str] = "INR"
     timezone: Optional[str] = "Asia/Kolkata"
+    brand_name: Optional[str] = None
+    logo_url: Optional[str] = None
 
 class CheckoutRequest(BaseModel):
     plan_id: str
@@ -112,6 +114,8 @@ def register_organization(
     company = Company(
         name=req.company_name.strip(),
         code=clean_code,
+        brand_name=req.brand_name.strip() if req.brand_name else req.company_name.strip(),
+        logo_url=req.logo_url.strip() if req.logo_url else None,
         contact_email=clean_email,
         timezone=req.timezone or "Asia/Kolkata",
         currency=req.currency or "INR",
@@ -390,3 +394,4 @@ def list_invoices(
         }
         for t in txns
     ]
+

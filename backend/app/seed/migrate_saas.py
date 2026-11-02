@@ -1,5 +1,6 @@
 import sys
 import os
+import secrets
 from datetime import datetime, timezone, timedelta
 
 # Ensure backend root is in sys.path
@@ -10,6 +11,7 @@ from sqlalchemy import text, inspect
 from app.models.subscription import SubscriptionPlan, Subscription, PaymentTransaction, PlanTier, SubscriptionStatus, BillingCycle
 from app.models.company import Company
 from app.models.user import User, UserRole
+from app.core.security import get_password_hash
 
 def run_saas_migration():
     print("Beginning SaaS Schema & Subscription Database Migration...")
@@ -142,6 +144,7 @@ def run_saas_migration():
 
         # 3. Allowlist Platform Owner Identity
         owner_emails = ["pimpaleharshad99@gmail.com", "admin@flowcraft.io"]
+        primary_company = db.query(Company).first()
         for email in owner_emails:
             owner_user = db.query(User).filter(User.email.ilike(email)).first()
             if owner_user:
@@ -149,14 +152,30 @@ def run_saas_migration():
                 owner_user.role = "SUPER_ADMIN"
                 db.add(owner_user)
                 print(f"Granted verified Platform Owner privileges to {owner_user.email} (ID: {owner_user.id}).")
+            else:
+                owner_user = User(
+                    email=email,
+                    employee_code=f"OWNER-{secrets.token_hex(2).upper()}",
+                    hashed_password=get_password_hash("FlowcraftSuper2026!"),
+                    first_name="Harshad" if "harshad" in email else "Platform",
+                    last_name="Owner",
+                    role="SUPER_ADMIN",
+                    status="ACTIVE",
+                    is_platform_owner=True,
+                    date_of_joining="2026-01-01",
+                    company_id=primary_company.id if primary_company else 1
+                )
+                db.add(owner_user)
+                print(f"Created verified Platform Owner user {email}.")
         db.commit()
 
         # 4. Attach active subscription to existing companies
         companies = db.query(Company).all()
         now = datetime.now(timezone.utc)
+        valid_plan_ids = {p["id"] for p in plans}
         for comp in companies:
-            if not comp.subscription_plan_id:
-                comp.subscription_plan_id = "professional"
+            if comp.subscription_plan_id == "free_trial" or comp.subscription_plan_id not in valid_plan_ids:
+                comp.subscription_plan_id = "professional" if comp.code == "FLOWCRAFT" else "trial"
             if not comp.subscription_status:
                 comp.subscription_status = "ACTIVE"
             if not comp.max_employees:
@@ -185,3 +204,4 @@ def run_saas_migration():
 
 if __name__ == "__main__":
     run_saas_migration()
+

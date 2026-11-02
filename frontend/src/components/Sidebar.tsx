@@ -133,17 +133,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => setActiveTab('dashboard')}
             className="flex items-center text-left focus:outline-none cursor-pointer hover:opacity-90 transition-opacity"
-            title="FlowPeople - Dashboard"
+            title={`${currentUser?.brand_name || currentUser?.company_name || 'FlowPeople'} - Dashboard`}
           >
-            <Logo size={34} />
+            <Logo 
+              size={34} 
+              customLogoUrl={currentUser?.company_logo_url}
+              customTitle={currentUser?.brand_name || currentUser?.company_name}
+            />
           </button>
         ) : (
           <button
             onClick={() => setActiveTab('dashboard')}
             className="mx-auto cursor-pointer focus:outline-none hover:opacity-90 transition-opacity"
-            title="FlowPeople by FlowCraft - Home"
+            title={`${currentUser?.brand_name || currentUser?.company_name || 'FlowPeople'} by FlowCraft - Home`}
           >
-            <Logo variant="icon" size={36} />
+            <Logo 
+              variant="icon" 
+              size={36} 
+              customLogoUrl={currentUser?.company_logo_url}
+              customTitle={currentUser?.brand_name || currentUser?.company_name}
+            />
           </button>
         )}
       </div>

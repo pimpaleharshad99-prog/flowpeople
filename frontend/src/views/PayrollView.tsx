@@ -895,13 +895,24 @@ export const PayrollView: React.FC<PayrollViewProps> = ({ currentUser }) => {
             <div className="pb-4 border-b border-[var(--border-glass)] flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
-                    FP
-                  </div>
-                  <span className="font-bold text-base tracking-tight text-[var(--text-main)]">FlowPeople</span>
+                  {currentUser?.company_logo_url ? (
+                    <img 
+                      src={currentUser.company_logo_url} 
+                      alt="" 
+                      className="w-7 h-7 object-contain rounded-lg border border-[var(--border-glass)]" 
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                      {(currentUser?.brand_name || currentUser?.company_name || 'FP').slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="font-bold text-base tracking-tight text-[var(--text-main)]">
+                    {currentUser?.brand_name || currentUser?.company_name || 'FlowPeople'}
+                  </span>
                 </div>
                 <span className="text-[11px] text-[var(--text-subtle)] block">
-                  FlowCraft Ecosystem • Enterprise Workforce HRMS
+                  {currentUser?.company_name ? `${currentUser.company_name} • Internal Workforce Record` : 'Enterprise Workforce HRMS'}
                 </span>
               </div>
 

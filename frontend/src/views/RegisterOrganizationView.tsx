@@ -39,6 +39,8 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
   // Organization Form State
   const [companyName, setCompanyName] = useState('');
   const [companyCode, setCompanyCode] = useState('');
+  const [brandName, setBrandName] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [timezone, setTimezone] = useState('Asia/Kolkata');
   const [currency, setCurrency] = useState('INR');
@@ -85,6 +87,8 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
       const res = await api.registerOrganization({
         company_name: companyName,
         company_code: companyCode.toUpperCase(),
+        brand_name: brandName.trim() || companyName.trim(),
+        logo_url: logoUrl.trim() || undefined,
         contact_email: contactEmail,
         owner_first_name: firstName,
         owner_last_name: lastName,
@@ -225,6 +229,36 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 transition"
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Software / Brand Name (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Acme People (Defaults to Company Name)"
+                      value={brandName}
+                      onChange={(e) => setBrandName(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 transition"
+                    />
+                    <span className="text-[10px] text-slate-500 mt-1 block">Your custom software name on the admin panel & PDFs</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Company Logo URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://example.com/logo.png"
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 transition"
+                    />
+                    <span className="text-[10px] text-slate-500 mt-1 block">Appears in your sidebar, topbar, and PDF headers</span>
                   </div>
                 </div>
 
@@ -464,3 +498,4 @@ export const RegisterOrganizationView: React.FC<RegisterOrganizationViewProps> =
     </div>
   );
 };
+

@@ -167,6 +167,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         title: `Official Attendance & In-Out Timesheet Ledger`,
         subtitle: `Complete Employee Clock-In, Departure & Biometric Verification Record`,
         date: reportDate,
+        companyName: currentUser?.company_name || 'Organization Workspace',
+        companyLogoUrl: currentUser?.company_logo_url,
+        softwareTitle: currentUser?.brand_name || currentUser?.company_name,
         records: pdfRecords,
         summary: {
           totalEmployees: hrData?.total_employees,
@@ -206,6 +209,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       title: `Employee Personal Attendance Timesheet`,
       subtitle: `Official In-Out Punch Ledger for ${currentUser?.full_name} (${currentUser?.employee_code})`,
       date: new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long' }),
+      companyName: currentUser?.company_name || 'Organization Workspace',
+      companyLogoUrl: currentUser?.company_logo_url,
+      softwareTitle: currentUser?.brand_name || currentUser?.company_name,
       records: pdfRecords
     });
   };

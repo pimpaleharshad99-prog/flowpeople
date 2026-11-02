@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from pydantic import BaseModel
 from app.core.database import get_db
 from app.models.company import Company, Branch, Department, Designation, Holiday
 from app.models.user import User
@@ -20,6 +21,37 @@ def get_company(current_user: User = Depends(get_current_user), db: Session = De
     company = db.query(Company).filter(Company.id == current_user.company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
+    return company
+
+class CompanyBrandingUpdate(BaseModel):
+    name: Optional[str] = None
+    brand_name: Optional[str] = None
+    logo_url: Optional[str] = None
+    timezone: Optional[str] = None
+    currency: Optional[str] = None
+
+@router.put("/company/branding", response_model=CompanyOut)
+def update_company_branding(
+    branding_data: CompanyBrandingUpdate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Allows Organization Owner or HR Admin to customize organization name, brand title, and logo."""
+    company = db.query(Company).filter(Company.id == current_user.company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    if branding_data.name is not None and branding_data.name.strip():
+        company.name = branding_data.name.strip()
+    if branding_data.brand_name is not None:
+        company.brand_name = branding_data.brand_name.strip()
+    if branding_data.logo_url is not None:
+        company.logo_url = branding_data.logo_url.strip()
+    if branding_data.timezone is not None and branding_data.timezone.strip():
+        company.timezone = branding_data.timezone.strip()
+    if branding_data.currency is not None and branding_data.currency.strip():
+        company.currency = branding_data.currency.strip()
+    db.commit()
+    db.refresh(company)
     return company
 
 @router.get("/departments", response_model=List[DepartmentOut])

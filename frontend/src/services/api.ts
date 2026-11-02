@@ -3,6 +3,9 @@ const API_BASE = '/api/v1';
 export interface User {
   id: number;
   company_id: number;
+  company_name?: string;
+  company_logo_url?: string;
+  brand_name?: string;
   employee_code: string;
   email: string;
   first_name: string;
@@ -620,6 +623,9 @@ export const api = {
   activateInvite: (data: { token: string; password: string; auth_user_id?: string }) =>
     fetchJson<any>(`${API_BASE}/auth/activate-invite`, { method: 'POST', body: JSON.stringify(data) }),
 
+  getCompany: () => fetchJson<any>(`${API_BASE}/organization/company`),
+  updateCompanyBranding: (data: { name?: string; brand_name?: string; logo_url?: string; timezone?: string; currency?: string }) =>
+    fetchJson<any>(`${API_BASE}/organization/company/branding`, { method: 'PUT', body: JSON.stringify(data) }),
   getDepartments: () => fetchJson<any[]>(`${API_BASE}/organization/departments`),
   getDesignations: () => fetchJson<any[]>(`${API_BASE}/organization/designations`),
   getHolidays: () => fetchJson<any[]>(`${API_BASE}/organization/holidays`),

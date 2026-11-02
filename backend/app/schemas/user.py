@@ -57,6 +57,9 @@ class UserOut(UserBase):
     company_id: int
     is_platform_owner: bool = False
     created_at: datetime
+    company_name: Optional[str] = None
+    company_logo_url: Optional[str] = None
+    brand_name: Optional[str] = None
     branch_name: Optional[str] = None
     department_name: Optional[str] = None
     designation_name: Optional[str] = None

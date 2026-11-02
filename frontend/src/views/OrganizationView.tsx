@@ -7,6 +7,7 @@ import {
   Plus, 
   Users, 
   Shield, 
+  ShieldCheck,
   MapPin, 
   Navigation, 
   Globe, 
@@ -61,6 +62,16 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
   const [paymentTxRef, setPaymentTxRef] = useState<string>('');
   const [paying, setPaying] = useState(false);
 
+  // White-Label Company Branding state
+  const [companyBranding, setCompanyBranding] = useState({
+    name: currentUser?.company_name || '',
+    brand_name: currentUser?.brand_name || '',
+    logo_url: currentUser?.company_logo_url || '',
+    timezone: 'Asia/Kolkata',
+    currency: 'INR'
+  });
+  const [savingBranding, setSavingBranding] = useState(false);
+
   // New Branch Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -103,6 +114,17 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
       if (subData) setSubInfo(subData);
       if (planData) setPlans(planData);
       if (invoiceData) setInvoices(invoiceData);
+      api.getCompany().then((c: any) => {
+        if (c) {
+          setCompanyBranding({
+            name: c.name || '',
+            brand_name: c.brand_name || '',
+            logo_url: c.logo_url || '',
+            timezone: c.timezone || 'Asia/Kolkata',
+            currency: c.currency || 'INR'
+          });
+        }
+      }).catch(() => {});
     } catch (err: any) {
       addToast({
         title: 'Error loading organization metadata',
@@ -332,6 +354,36 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
     printWindow.document.close();
   };
 
+  const handleSaveBranding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingBranding(true);
+      const res = await api.updateCompanyBranding(companyBranding);
+      addToast({
+        title: 'Branding Updated',
+        description: 'Your organization software title, logo and white-label settings have been updated.',
+        type: 'success'
+      });
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        parsed.company_name = res.name;
+        parsed.brand_name = res.brand_name;
+        parsed.company_logo_url = res.logo_url;
+        localStorage.setItem('currentUser', JSON.stringify(parsed));
+      }
+      setTimeout(() => window.location.reload(), 600);
+    } catch (err: any) {
+      addToast({
+        title: 'Failed to update branding',
+        description: err.message,
+        type: 'danger'
+      });
+    } finally {
+      setSavingBranding(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <PageHeader
@@ -403,6 +455,7 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
           { id: 'shifts', label: 'Shift Schedules', count: shifts.length },
           { id: 'holidays', label: 'Holiday Calendar', count: holidays.length },
           { id: 'subscription', label: 'Plan & Subscription', count: subInfo?.usage.employees_count },
+          { id: 'branding', label: 'Company Branding & Logo' },
         ]}
         activeTab={activeTab}
         onChange={setActiveTab}
@@ -775,6 +828,144 @@ export const OrganizationView: React.FC<OrganizationViewProps> = ({ currentUser 
                 </table>
               </div>
             )}
+          </GlassCard>
+        </div>
+      )}
+
+      {/* Tab: Company Branding & White-Label Logo */}
+      {activeTab === 'branding' && (
+        <div className="space-y-6">
+          <GlassCard className="p-6">
+            <div className="flex flex-col md:flex-row gap-6 items-start justify-between border-b border-[var(--border-glass)] pb-6 mb-6">
+              <div>
+                <h3 className="text-base font-bold text-[var(--text-main)] flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-[var(--accent)]" />
+                  <span>White-Label Organization Branding</span>
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] mt-1 max-w-xl">
+                  Configure your organization's custom software name and corporate logo. This replaces the default branding across the top navigation, sidebar, employee portals, and official PDF attendance reports.
+                </p>
+              </div>
+
+              {/* Live Preview Pill */}
+              <div className="p-3.5 rounded-xl bg-[var(--surface-sunken)] border border-[var(--border-glass)] min-w-[220px]">
+                <p className="text-[10px] font-bold text-[var(--text-subtle)] uppercase tracking-wider mb-2">
+                  Live Header Preview
+                </p>
+                <div className="flex items-center gap-3">
+                  {companyBranding.logo_url ? (
+                    <img 
+                      src={companyBranding.logo_url} 
+                      alt="Logo Preview" 
+                      className="w-9 h-9 object-contain rounded-lg border border-[var(--border-glass)] bg-white/40"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-lg bg-[var(--accent)] text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                      {(companyBranding.brand_name || companyBranding.name || 'FP').slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[var(--text-main)] truncate">
+                      {companyBranding.brand_name || companyBranding.name || 'FlowPeople'}
+                    </p>
+                    <p className="text-[10px] text-[var(--text-subtle)]">
+                      by FlowCraft
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveBranding} className="space-y-5 max-w-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
+                    Legal Organization Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Acme Technologies Inc."
+                    value={companyBranding.name}
+                    onChange={(e) => setCompanyBranding({ ...companyBranding, name: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-[var(--surface-sunken)] border border-[var(--border-glass)] text-[var(--text-main)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                  />
+                  <span className="text-[10px] text-[var(--text-subtle)] mt-1 block">Used in legal payroll and tax receipts</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
+                    Custom Software / Portal Title
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Acme Workforce (defaults to Org Name)"
+                    value={companyBranding.brand_name}
+                    onChange={(e) => setCompanyBranding({ ...companyBranding, brand_name: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-[var(--surface-sunken)] border border-[var(--border-glass)] text-[var(--text-main)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                  />
+                  <span className="text-[10px] text-[var(--text-subtle)] mt-1 block">Displayed on Admin Panel, Sidebar & PDF Headers</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
+                  Company Logo Image URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://example.com/assets/logo.png"
+                  value={companyBranding.logo_url}
+                  onChange={(e) => setCompanyBranding({ ...companyBranding, logo_url: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl text-xs bg-[var(--surface-sunken)] border border-[var(--border-glass)] text-[var(--text-main)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+                <span className="text-[10px] text-[var(--text-subtle)] mt-1 block">
+                  Direct PNG, SVG, or JPG image link. Embedded in your sidebar and official PDF timesheet headers.
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">Corporate Timezone</label>
+                  <input
+                    type="text"
+                    value={companyBranding.timezone}
+                    onChange={(e) => setCompanyBranding({ ...companyBranding, timezone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-[var(--surface-sunken)] border border-[var(--border-glass)] text-[var(--text-main)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">Base Currency</label>
+                  <input
+                    type="text"
+                    value={companyBranding.currency}
+                    onChange={(e) => setCompanyBranding({ ...companyBranding, currency: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-[var(--surface-sunken)] border border-[var(--border-glass)] text-[var(--text-main)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-xs text-teal-800 dark:text-teal-300 flex items-start gap-2.5">
+                <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
+                <p>
+                  <strong>Footer Attribution:</strong> As requested, generated PDF attendance and timesheet exports will carry your organization's logo and title prominently at the top, while keeping the platform certification stamp <em>"FlowPeople by FlowCraft"</em> discreetly at the bottom footer.
+                </p>
+              </div>
+
+              {isAdmin && (
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={savingBranding}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[var(--accent)] text-white hover:opacity-90 transition-opacity shadow-md disabled:opacity-50"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{savingBranding ? 'Saving Branding...' : 'Save & Apply Organization Branding'}</span>
+                  </button>
+                </div>
+              )}
+            </form>
           </GlassCard>
         </div>
       )}

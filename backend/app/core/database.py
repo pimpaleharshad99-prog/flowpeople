@@ -24,8 +24,16 @@ def _migrate_columns():
     try:
         from sqlalchemy import text
         with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE attendance_punches ADD COLUMN verification_method VARCHAR(50) DEFAULT 'FACE'"))
-            conn.commit()
+            try:
+                conn.execute(text("ALTER TABLE attendance_punches ADD COLUMN verification_method VARCHAR(50) DEFAULT 'FACE'"))
+                conn.commit()
+            except Exception:
+                pass
+            try:
+                conn.execute(text("ALTER TABLE companies ADD COLUMN brand_name VARCHAR(200)"))
+                conn.commit()
+            except Exception:
+                pass
     except Exception:
         pass
 

@@ -81,9 +81,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       {/* Left: Breadcrumb / Page Title */}
       <div className="flex items-center gap-3">
         <div className="md:hidden shrink-0">
-          <Logo variant="icon" size={28} />
+          <Logo 
+            variant="icon" 
+            size={28} 
+            customLogoUrl={currentUser?.company_logo_url}
+            customTitle={currentUser?.brand_name || currentUser?.company_name}
+          />
         </div>
-        <span className="hidden sm:inline text-xs font-medium text-[var(--text-subtle)]">FlowPeople</span>
+        <span className="hidden sm:inline text-xs font-medium text-[var(--text-subtle)]">
+          {currentUser?.brand_name || currentUser?.company_name || 'FlowPeople'}
+        </span>
         <span className="hidden sm:inline text-xs text-[var(--text-subtle)]">/</span>
         <span className="text-sm font-semibold text-[var(--text-main)]">{activeTabTitle}</span>
       </div>

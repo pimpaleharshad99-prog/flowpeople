@@ -57,6 +57,7 @@ class CompanyOut(BaseModel):
     id: int
     name: str
     code: str
+    brand_name: Optional[str] = None
     logo_url: Optional[str] = None
     domain: Optional[str] = None
     timezone: str

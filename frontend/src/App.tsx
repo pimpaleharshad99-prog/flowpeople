@@ -409,7 +409,7 @@ export function App() {
                   />
                 )}
                 {activeTab === 'hradmin' && (
-                  <HRAdminPortalView />
+                  <HRAdminPortalView currentUser={currentUser} />
                 )}
                 {activeTab === 'manager' && (
                   <ManagerPortalView />

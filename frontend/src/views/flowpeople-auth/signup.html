@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Create your account · FlowPeople</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="auth.css">
+</head>
+<body data-page="signup">
+<div class="auth">
+  <aside class="side">
+    <a class="logo" data-route="home" href="/"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#14a89a"/><path d="M11 24c3 0 3-8 7-8s3 8 7 8 3-5 4-5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="29" cy="12" r="3" fill="#fff"/></svg><span>Flow<small>People</small></span></a>
+    <div>
+      <h2>Start your free trial in minutes.</h2>
+      <p class="lead">Create your organization, invite your team and track your first shift today.</p>
+      <ul class="points">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>14-day free trial, no credit card needed</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Import employees from a spreadsheet</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Biometric data stays encrypted and private</li>
+      </ul>
+    </div>
+    <div class="by">FlowPeople is a product of FlowCraft</div>
+  </aside>
+
+  <main class="main">
+    <a class="logo mtop" data-route="home" href="/"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#0d8a7f"/><path d="M11 24c3 0 3-8 7-8s3 8 7 8 3-5 4-5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="29" cy="12" r="3" fill="#7fe0d3"/></svg><span>Flow<small>People</small></span></a>
+    <div class="card wide">
+      <h1>Create your account</h1>
+      <p class="sub">Set up FlowPeople for your organization. You will be its owner.</p>
+
+      <div class="alert" id="alert" role="alert" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span class="amsg"></span></div>
+
+      <form id="form" novalidate>
+        <div class="row2">
+          <div class="field">
+            <label for="fullName">Full name</label>
+            <div class="control"><input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="Priya Sharma" maxlength="100" aria-describedby="fullName-err" required></div>
+            <p class="err-msg" id="fullName-err"></p>
+          </div>
+          <div class="field">
+            <label for="organizationName">Organization name</label>
+            <div class="control"><input id="organizationName" name="organizationName" type="text" autocomplete="organization" placeholder="Acme Industries" maxlength="120" aria-describedby="organizationName-err" required></div>
+            <p class="err-msg" id="organizationName-err"></p>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="email">Work email</label>
+            <div class="control"><input id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="you@company.com" maxlength="254" aria-describedby="email-err" required></div>
+            <p class="err-msg" id="email-err"></p>
+          </div>
+          <div class="field">
+            <label for="phone">Phone number</label>
+            <div class="control"><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" maxlength="24" aria-describedby="phone-err" required></div>
+            <p class="err-msg" id="phone-err"></p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="control has-btn">
+            <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Create a strong password" maxlength="128" aria-describedby="password-err rules" required>
+            <button type="button" class="toggle" data-for="password" aria-label="Show password" aria-pressed="false">
+              <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg>
+              <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M3 3l18 18M10.6 6.2A9.6 9.6 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-3.2 3.8M6.5 7.6A16 16 0 0 0 2.5 12S6 18 12 18c1.4 0 2.7-.3 3.9-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+          <div class="meter" id="meter" data-s="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <ul class="rules" id="rules">
+            <li data-rule="len">At least 10 characters</li>
+            <li data-rule="upper">One uppercase letter</li>
+            <li data-rule="lower">One lowercase letter</li>
+            <li data-rule="digit">One number</li>
+          </ul>
+          <p class="err-msg" id="password-err"></p>
+        </div>
+        <div class="field">
+          <label for="confirmPassword">Confirm password</label>
+          <div class="control has-btn">
+            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter your password" maxlength="128" aria-describedby="confirmPassword-err" required>
+            <button type="button" class="toggle" data-for="confirmPassword" aria-label="Show password" aria-pressed="false">
+              <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg>
+              <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M3 3l18 18M10.6 6.2A9.6 9.6 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-3.2 3.8M6.5 7.6A16 16 0 0 0 2.5 12S6 18 12 18c1.4 0 2.7-.3 3.9-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+          <p class="err-msg" id="confirmPassword-err"></p>
+        </div>
+        <div class="field">
+          <label class="check"><input type="checkbox" id="terms" name="terms" aria-describedby="terms-err"><span>I agree to the <a data-route="terms" href="/terms">Terms of Service</a> and <a data-route="privacy" href="/privacy">Privacy Policy</a>.</span></label>
+          <p class="err-msg" id="terms-err"></p>
+        </div>
+        <button class="btn" id="submit" type="submit"><span class="spin" aria-hidden="true"></span><span>Create account</span></button>
+      </form>
+
+      <p class="foot">Already have an account? <a data-route="login" href="/login">Sign in</a></p>
+    </div>
+  </main>
+</div>
+<script src="auth-config.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowPeople by FlowCraft — People Management. Simplified.</title>
+<meta name="description" content="FlowPeople is an HRMS with face and fingerprint attendance, payroll, leave, shifts and real-time analytics.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal-50:#effcfa;--teal-100:#d5f5f0;--teal-200:#aeeae0;--teal-400:#2dc4b2;--teal-500:#14a89a;--teal-600:#0d8a7f;--teal-700:#0f6e67;--teal-900:#0b3b3a;
+  --ink:#0f1f24;--ink-2:#41565c;--ink-3:#6d8187;--line:#e4ecee;--bg:#fff;--bg-soft:#f6fafa;
+  --shadow-sm:0 1px 2px rgba(15,31,36,.05),0 2px 8px rgba(15,31,36,.05);
+  --shadow-md:0 8px 24px rgba(15,31,36,.08);
+  --shadow-lg:0 24px 60px rgba(13,138,127,.16),0 8px 24px rgba(15,31,36,.08);
+  --r:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4{font-family:"Plus Jakarta Sans",Inter,sans-serif;line-height:1.15;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+img,svg{display:block;max-width:100%}
+svg:not([viewBox]){height:auto;aspect-ratio:1/1}
+.wrap{width:min(1200px,100% - 40px);margin-inline:auto}
+section{padding:96px 0}
+.eyebrow{display:inline-block;font:600 13px/1 "Plus Jakarta Sans";letter-spacing:.08em;text-transform:uppercase;color:var(--teal-600);background:var(--teal-50);border:1px solid var(--teal-100);padding:8px 14px;border-radius:99px;margin-bottom:18px}
+.sec-head{max-width:680px;margin:0 auto 56px;text-align:center}
+.sec-head h2{font-size:clamp(28px,4vw,42px);margin-bottom:14px}
+.sec-head p{color:var(--ink-2);font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 15px/1 "Plus Jakarta Sans";padding:15px 24px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}
+.btn:focus-visible,a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--teal-400);outline-offset:3px}
+.btn-primary{background:var(--teal-600);color:#fff;box-shadow:0 6px 18px rgba(13,138,127,.3)}
+.btn-primary:hover{background:var(--teal-700);transform:translateY(-2px)}
+.btn-ghost{background:#fff;color:var(--ink);border-color:var(--line);box-shadow:var(--shadow-sm)}
+.btn-ghost:hover{border-color:var(--teal-400);transform:translateY(-2px)}
+.btn-sm{padding:11px 18px;font-size:14px}
+
+/* NAV */
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .2s,box-shadow .2s}
+header.scrolled{border-color:var(--line);box-shadow:var(--shadow-sm)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{display:flex;align-items:center;gap:10px;font:800 21px "Plus Jakarta Sans";letter-spacing:-.03em}
+.logo small{font-weight:600;color:var(--teal-600)}
+.logo-mark{width:34px;height:34px}
+.nav-links{display:flex;gap:30px;font-weight:500;font-size:15px;color:var(--ink-2)}
+.nav-links a:hover{color:var(--teal-600)}
+.nav-cta{display:flex;align-items:center;gap:12px}
+.nav-cta .login{font-weight:600;font-size:15px;color:var(--ink-2);padding:10px 12px}
+.nav-cta .login:hover{color:var(--teal-600)}
+.burger{display:none;background:none;border:1px solid var(--line);border-radius:10px;width:44px;height:44px;cursor:pointer;align-items:center;justify-content:center}
+.mobile-menu{display:none;border-top:1px solid var(--line);padding:12px 20px 20px;background:#fff}
+.mobile-menu a{display:block;padding:14px 4px;font-weight:600;border-bottom:1px solid var(--line)}
+.mobile-menu .btn{margin-top:16px;width:100%;border:0}
+.mobile-menu.open{display:block}
+
+/* HERO */
+.hero{padding:72px 0 88px;background:radial-gradient(900px 500px at 85% -10%,var(--teal-100),transparent 60%),radial-gradient(600px 400px at 0% 20%,var(--teal-50),transparent 60%)}
+.hero-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(40px,6vw,66px);margin-bottom:20px}
+.hero h1 span{background:linear-gradient(90deg,var(--teal-600),var(--teal-400));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:19px;color:var(--ink-2);max-width:520px;margin-bottom:32px}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
+.trust{display:flex;gap:22px;flex-wrap:wrap;font-size:14px;color:var(--ink-3)}
+.trust span{display:flex;align-items:center;gap:7px}
+.trust svg{width:16px;color:var(--teal-500)}
+.hero-visual{position:relative}
+.float{position:absolute;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-md);padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:13px;z-index:2;animation:bob 6s ease-in-out infinite}
+.float b{display:block;font:700 14px "Plus Jakarta Sans"}
+.float .ic{width:36px;height:36px;border-radius:10px;background:var(--teal-50);color:var(--teal-600);display:grid;place-items:center}
+.float .ic svg{width:20px}
+.f1{top:-18px;left:-22px}
+.f2{bottom:-26px;right:-12px;animation-delay:-3s}
+@keyframes bob{50%{transform:translateY(-9px)}}
+
+/* DASHBOARD MOCK */
+.dash{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-lg);overflow:hidden}
+.dash-bar{display:flex;align-items:center;gap:7px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg-soft)}
+.dash-bar i{width:10px;height:10px;border-radius:50%;background:#d6e2e4}
+.dash-bar em{margin-left:10px;font-style:normal;font-size:12px;color:var(--ink-3);background:#fff;border:1px solid var(--line);border-radius:8px;padding:3px 12px}
+.dash-body{display:grid;grid-template-columns:150px 1fr;min-height:340px}
+.side{border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.side div{padding:9px 12px;border-radius:10px;display:flex;align-items:center;gap:9px}
+.side div.on{background:var(--teal-50);color:var(--teal-700);font-weight:600}
+.side svg{width:16px;flex:none}
+.main{padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{border:1px solid var(--line);border-radius:14px;padding:12px}
+.kpi small{font-size:11px;color:var(--ink-3)}
+.kpi strong{display:block;font:800 22px "Plus Jakarta Sans";margin-top:2px}
+.kpi em{font-style:normal;font-size:11px;color:var(--teal-600);font-weight:600}
+.panels{display:grid;grid-template-columns:1.5fr 1fr;gap:10px}
+.panel{border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.panel h5{font:700 12px "Plus Jakarta Sans";margin-bottom:10px;color:var(--ink-2)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:92px}
+.bars span{flex:1;background:linear-gradient(var(--teal-400),var(--teal-500));border-radius:6px 6px 2px 2px;transform-origin:bottom;animation:grow 1.2s cubic-bezier(.2,.8,.2,1) both}
+.bars span:nth-child(odd){opacity:.55}
+@keyframes grow{from{transform:scaleY(0)}}
+.donut{width:92px;height:92px;margin:0 auto}
+.rows{display:flex;flex-direction:column;gap:8px;font-size:12px}
+.rows div{display:flex;align-items:center;gap:8px}
+.av{width:22px;height:22px;border-radius:50%;background:var(--teal-100);color:var(--teal-700);font:700 10px/22px "Plus Jakarta Sans";text-align:center;flex:none}
+.pill{margin-left:auto;white-space:nowrap;font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--teal-50);color:var(--teal-700)}
+.pill.late{background:#fff4e5;color:#b45f06}
+
+/* LOGOS */
+.stats{padding:0 0 40px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;border:1px solid var(--line);border-radius:var(--r);padding:28px;box-shadow:var(--shadow-sm);background:#fff;margin-top:-30px;position:relative}
+.stat{text-align:center}
+.stat strong{display:block;font:800 34px "Plus Jakarta Sans";color:var(--teal-600)}
+.stat span{font-size:14px;color:var(--ink-3)}
+
+/* FEATURES */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px;box-shadow:var(--shadow-sm);transition:transform .25s,box-shadow .25s,border-color .25s}
+.card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md);border-color:var(--teal-200)}
+.card .ic{width:48px;height:48px;border-radius:14px;background:var(--teal-50);color:var(--teal-600);display:grid;place-items:center;margin-bottom:18px}
+.card .ic svg{width:24px}
+.card h3{font-size:18px;margin-bottom:8px}
+.card p{font-size:15px;color:var(--ink-2)}
+.card.hi{background:linear-gradient(160deg,var(--teal-600),var(--teal-700));color:#fff;border:0}
+.card.hi p{color:#d3f3ee}
+.card.hi .ic{background:rgba(255,255,255,.16);color:#fff}
+
+/* HOW */
+.how{background:var(--bg-soft)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative}
+.steps:before{content:"";position:absolute;top:27px;left:12%;right:12%;height:2px;background:repeating-linear-gradient(90deg,var(--teal-200) 0 8px,transparent 8px 16px)}
+.step{text-align:center;position:relative}
+.num{width:56px;height:56px;border-radius:50%;background:#fff;border:2px solid var(--teal-400);color:var(--teal-600);font:800 20px/52px "Plus Jakarta Sans";margin:0 auto 18px;box-shadow:0 0 0 8px var(--bg-soft)}
+.step h3{font-size:18px;margin-bottom:8px}
+.step p{font-size:15px;color:var(--ink-2)}
+
+/* FACE SHOWCASE */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.split h2{font-size:clamp(28px,4vw,42px);margin-bottom:16px}
+.split p.lead{color:var(--ink-2);font-size:18px;margin-bottom:24px}
+.checks{list-style:none;display:grid;gap:14px;margin-bottom:32px}
+.checks li{display:flex;gap:12px;align-items:flex-start;color:var(--ink-2)}
+.checks svg{width:22px;flex:none;color:var(--teal-600);margin-top:2px}
+.checks b{color:var(--ink)}
+.kiosk{background:linear-gradient(160deg,#0e2b2e,#0b3b3a);border-radius:28px;padding:28px;box-shadow:var(--shadow-lg);color:#fff;position:relative;overflow:hidden}
+.kiosk:before{content:"";position:absolute;inset:-40% -20% auto auto;width:360px;height:360px;background:radial-gradient(circle,rgba(45,196,178,.35),transparent 65%)}
+.kiosk-top{display:flex;justify-content:space-between;font-size:13px;color:#a9cfcb;position:relative}
+.kiosk-top b{color:#fff}
+.scan{position:relative;width:min(260px,70%);aspect-ratio:3/4;margin:22px auto;border-radius:22px;background:linear-gradient(180deg,#14484a,#0e3436);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+.scan svg.face{position:absolute;inset:0;margin:auto;width:78%;color:#7fe0d3;opacity:.9}
+.scan .corner{position:absolute;width:34px;height:34px;border:3px solid var(--teal-400)}
+.c1{top:14px;left:14px;border-right:0;border-bottom:0;border-radius:10px 0 0 0}
+.c2{top:14px;right:14px;border-left:0;border-bottom:0;border-radius:0 10px 0 0}
+.c3{bottom:14px;left:14px;border-right:0;border-top:0;border-radius:0 0 0 10px}
+.c4{bottom:14px;right:14px;border-left:0;border-top:0;border-radius:0 0 10px 0}
+.scan .line{position:absolute;left:8%;right:8%;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--teal-400),transparent);box-shadow:0 0 18px var(--teal-400);animation:scan 2.8s ease-in-out infinite}
+@keyframes scan{0%,100%{top:12%}50%{top:86%}}
+.result{position:relative;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.result .av{width:40px;height:40px;line-height:40px;font-size:14px;background:var(--teal-400);color:#06302d}
+.result b{display:block}
+.result small{color:#a9cfcb}
+.result .ok{margin-left:auto;background:var(--teal-400);color:#06302d;font:700 12px "Plus Jakarta Sans";padding:6px 12px;border-radius:99px;white-space:nowrap}
+
+/* DASH PREVIEW */
+.preview{background:linear-gradient(180deg,#fff,var(--teal-50))}
+.tabs{display:flex;justify-content:center;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+.tab{font:600 14px "Plus Jakarta Sans";padding:11px 20px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer}
+.tab[aria-selected=true]{background:var(--teal-600);color:#fff;border-color:var(--teal-600)}
+.tabpanel{display:none}
+.tabpanel.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+.big-dash{max-width:960px;margin:0 auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;color:var(--ink-3);font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px 6px;border-bottom:1px solid var(--line)}
+.tbl-wrap{overflow-x:auto}
+.progress{height:8px;background:var(--teal-50);border-radius:9px;overflow:hidden;min-width:70px}
+.progress i{display:block;height:100%;background:var(--teal-500);border-radius:9px}
+
+/* SECURITY */
+.sec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.sec-banner{margin-top:28px;background:var(--teal-900);color:#fff;border-radius:var(--r);padding:32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.sec-banner p{color:#b6dad6;max-width:640px}
+.sec-banner h3{font-size:22px;margin-bottom:6px}
+
+/* PRICING */
+.pricing{background:var(--bg-soft)}
+.toggle{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:40px;font-weight:600;font-size:15px;color:var(--ink-2)}
+.switch{width:52px;height:30px;border-radius:99px;background:var(--teal-600);border:0;position:relative;cursor:pointer}
+.switch:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch[aria-checked=true]:after{transform:translateX(22px)}
+.save{background:var(--teal-100);color:var(--teal-700);font-size:12px;padding:4px 10px;border-radius:99px}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
+.plan{background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px 30px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;position:relative}
+.plan.pop{border:2px solid var(--teal-500);box-shadow:var(--shadow-lg);transform:translateY(-10px)}
+.badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--teal-600);color:#fff;font:700 12px "Plus Jakarta Sans";padding:6px 14px;border-radius:99px}
+.plan h3{font-size:20px}
+.plan .sub{color:var(--ink-3);font-size:14px;margin:6px 0 20px;min-height:44px}
+.price{font:800 44px "Plus Jakarta Sans";letter-spacing:-.03em}
+.price small{font:500 14px Inter;color:var(--ink-3);letter-spacing:0}
+.plan ul{list-style:none;margin:24px 0 30px;display:grid;gap:12px;font-size:15px;color:var(--ink-2);flex:1}
+.plan li{display:flex;gap:10px}
+.plan li svg{width:18px;flex:none;color:var(--teal-600);margin-top:3px}
+.plan .btn{width:100%}
+.note{text-align:center;margin-top:28px;color:var(--ink-3);font-size:14px}
+
+/* FAQ */
+.faq{max-width:800px;margin:0 auto;display:grid;gap:12px}
+details{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-sm);transition:border-color .2s}
+details[open]{border-color:var(--teal-200)}
+summary{list-style:none;cursor:pointer;padding:20px 24px;font:700 17px "Plus Jakarta Sans";display:flex;justify-content:space-between;align-items:center;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";font:500 26px/1 Inter;color:var(--teal-600);transition:transform .2s}
+details[open] summary:after{transform:rotate(45deg)}
+details p{padding:0 24px 22px;color:var(--ink-2)}
+
+/* CTA + FOOTER */
+.cta{padding:0 0 96px}
+.cta-box{background:linear-gradient(135deg,var(--teal-600),var(--teal-700));border-radius:32px;padding:64px 32px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.cta-box:before{content:"";position:absolute;right:-80px;top:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.08)}
+.cta-box h2{font-size:clamp(28px,4vw,42px);margin-bottom:12px;position:relative}
+.cta-box p{color:#d3f3ee;margin-bottom:28px;font-size:18px;position:relative}
+.cta-box .btn-primary{background:#fff;color:var(--teal-700);box-shadow:none}
+.cta-box .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.5);box-shadow:none}
+.cta-box .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+footer{background:var(--ink);color:#b4c5c9;padding:72px 0 32px}
+.foot-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:40px;margin-bottom:48px}
+footer .logo{color:#fff;margin-bottom:14px}
+footer p{font-size:14px;max-width:320px}
+footer h4{color:#fff;font-size:14px;margin-bottom:16px}
+footer ul{list-style:none;display:grid;gap:10px;font-size:14px}
+footer a:hover{color:var(--teal-400)}
+.foot-bottom{border-top:1px solid #243a40;padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px}
+.by{display:flex;align-items:center;gap:8px;color:#fff;font-weight:600}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+
+/* RESPONSIVE */
+@media (max-width:1060px){
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .hero-grid,.split{grid-template-columns:1fr;gap:48px}
+  .hero p.lead{max-width:none}
+  .steps{grid-template-columns:repeat(2,1fr);row-gap:36px}.steps:before{display:none}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .split .kiosk-col{order:-1}
+}
+@media (max-width:860px){
+  .nav-links,.nav-cta .login,.nav-cta .btn{display:none}
+  .burger{display:flex}
+  .sec-grid,.plans{grid-template-columns:1fr}
+  .plan.pop{transform:none}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  section{padding:72px 0}
+}
+@media (max-width:600px){
+  .grid-4{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .dash-body{grid-template-columns:1fr}.side{display:none}
+  .kpis{grid-template-columns:1fr 1fr}.kpis .kpi:last-child{display:none}
+  .panels{grid-template-columns:1fr}
+  .float{display:none}
+  .foot-grid{grid-template-columns:1fr}
+  .hero-ctas .btn{width:100%}
+  .sec-banner{padding:24px}
+  .result{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 10v1M15 10v1M12 10v3.5h-1M9 16c1.7 1.4 4.3 1.4 6 0"/></symbol>
+    <symbol id="i-finger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11v4a6 6 0 0 1-1.5 4M8 12a4 4 0 0 1 8 0v2.5a9 9 0 0 1-1.2 4.5M5 12a7 7 0 0 1 14 0M5 12v2c0 2 .4 3.6 1.2 5M12 8a1 1 0 0 0-1 1v2"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5a3.2 3.2 0 0 1 0 6M18 14c2 .6 3.5 2.8 3.5 6"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17M9 14.5l2 2 4-4"/></symbol>
+    <symbol id="i-pay" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18M7 15h3"/><circle cx="16.5" cy="15" r="1.2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6"/></symbol>
+    <symbol id="i-self" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/><path d="M17.5 3.5l1 1 2-2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="3"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 15v2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v5.5c0 4.5-3.1 8-7.5 9.5-4.4-1.5-7.5-5-7.5-9.5V6L12 3z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2.5 2.5"/></symbol>
+    <symbol id="i-log" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M9 11h6M9 14.5h6M9 18h3"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="6.5" rx="2"/><rect x="3.5" y="13.5" width="17" height="6.5" rx="2"/><path d="M7 7.2h.01M7 16.8h.01"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+  </defs>
+</svg>
+
+<header id="top">
+  <div class="wrap nav">
+    <a class="logo" href="#top" aria-label="FlowPeople home">
+      <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#0d8a7f"/><path d="M11 24c3 0 3-8 7-8s3 8 7 8 3-5 4-5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="29" cy="12" r="3" fill="#7fe0d3"/></svg>
+      <span>Flow<small>People</small></span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#solutions">Solutions</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="login" data-route="login" href="/login">Login</a>
+      <a class="btn btn-primary btn-sm" data-route="signup" href="/signup">Get Started</a>
+      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="mm">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mm">
+    <a href="#features">Features</a>
+    <a href="#solutions">Solutions</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#about">About</a>
+    <a data-route="login" href="/login">Login</a>
+    <a class="btn btn-primary" data-route="signup" href="/signup">Get Started</a>
+  </div>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">HRMS with biometric attendance</span>
+      <h1>People Management. <span>Simplified.</span></h1>
+      <p class="lead">FlowPeople brings intelligent HR management and biometric attendance into one calm workspace. Track every shift with face and fingerprint check-ins, run payroll with confidence, and give your team the tools they need.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" data-route="signup" href="/signup">Start Free Trial
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-ghost" href="#features">Explore Features</a>
+      </div>
+      <div class="trust">
+        <span><svg><use href="#i-check"/></svg>14-day free trial</span>
+        <span><svg><use href="#i-check"/></svg>No credit card needed</span>
+        <span><svg><use href="#i-check"/></svg>Setup in a day</span>
+      </div>
+    </div>
+
+    <div class="hero-visual rv">
+      <div class="float f1"><div class="ic"><svg><use href="#i-face"/></svg></div><div><b>Face verified</b>Priya S. · 09:02 AM</div></div>
+      <div class="float f2"><div class="ic"><svg><use href="#i-chart"/></svg></div><div><b>96.4% on time</b>This week</div></div>
+      <div class="dash" role="img" aria-label="FlowPeople HR dashboard preview showing attendance, headcount and recent check-ins">
+        <div class="dash-bar"><i></i><i></i><i></i><em>app.flowpeople.com/dashboard</em></div>
+        <div class="dash-body">
+          <div class="side">
+            <div class="on"><svg><use href="#i-home"/></svg>Overview</div>
+            <div><svg><use href="#i-users"/></svg>Employees</div>
+            <div><svg><use href="#i-face"/></svg>Attendance</div>
+            <div><svg><use href="#i-cal"/></svg>Leave</div>
+            <div><svg><use href="#i-pay"/></svg>Payroll</div>
+            <div><svg><use href="#i-chart"/></svg>Reports</div>
+          </div>
+          <div class="main">
+            <div class="kpis">
+              <div class="kpi"><small>Total employees</small><strong>1,248</strong><em>+3.2%</em></div>
+              <div class="kpi"><small>Present today</small><strong>1,174</strong><em>94.1%</em></div>
+              <div class="kpi"><small>On leave</small><strong>38</strong><em>Approved</em></div>
+            </div>
+            <div class="panels">
+              <div class="panel"><h5>Weekly attendance</h5>
+                <div class="bars" aria-hidden="true">
+                  <span style="height:62%"></span><span style="height:78%;animation-delay:.1s"></span><span style="height:70%;animation-delay:.2s"></span><span style="height:92%;animation-delay:.3s"></span><span style="height:84%;animation-delay:.4s"></span><span style="height:46%;animation-delay:.5s"></span><span style="height:30%;animation-delay:.6s"></span>
+                </div>
+              </div>
+              <div class="panel"><h5>Latest check-ins</h5>
+                <div class="rows">
+                  <div><span class="av">PS</span>Priya S.<span class="pill">On time</span></div>
+                  <div><span class="av">RK</span>Rahul K.<span class="pill">On time</span></div>
+                  <div><span class="av">AM</span>Anita M.<span class="pill late">Late 8m</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stats-row rv">
+      <div class="stat"><strong data-count="99.9" data-dec="1" data-suffix="%">99.9%</strong><span>Face match accuracy</span></div>
+      <div class="stat"><strong data-count="2" data-prefix="&lt;" data-suffix="s">&lt;2s</strong><span>Average check-in time</span></div>
+      <div class="stat"><strong data-count="80" data-suffix="%">80%</strong><span>Less time on HR admin</span></div>
+      <div class="stat"><strong data-count="1" data-suffix=" day">1 day</strong><span>Typical go-live</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">Features</span>
+      <h2>Everything your people team needs</h2>
+      <p>Eight connected modules that replace spreadsheets, paper registers and scattered tools.</p>
+    </div>
+    <div class="grid-4">
+      <article class="card hi rv"><div class="ic"><svg><use href="#i-face"/></svg></div><h3>Face Recognition Attendance</h3><p>Contactless check-in in under two seconds, with live liveness checks to stop photo and video spoofing.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-finger"/></svg></div><h3>Fingerprint Attendance</h3><p>Connect fingerprint devices for sites where speed and reliability matter. Punches sync in real time.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-users"/></svg></div><h3>Employee Management</h3><p>One profile for documents, roles, contracts and history. Org charts and bulk import included.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-cal"/></svg></div><h3>Leave Management</h3><p>Custom leave policies, balances that update by themselves, and approvals in one tap.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-pay"/></svg></div><h3>Payroll Management</h3><p>Attendance flows straight into payroll. Handle overtime, deductions and payslips without re-entry.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-clock"/></svg></div><h3>Shift Management</h3><p>Build rosters, rotate shifts and handle swaps. Spot gaps and overlaps before they happen.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-chart"/></svg></div><h3>Real-time Analytics</h3><p>Live dashboards for attendance, lateness, overtime and headcount. Export any report in seconds.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-self"/></svg></div><h3>Employee Self-Service</h3><p>Staff view payslips, apply for leave and fix attendance from their phone, with no HR ticket needed.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTIONS / HOW IT WORKS -->
+<section class="how" id="solutions">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">How it works</span>
+      <h2>From sign-up to first payslip in four steps</h2>
+      <p>Built for growing teams, factories, schools, clinics, retail chains and offices with more than one site.</p>
+    </div>
+    <div class="steps">
+      <div class="step rv"><div class="num">1</div><h3>Set up your company</h3><p>Add locations, departments, shifts and leave rules. Import employees from a spreadsheet.</p></div>
+      <div class="step rv"><div class="num">2</div><h3>Enrol your team</h3><p>Capture a face or fingerprint once. It takes less than ten seconds per person.</p></div>
+      <div class="step rv"><div class="num">3</div><h3>Track attendance</h3><p>Employees check in at a device or kiosk. Every punch lands in your dashboard instantly.</p></div>
+      <div class="step rv"><div class="num">4</div><h3>Run payroll</h3><p>Review the numbers, approve, and send payslips. Attendance and leave are already counted.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FACE SHOWCASE -->
+<section id="face">
+  <div class="wrap split">
+    <div class="rv">
+      <span class="eyebrow">Face attendance</span>
+      <h2>Check in with a look. Nothing to touch, nothing to forget.</h2>
+      <p class="lead">Turn any tablet or kiosk into a secure attendance point. FlowPeople recognises your team, records the punch and tells HR right away.</p>
+      <ul class="checks">
+        <li><svg><use href="#i-check"/></svg><span><b>Liveness detection.</b> Blocks photos, videos and masks.</span></li>
+        <li><svg><use href="#i-check"/></svg><span><b>Works in real conditions.</b> Handles glasses, beards, masks and low light.</span></li>
+        <li><svg><use href="#i-check"/></svg><span><b>Geo-fenced punches.</b> Only valid at approved sites.</span></li>
+        <li><svg><use href="#i-check"/></svg><span><b>Instant alerts.</b> Late, missed and unknown faces are flagged live.</span></li>
+      </ul>
+      <a class="btn btn-primary" data-route="signup" href="/signup">Try Face Attendance Free</a>
+    </div>
+    <div class="kiosk-col rv">
+      <div class="kiosk" role="img" aria-label="Face attendance kiosk scanning an employee and confirming check-in">
+        <div class="kiosk-top"><b>FlowPeople Kiosk</b><span>Main Gate · 09:02 AM</span></div>
+        <div class="scan">
+          <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+          <svg class="face" viewBox="0 0 120 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="60" cy="72" rx="36" ry="46"/><path d="M42 64h10M68 64h10M60 66v18l-5 2M48 100c7 6 17 6 24 0M30 60c0-24 14-34 30-34s30 10 30 34"/><circle cx="60" cy="72" r="1" fill="currentColor"/></svg>
+          <span class="line"></span>
+        </div>
+        <div class="result"><span class="av">PS</span><div><b>Priya Sharma</b><small>Design · Shift A</small></div><span class="ok">✓ Checked in</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<section class="preview">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">Dashboard</span>
+      <h2>See your whole workforce at a glance</h2>
+      <p>Switch views to explore how FlowPeople keeps each part of HR in one place.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Dashboard views">
+      <button class="tab" role="tab" aria-selected="true" aria-controls="p1" id="t1">Attendance</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p2" id="t2">Leave</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p3" id="t3">Payroll</button>
+    </div>
+    <div class="dash big-dash rv">
+      <div class="dash-bar"><i></i><i></i><i></i><em>app.flowpeople.com</em></div>
+      <div style="padding:22px">
+        <div class="tabpanel on" id="p1" role="tabpanel" aria-labelledby="t1">
+          <div class="kpis" style="margin-bottom:16px">
+            <div class="kpi"><small>Present</small><strong>1,174</strong><em>94.1%</em></div>
+            <div class="kpi"><small>Late arrivals</small><strong>41</strong><em>-12% vs last week</em></div>
+            <div class="kpi"><small>Overtime hours</small><strong>312</strong><em>Within budget</em></div>
+          </div>
+          <div class="panel tbl-wrap"><table class="tbl"><thead><tr><th>Employee</th><th>Method</th><th>In</th><th>Out</th><th>Status</th></tr></thead><tbody>
+            <tr><td>Priya Sharma</td><td>Face</td><td>09:02</td><td>—</td><td><span class="pill" style="margin:0">On time</span></td></tr>
+            <tr><td>Rahul Kulkarni</td><td>Fingerprint</td><td>08:57</td><td>—</td><td><span class="pill" style="margin:0">On time</span></td></tr>
+            <tr><td>Anita Menon</td><td>Face</td><td>09:18</td><td>—</td><td><span class="pill late" style="margin:0">Late 18m</span></td></tr>
+            <tr><td>Vikram Rao</td><td>Face</td><td>08:49</td><td>—</td><td><span class="pill" style="margin:0">On time</span></td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="tabpanel" id="p2" role="tabpanel" aria-labelledby="t2" hidden>
+          <div class="panel tbl-wrap"><table class="tbl"><thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Balance used</th><th>Status</th></tr></thead><tbody>
+            <tr><td>Neha Joshi</td><td>Annual</td><td>10–14 Nov</td><td><div class="progress"><i style="width:40%"></i></div></td><td><span class="pill" style="margin:0">Approved</span></td></tr>
+            <tr><td>Sameer Patil</td><td>Sick</td><td>3 Nov</td><td><div class="progress"><i style="width:15%"></i></div></td><td><span class="pill" style="margin:0">Approved</span></td></tr>
+            <tr><td>Kavya Iyer</td><td>Annual</td><td>20–24 Nov</td><td><div class="progress"><i style="width:62%"></i></div></td><td><span class="pill late" style="margin:0">Pending</span></td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="tabpanel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
+          <div class="kpis" style="margin-bottom:16px">
+            <div class="kpi"><small>Payroll this month</small><strong>₹84.2L</strong><em>Ready to review</em></div>
+            <div class="kpi"><small>Payslips generated</small><strong>1,248</strong><em>100%</em></div>
+            <div class="kpi"><small>Exceptions</small><strong>6</strong><em>Needs review</em></div>
+          </div>
+          <div class="panel"><h5>Payroll cost by department</h5>
+            <div class="bars" aria-hidden="true" style="height:110px"><span style="height:88%"></span><span style="height:64%"></span><span style="height:72%"></span><span style="height:48%"></span><span style="height:56%"></span><span style="height:36%"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section id="security">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">Security &amp; privacy</span>
+      <h2>Biometric data deserves the highest care</h2>
+      <p>FlowPeople is built so your people's data stays protected, private and under your control.</p>
+    </div>
+    <div class="sec-grid">
+      <article class="card rv"><div class="ic"><svg><use href="#i-lock"/></svg></div><h3>Encrypted end to end</h3><p>Data is encrypted in transit and at rest. Biometric templates are stored as encrypted math, not as photos.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-key"/></svg></div><h3>Role-based access</h3><p>Decide exactly who can see salaries, documents and attendance. Every permission is yours to set.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-log"/></svg></div><h3>Full audit trail</h3><p>Every change to a record is logged with who, what and when, ready for audits.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-eye"/></svg></div><h3>Consent and privacy controls</h3><p>Record employee consent for biometric capture, set retention periods and delete data on request.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-server"/></svg></div><h3>Reliable cloud</h3><p>Daily backups and a resilient setup keep your records safe and available.</p></article>
+      <article class="card rv"><div class="ic"><svg><use href="#i-shield"/></svg></div><h3>Anti-spoofing</h3><p>Liveness checks and device binding help make sure the person at the kiosk is really them.</p></article>
+    </div>
+    <div class="sec-banner rv">
+      <div><h3>Your data is never sold or shared.</h3><p>Biometric data is used only for attendance and is never used for advertising or sold to third parties.</p></div>
+      <a class="btn btn-primary" style="background:#fff;color:var(--teal-700);box-shadow:none" href="#faq">Read security FAQs</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">Pricing</span>
+      <h2>Simple pricing that grows with you</h2>
+      <p>Pay per employee per month. Start free for 14 days. Cancel any time.</p>
+    </div>
+    <div class="toggle rv"><span>Monthly</span><button class="switch" id="billing" role="switch" aria-checked="true" aria-label="Billing period: yearly"></button><span>Yearly <span class="save">Save 20%</span></span></div>
+    <div class="plans">
+      <article class="plan rv">
+        <h3>Starter</h3><p class="sub">For small teams getting off spreadsheets.</p>
+        <div class="price"><span data-m="₹49" data-y="₹39">₹39</span><small> / employee / month</small></div>
+        <ul>
+          <li><svg><use href="#i-check"/></svg>Employee management</li>
+          <li><svg><use href="#i-check"/></svg>Face or fingerprint attendance</li>
+          <li><svg><use href="#i-check"/></svg>Leave management</li>
+          <li><svg><use href="#i-check"/></svg>Self-service app</li>
+        </ul>
+        <a class="btn btn-ghost" data-route="signup" href="/signup">Start Free Trial</a>
+      </article>
+      <article class="plan pop rv">
+        <span class="badge">Most popular</span>
+        <h3>Growth</h3><p class="sub">For growing companies that run payroll in-house.</p>
+        <div class="price"><span data-m="₹99" data-y="₹79">₹79</span><small> / employee / month</small></div>
+        <ul>
+          <li><svg><use href="#i-check"/></svg>Everything in Starter</li>
+          <li><svg><use href="#i-check"/></svg>Payroll and payslips</li>
+          <li><svg><use href="#i-check"/></svg>Shift and roster management</li>
+          <li><svg><use href="#i-check"/></svg>Real-time analytics</li>
+          <li><svg><use href="#i-check"/></svg>Multiple locations</li>
+        </ul>
+        <a class="btn btn-primary" data-route="signup" href="/signup">Start Free Trial</a>
+      </article>
+      <article class="plan rv">
+        <h3>Enterprise</h3><p class="sub">For large organisations with custom needs.</p>
+        <div class="price"><span>Custom</span></div>
+        <ul>
+          <li><svg><use href="#i-check"/></svg>Everything in Growth</li>
+          <li><svg><use href="#i-check"/></svg>Custom roles and approvals</li>
+          <li><svg><use href="#i-check"/></svg>Dedicated onboarding</li>
+          <li><svg><use href="#i-check"/></svg>Priority support</li>
+        </ul>
+        <a class="btn btn-ghost" data-route="contact" href="mailto:hello@flowcraft.in">Talk to Sales</a>
+      </article>
+    </div>
+    <p class="note">Prices shown are sample pricing for preview. Replace with your final plans before launch.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">FAQ</span>
+      <h2>Questions customers ask us</h2>
+    </div>
+    <div class="faq rv">
+      <details open><summary>How does face recognition attendance work?</summary><p>Employees enrol once with a short face capture. After that, they look at a tablet or kiosk and the system matches them, checks liveness and records the punch in about two seconds.</p></details>
+      <details><summary>Do you store photos of my employees' faces?</summary><p>FlowPeople stores an encrypted biometric template instead of a usable photo. You control retention and can delete a person's data at any time.</p></details>
+      <details><summary>Can we use fingerprint devices as well?</summary><p>Yes. You can use face, fingerprint or both, and mix methods across locations. All punches appear in the same attendance records.</p></details>
+      <details><summary>Does attendance connect to payroll?</summary><p>Yes. Attendance, overtime and approved leave flow into payroll automatically, so there is no copying between files.</p></details>
+      <details><summary>Can employees use it on their phones?</summary><p>Yes. Employee self-service lets people view payslips, apply for leave and request attendance fixes from their phone or laptop.</p></details>
+      <details><summary>How long does setup take?</summary><p>Most teams are live within a day. You import employees from a spreadsheet, set policies and start enrolling faces or fingerprints.</p></details>
+      <details><summary>Is there a free trial?</summary><p>Yes, 14 days free with no credit card needed. <a data-route="signup" href="/signup" style="color:var(--teal-600);font-weight:600">Start your free trial</a>.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / CTA -->
+<section id="about" style="padding-bottom:48px">
+  <div class="wrap split">
+    <div class="rv">
+      <span class="eyebrow">About</span>
+      <h2>Made by FlowCraft for the people who run teams</h2>
+      <p class="lead">FlowCraft builds software that makes everyday work flow. FlowPeople is our HRMS: simple enough for a small business, strong enough for large teams, and designed around people rather than paperwork.</p>
+      <a class="btn btn-ghost" href="#features">See what's inside</a>
+    </div>
+    <div class="grid-4 rv" style="grid-template-columns:1fr 1fr">
+      <div class="card"><div class="ic"><svg><use href="#i-bolt"/></svg></div><h3>Fast</h3><p>Quick to set up and quick to use.</p></div>
+      <div class="card"><div class="ic"><svg><use href="#i-shield"/></svg></div><h3>Safe</h3><p>Privacy first for every record.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <div class="cta-box rv">
+      <h2>Ready to simplify people management?</h2>
+      <p>Start your free 14-day trial. Be up and running today.</p>
+      <div class="row">
+        <a class="btn btn-primary" data-route="signup" href="/signup">Start Free Trial</a>
+        <a class="btn btn-ghost" data-route="login" href="/login">Login</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="logo" href="#top"><svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#14a89a"/><path d="M11 24c3 0 3-8 7-8s3 8 7 8 3-5 4-5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="29" cy="12" r="3" fill="#fff"/></svg><span>Flow<small style="color:#7fe0d3">People</small></span></a>
+        <p>Intelligent HR management and biometric attendance, by FlowCraft.</p>
+      </div>
+      <div><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#face">Face attendance</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#security">Security</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a href="#about">About FlowCraft</a></li><li><a href="#faq">FAQ</a></li><li><a href="mailto:hello@flowcraft.in">Contact</a></li></ul></div>
+      <div><h4>Get started</h4><ul><li><a data-route="signup" href="/signup">Start Free Trial</a></li><li><a data-route="login" href="/login">Login</a></li></ul></div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 FlowCraft. All rights reserved.</span>
+      <span class="by">FlowPeople is a product of FlowCraft</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* Route config: set these to your app's real paths. Every Login / Get Started / Start Free Trial
+   button reads from here, so you only change them in one place. */
+var ROUTES = { login: "/login", signup: "/signup", contact: "mailto:hello@flowcraft.in" };
+document.querySelectorAll("[data-route]").forEach(function(a){
+  var r = ROUTES[a.getAttribute("data-route")];
+  if (r) a.setAttribute("href", r);
+});
+
+/* sticky header shadow */
+var hdr = document.querySelector("header");
+function onScroll(){ hdr.classList.toggle("scrolled", window.scrollY > 8); }
+window.addEventListener("scroll", onScroll, {passive:true}); onScroll();
+
+/* mobile menu */
+var burger = document.getElementById("burger"), mm = document.getElementById("mm");
+burger.addEventListener("click", function(){
+  var open = mm.classList.toggle("open");
+  burger.setAttribute("aria-expanded", open);
+});
+mm.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", function(){ mm.classList.remove("open"); burger.setAttribute("aria-expanded","false"); }); });
+
+/* reveal on scroll */
+var els = document.querySelectorAll(".rv");
+if ("IntersectionObserver" in window) {
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, {threshold:.12});
+  els.forEach(function(el, i){ el.style.transitionDelay = (i % 4) * 70 + "ms"; io.observe(el); });
+} else { els.forEach(function(el){ el.classList.add("in"); }); }
+
+/* dashboard tabs */
+var tabs = document.querySelectorAll(".tab");
+tabs.forEach(function(t){
+  t.addEventListener("click", function(){
+    tabs.forEach(function(x){
+      var on = x === t;
+      x.setAttribute("aria-selected", on);
+      var p = document.getElementById(x.getAttribute("aria-controls"));
+      p.classList.toggle("on", on); p.hidden = !on;
+    });
+  });
+});
+
+/* billing toggle */
+var sw = document.getElementById("billing");
+sw.addEventListener("click", function(){
+  var yearly = sw.getAttribute("aria-checked") !== "true";
+  sw.setAttribute("aria-checked", yearly);
+  sw.setAttribute("aria-label", "Billing period: " + (yearly ? "yearly" : "monthly"));
+  document.querySelectorAll("[data-m]").forEach(function(s){ s.textContent = yearly ? s.dataset.y : s.dataset.m; });
+});
+</script>
+</body>
+</html>

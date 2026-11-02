@@ -89,11 +89,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Executive HR Summary - FlowPeople by FlowCraft</title>
+          <title>Executive HR Summary - ${currentUser?.brand_name || currentUser?.company_name || 'Organization'}</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 32px; color: #1e293b; }
             .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 24px; }
-            .logo { max-height: 32px; }
+            .logo { max-height: 40px; max-width: 150px; object-fit: contain; }
             .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
             .card { border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #f8fafc; }
             .card p { margin: 0; font-size: 11px; color: #64748b; }
@@ -101,15 +101,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 16px; }
             th { background: #f1f5f9; text-align: left; padding: 8px 12px; border-bottom: 1px solid #cbd5e1; }
             td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
-            .footer { margin-top: 40px; font-size: 11px; color: #64748b; text-align: right; }
+            .footer { margin-top: 40px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 14px; }
           </style>
         </head>
         <body>
           <div class="header">
-            <img class="logo" src="/brand/flowpeople-logo.svg" alt="FlowPeople by FlowCraft" />
-            <div>
-              <h2 style="margin: 0; font-size: 18px;">Monthly HR Workforce Summary</h2>
-              <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Report Date: ${new Date().toLocaleDateString()}</p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              ${currentUser?.company_logo_url ? `<img class="logo" src="${currentUser.company_logo_url}" alt="${currentUser?.company_name || 'Logo'}" />` : ''}
+              <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #0f172a;">${currentUser?.brand_name || currentUser?.company_name || 'Organization'}</h2>
+                <p style="margin: 3px 0 0; font-size: 12px; color: #64748b;">Monthly HR Workforce Executive Summary</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <p style="margin: 0; font-size: 12px; font-weight: 600;">Report Date: ${new Date().toLocaleDateString()}</p>
+              <p style="margin: 2px 0 0; font-size: 11px; color: #64748b;">Confidential HR Document</p>
             </div>
           </div>
           <div class="grid">
@@ -125,7 +131,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               ${weeklyTrend.map(w => `<tr><td>${w.day}</td><td>${w.rate}%</td><td>${w.present}</td><td>${w.total}</td></tr>`).join('')}
             </tbody>
           </table>
-          <div class="footer">FlowPeople &bull; Workforce Management Platform by FlowCraft</div>
+          <div class="footer">
+            <span>FlowPeople by FlowCraft &bull; Certified Workforce Management Platform</span>
+            <span>Generated for ${currentUser?.company_name || 'Company'}</span>
+          </div>
         </body>
       </html>
     `);

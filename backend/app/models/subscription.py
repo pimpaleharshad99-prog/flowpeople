@@ -99,3 +99,4 @@ class PaymentTransaction(Base):
 
     company = relationship("Company")
     subscription = relationship("Subscription", back_populates="transactions")
+

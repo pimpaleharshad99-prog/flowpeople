@@ -49,7 +49,11 @@ import { EmployeeAttendanceHistoryModal } from '../components/EmployeeAttendance
 import { removeFaceBiometrics } from '../services/kioskService';
 import { generateAttendancePdf, AttendancePdfRecord } from '../utils/pdfGenerator';
 
-export const HRAdminPortalView: React.FC = () => {
+interface HRAdminPortalViewProps {
+  currentUser?: User | null;
+}
+
+export const HRAdminPortalView: React.FC<HRAdminPortalViewProps> = ({ currentUser }) => {
   const { addToast } = useToast();
   
   // Dashboard & Attendance Data
@@ -210,6 +214,9 @@ export const HRAdminPortalView: React.FC = () => {
       title: 'HR Administration Attendance & In-Out Roster',
       subtitle: `Official Verification Record for ${dashboardData.date} • Branch: All Branches`,
       date: dashboardData.date,
+      companyName: currentUser?.company_name || 'Organization Workspace',
+      companyLogoUrl: currentUser?.company_logo_url,
+      softwareTitle: currentUser?.brand_name || currentUser?.company_name,
       records: pdfRecords,
       summary: {
         totalEmployees: dashboardData.total_employees,
@@ -988,6 +995,9 @@ export const HRAdminPortalView: React.FC = () => {
         userId={selectedEmployeeForHistory?.userId || null}
         employeeName={selectedEmployeeForHistory?.name || ''}
         employeeCode={selectedEmployeeForHistory?.code}
+        companyName={currentUser?.company_name}
+        companyLogoUrl={currentUser?.company_logo_url}
+        softwareTitle={currentUser?.brand_name || currentUser?.company_name}
       />
     </div>
   );
