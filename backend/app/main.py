@@ -36,12 +36,13 @@ app.include_router(google_drive_router, prefix="/api/integrations/google-drive",
 
 @app.on_event("startup")
 def on_startup():
-    with engine.connect() as conn:
-        try:
-            conn.execute(text("ALTER TABLE attendance_punches ADD COLUMN verification_method VARCHAR(50) DEFAULT 'FACE'"))
-            conn.commit()
-        except Exception:
-            pass
+    if settings.ENVIRONMENT != "production" and "sqlite" in settings.DATABASE_URL.lower():
+        with engine.connect() as conn:
+            try:
+                conn.execute(text("ALTER TABLE attendance_punches ADD COLUMN verification_method VARCHAR(50) DEFAULT 'FACE'"))
+                conn.commit()
+            except Exception:
+                pass
 
     # Demo seed data is development-only. Never seed production databases.
     if settings.ENVIRONMENT != "production" and "sqlite" in settings.DATABASE_URL.lower():
