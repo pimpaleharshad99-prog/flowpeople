@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import model_validator
 from typing import List
 from pathlib import Path
 import os
@@ -12,6 +13,7 @@ load_dotenv(_BASE_DIR / ".env")
 load_dotenv(Path.cwd() / ".env")
 
 class Settings(BaseSettings):
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development").lower()
     PROJECT_NAME: str = "FlowPeople — Complete Workforce Management (FlowCraft)"
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-super-secret-jwt-key-flowpeople-flowcraft-2026")
@@ -43,6 +45,19 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
     SUPABASE_JWKS: str = os.getenv("SUPABASE_JWKS", "")
+
+    @model_validator(mode="after")
+    def validate_production_configuration(self):
+        if self.ENVIRONMENT == "production":
+            if "sqlite" in self.DATABASE_URL.lower():
+                raise ValueError("Production requires a persistent PostgreSQL DATABASE_URL; SQLite is development-only.")
+            if len(self.SECRET_KEY) < 32 or self.SECRET_KEY.startswith("dev-"):
+                raise ValueError("Production requires a strong SECRET_KEY of at least 32 characters.")
+            if not self.SUPABASE_URL or not self.SUPABASE_KEY:
+                raise ValueError("Production requires SUPABASE_URL and SUPABASE_KEY.")
+            if not self.BACKEND_CORS_ORIGINS or "*" in self.BACKEND_CORS_ORIGINS:
+                raise ValueError("Production CORS must contain explicit trusted origins; wildcard is forbidden.")
+        return self
 
     model_config = SettingsConfigDict(
         env_file=[(_BASE_DIR / ".env").as_posix(), ".env"],
