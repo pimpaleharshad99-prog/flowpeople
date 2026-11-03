@@ -6,10 +6,13 @@ from app.api.v1.router import api_router
 from app.api.v1.endpoints.integrations import router as google_drive_router
 from app.seed.demo_data import seed_database
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi import HTTPException
 import os
 
-# Create DB tables
-Base.metadata.create_all(bind=engine)
+# Development convenience only. Production schema must be deployed through reviewed Alembic migrations.
+if settings.ENVIRONMENT != "production":
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -22,7 +25,7 @@ app = FastAPI(
 # Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins for dev/preview
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,14 +43,20 @@ def on_startup():
         except Exception:
             pass
 
-    # If database file doesn't exist or is empty, seed it
-    db_file = "hrms.db"
-    if not os.path.exists(db_file) or os.path.getsize(db_file) == 0:
-        print("Database not found or empty. Seeding initial demo data...")
-        seed_database()
+    # Demo seed data is development-only. Never seed production databases.
+    if settings.ENVIRONMENT != "production" and "sqlite" in settings.DATABASE_URL.lower():
+        db_file = "hrms.db"
+        if not os.path.exists(db_file) or os.path.getsize(db_file) == 0:
+            print("Development database not found or empty. Seeding demo data...")
+            seed_database()
 
 @app.get("/health")
 def health_check():
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except SQLAlchemyError:
+        raise HTTPException(status_code=503, detail="Database unavailable")
     return {
         "status": "healthy",
         "service": "FlowPeople HRMS Engine (FlowCraft)",
