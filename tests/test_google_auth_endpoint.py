@@ -81,3 +81,35 @@ def test_google_auth_invalid_credential_rejected():
         })
         assert res.status_code == 400
         assert "verification failed" in res.json()["detail"].lower()
+
+def test_google_auth_with_custom_redirect_uri():
+    """Validates code flow forwards redirect_uri when provided."""
+    mock_tokens = {
+        "access_token": "mock_access_token_custom_uri",
+        "expires_in": 3600
+    }
+    mock_userinfo = {
+        "email": "custom_uri_user@flowcraft.io",
+        "email_verified": True,
+        "name": "Custom URI User",
+        "given_name": "Custom",
+        "family_name": "User",
+        "sub": "555666777"
+    }
+
+    mock_resp_userinfo = MagicMock()
+    mock_resp_userinfo.status_code = 200
+    mock_resp_userinfo.json.return_value = mock_userinfo
+
+    with patch("app.services.google_drive.exchange_code_for_tokens", return_value=mock_tokens) as mock_exchange:
+        with patch("httpx.Client.get", return_value=mock_resp_userinfo):
+            res = client.post("/api/v1/auth/google", json={
+                "code": "mock_auth_code_with_redirect_uri",
+                "redirect_uri": "https://eqbrciupuhzwcmkarxqa.supabase.co/auth/v1/callback"
+            })
+            assert res.status_code == 200
+            assert mock_exchange.called
+            args, kwargs = mock_exchange.call_args
+            assert kwargs.get("redirect_uri") == "https://eqbrciupuhzwcmkarxqa.supabase.co/auth/v1/callback"
+
+

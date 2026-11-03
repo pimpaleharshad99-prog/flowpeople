@@ -90,11 +90,12 @@ def is_google_oauth_configured() -> bool:
     """Returns True if Google OAuth Client ID and Secret are configured."""
     return bool(settings.GOOGLE_CLIENT_ID and settings.GOOGLE_CLIENT_SECRET)
 
-def build_authorization_url(state: str) -> str:
+def build_authorization_url(state: str, redirect_uri: Optional[str] = None) -> str:
     """Builds the official Google OAuth 2.0 Web Server authorization URL."""
+    uri = redirect_uri or getattr(settings, "GOOGLE_DRIVE_REDIRECT_URI", None) or settings.GOOGLE_REDIRECT_URI
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "redirect_uri": uri,
         "response_type": "code",
         "scope": settings.GOOGLE_DRIVE_SCOPES,
         "access_type": "offline",
@@ -104,13 +105,14 @@ def build_authorization_url(state: str) -> str:
     }
     return f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
 
-def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
+def exchange_code_for_tokens(code: str, redirect_uri: Optional[str] = None) -> Dict[str, Any]:
     """Exchanges Google authorization code for access and refresh tokens."""
+    uri = redirect_uri or getattr(settings, "GOOGLE_DRIVE_REDIRECT_URI", None) or settings.GOOGLE_REDIRECT_URI
     data = {
         "code": code,
         "client_id": settings.GOOGLE_CLIENT_ID,
         "client_secret": settings.GOOGLE_CLIENT_SECRET,
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "redirect_uri": uri,
         "grant_type": "authorization_code"
     }
     headers = {"Content-Type": "application/x-www-form-urlencoded"}

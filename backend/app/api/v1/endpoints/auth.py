@@ -555,7 +555,7 @@ def google_auth_login(
     if req.code:
         from app.services.google_drive import exchange_code_for_tokens
         try:
-            tokens = exchange_code_for_tokens(req.code)
+            tokens = exchange_code_for_tokens(req.code, redirect_uri=req.redirect_uri or settings.GOOGLE_REDIRECT_URI)
             access_token = tokens.get("access_token")
             if not access_token:
                 raise ValueError("No access token returned from Google.")
@@ -589,7 +589,7 @@ def google_auth_login(
                         if not aud.startswith(settings.GOOGLE_CLIENT_ID.split('-')[0]):
                             raise ValueError(f"Google ID token audience mismatch: {aud}")
                 else:
-                    # 2. Fallback: check if credential is an access token
+                    # 2. Fallback: check if credential is a Google access token
                     res_userinfo = client.get(
                         "https://www.googleapis.com/oauth2/v3/userinfo",
                         headers={"Authorization": f"Bearer {raw_cred}"}
@@ -597,7 +597,25 @@ def google_auth_login(
                     if res_userinfo.status_code == 200:
                         google_data = res_userinfo.json()
                     else:
-                        raise ValueError("Invalid Google OAuth credential.")
+                        # 3. Fallback: check if credential is a valid Supabase JWT from OAuth redirect
+                        try:
+                            from app.services.platform_admin import verify_supabase_token
+                            sb_user = verify_supabase_token(raw_cred)
+                            if sb_user and sb_user.get("email"):
+                                meta = sb_user.get("user_metadata") or {}
+                                google_data = {
+                                    "email": sb_user["email"],
+                                    "given_name": meta.get("full_name") or meta.get("name") or sb_user["email"].split("@")[0],
+                                    "family_name": "",
+                                    "picture": meta.get("avatar_url") or meta.get("picture"),
+                                    "email_verified": True,
+                                    "sub": sb_user.get("id")
+                                }
+                        except Exception:
+                            pass
+                        
+                        if not google_data:
+                            raise ValueError("Invalid Google OAuth credential.")
         except HTTPException:
             raise
         except Exception as e:

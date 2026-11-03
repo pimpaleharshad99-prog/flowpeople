@@ -31,11 +31,12 @@ class Settings(BaseSettings):
     DEFAULT_GRACE_PERIOD_MINS: int = 15
     DEFAULT_BREAK_DURATION_MINS: int = 60
 
-    # Google Drive OAuth 2.0 Integration
+    # Google Drive & OAuth 2.0 Integration
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
-    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/integrations/google-drive/callback")
-    GOOGLE_DRIVE_SCOPES: str = os.getenv("GOOGLE_DRIVE_SCOPES", "https://www.googleapis.com/auth/drive.file")
+    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "https://eqbrciupuhzwcmkarxqa.supabase.co/auth/v1/callback")
+    GOOGLE_DRIVE_REDIRECT_URI: str = os.getenv("GOOGLE_DRIVE_REDIRECT_URI", "http://localhost:8000/api/integrations/google-drive/callback")
+    GOOGLE_DRIVE_SCOPES: str = os.getenv("GOOGLE_DRIVE_SCOPES", "https://www.googleapis.com/auth/drive.file openid email profile")
     GOOGLE_OAUTH_ENABLED: bool = os.getenv("GOOGLE_OAUTH_ENABLED", "false").lower() in ("true", "1", "yes")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
