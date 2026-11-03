@@ -12,6 +12,49 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- ----------------------------------------------------------------------------
+-- PHASE 3: CLEAN RESET OF APPLICATION-OWNED OBJECTS
+-- (Safely drops conflicting application-owned tables, views, and functions;
+--  never touches auth.users or internal Supabase schemas)
+-- ----------------------------------------------------------------------------
+DROP VIEW IF EXISTS public.companies CASCADE;
+DROP VIEW IF EXISTS public.company_members CASCADE;
+DROP VIEW IF EXISTS public.attendance_punches CASCADE;
+DROP VIEW IF EXISTS public.face_enrollments CASCADE;
+
+DROP TABLE IF EXISTS public.subscription_plans CASCADE;
+DROP TABLE IF EXISTS public.subscriptions CASCADE;
+DROP TABLE IF EXISTS public.platform_admins CASCADE;
+DROP TABLE IF EXISTS public.organization_invitations CASCADE;
+DROP TABLE IF EXISTS public.organization_settings CASCADE;
+DROP TABLE IF EXISTS public.audit_logs CASCADE;
+DROP TABLE IF EXISTS public.notifications CASCADE;
+DROP TABLE IF EXISTS public.face_verification_logs CASCADE;
+DROP TABLE IF EXISTS public.face_verification_profiles CASCADE;
+DROP TABLE IF EXISTS public.recognition_devices CASCADE;
+DROP TABLE IF EXISTS public.holidays CASCADE;
+DROP TABLE IF EXISTS public.leave_requests CASCADE;
+DROP TABLE IF EXISTS public.leave_balances CASCADE;
+DROP TABLE IF EXISTS public.leave_types CASCADE;
+DROP TABLE IF EXISTS public.attendance_logs CASCADE;
+DROP TABLE IF EXISTS public.attendance_records CASCADE;
+DROP TABLE IF EXISTS public.employee_shift_assignments CASCADE;
+DROP TABLE IF EXISTS public.shifts CASCADE;
+DROP TABLE IF EXISTS public.employees CASCADE;
+DROP TABLE IF EXISTS public.designations CASCADE;
+DROP TABLE IF EXISTS public.departments CASCADE;
+DROP TABLE IF EXISTS public.branches CASCADE;
+DROP TABLE IF EXISTS public.organization_members CASCADE;
+DROP TABLE IF EXISTS public.organizations CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
+DROP FUNCTION IF EXISTS public.register_company CASCADE;
+DROP FUNCTION IF EXISTS public.is_platform_owner CASCADE;
+DROP FUNCTION IF EXISTS public.get_current_user_organization_id CASCADE;
+DROP FUNCTION IF EXISTS public.get_current_user_role CASCADE;
+DROP FUNCTION IF EXISTS public.is_org_admin CASCADE;
+DROP FUNCTION IF EXISTS public.handle_updated_at CASCADE;
+
 -- Automated updated_at timestamp function
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
@@ -34,6 +77,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+DROP TRIGGER IF EXISTS set_profiles_updated_at ON public.profiles;
 CREATE TRIGGER set_profiles_updated_at
     BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -71,6 +115,7 @@ CREATE INDEX IF NOT EXISTS idx_organizations_slug ON public.organizations(slug);
 CREATE INDEX IF NOT EXISTS idx_organizations_code ON public.organizations(organization_code);
 CREATE INDEX IF NOT EXISTS idx_organizations_owner ON public.organizations(owner_user_id);
 
+DROP TRIGGER IF EXISTS set_organizations_updated_at ON public.organizations;
 CREATE TRIGGER set_organizations_updated_at
     BEFORE UPDATE ON public.organizations
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -94,6 +139,7 @@ CREATE INDEX IF NOT EXISTS idx_org_members_user ON public.organization_members(u
 CREATE INDEX IF NOT EXISTS idx_org_members_org ON public.organization_members(organization_id);
 CREATE INDEX IF NOT EXISTS idx_org_members_role ON public.organization_members(organization_id, role);
 
+DROP TRIGGER IF EXISTS set_org_members_updated_at ON public.organization_members;
 CREATE TRIGGER set_org_members_updated_at
     BEFORE UPDATE ON public.organization_members
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -188,6 +234,7 @@ CREATE INDEX IF NOT EXISTS idx_employees_user ON public.employees(user_id);
 CREATE INDEX IF NOT EXISTS idx_employees_email ON public.employees(organization_id, email);
 CREATE INDEX IF NOT EXISTS idx_employees_manager ON public.employees(reporting_manager_id);
 
+DROP TRIGGER IF EXISTS set_employees_updated_at ON public.employees;
 CREATE TRIGGER set_employees_updated_at
     BEFORE UPDATE ON public.employees
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -257,6 +304,7 @@ CREATE TABLE IF NOT EXISTS public.attendance_records (
 CREATE INDEX IF NOT EXISTS idx_attendance_records_org_date ON public.attendance_records(organization_id, date);
 CREATE INDEX IF NOT EXISTS idx_attendance_records_employee ON public.attendance_records(employee_id);
 
+DROP TRIGGER IF EXISTS set_attendance_records_updated_at ON public.attendance_records;
 CREATE TRIGGER set_attendance_records_updated_at
     BEFORE UPDATE ON public.attendance_records
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -340,6 +388,7 @@ CREATE TABLE IF NOT EXISTS public.leave_requests (
 CREATE INDEX IF NOT EXISTS idx_leave_requests_org_status ON public.leave_requests(organization_id, status);
 CREATE INDEX IF NOT EXISTS idx_leave_requests_employee ON public.leave_requests(employee_id);
 
+DROP TRIGGER IF EXISTS set_leave_requests_updated_at ON public.leave_requests;
 CREATE TRIGGER set_leave_requests_updated_at
     BEFORE UPDATE ON public.leave_requests
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -460,6 +509,7 @@ CREATE TABLE IF NOT EXISTS public.organization_settings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+DROP TRIGGER IF EXISTS set_org_settings_updated_at ON public.organization_settings;
 CREATE TRIGGER set_org_settings_updated_at
     BEFORE UPDATE ON public.organization_settings
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
