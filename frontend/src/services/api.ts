@@ -1,6 +1,9 @@
 import { registerCompanyWithSupabase } from './organizationService';
 
-const API_BASE = '/api/v1';
+// In development, keep this empty so Vite proxies /api to localhost:8000.
+// In production, VITE_API_URL points to the deployed FastAPI service.
+const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\\/+$/, '');
+const API_BASE = `${API_ORIGIN}/api/v1`;
 
 export interface User {
   id: number;
