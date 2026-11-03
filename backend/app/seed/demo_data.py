@@ -200,6 +200,7 @@ def seed_database():
             first_name="Sarah",
             last_name="Connor",
             role=UserRole.SUPER_ADMIN.value,
+            is_platform_owner=True,
             status=EmploymentStatus.ACTIVE.value,
             shift_id=shift_general.id,
             department_id=dept_hr.id,

@@ -7,6 +7,19 @@
       "key_ops": [
         "verify"
       ],
+      "kid": "81fc2014-0032-4ca6-acb3-c3cdc20ebfbc",
+      "kty": "EC",
+      "use": "sig",
+      "x": "SxXfELb0-s2dx98l4Ye1cx7eEmBIVsHqIEzhdZAkAyI",
+      "y": "7zNmW0HG5XwC8xC2e32nESNxx22DVJLyqlEfwnOybWo"
+    },
+    {
+      "alg": "ES256",
+      "crv": "P-256",
+      "ext": true,
+      "key_ops": [
+        "verify"
+      ],
       "kid": "bb914d94-71d7-4dc7-8d6a-a89e962db62f",
       "kty": "EC",
       "use": "sig",

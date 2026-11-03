@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Lock, Mail, KeyRound, ArrowRight, CheckCircle2, Shield,
   Briefcase, Users, UserCheck, ChevronDown, ChevronUp, UserPlus,
-  Scan
+  Scan, Zap
 } from 'lucide-react';
 import { api, User } from '../services/api';
 import { supabase } from '../lib/supabase';
@@ -17,19 +17,37 @@ interface LoginViewProps {
 const CLEAN_ROLES = [
   {
     role: 'SUPER_ADMIN',
-    label: 'Harshad Pimpale',
-    identifier: 'pimpaleharshad99@gmail.com',
+    label: 'Platform Administrator',
+    identifier: 'admin@acme.corp',
     altCode: 'admin',
-    password: '',
+    password: 'Admin@EMP001',
     icon: Shield,
-    color: 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+    color: 'text-amber-600 bg-amber-500/10 border-amber-500/20'
   },
   {
-    role: 'SUPER_ADMIN',
-    label: 'Harsh Pimpale',
-    identifier: 'pimpaleg80@gmail.com',
-    altCode: 'harsh',
-    password: '',
+    role: 'HR_ADMIN',
+    label: 'David Vance (HR Admin)',
+    identifier: 'hr@acme.corp',
+    altCode: 'hr',
+    password: 'HR@EMP002',
+    icon: UserCheck,
+    color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
+  },
+  {
+    role: 'MANAGER',
+    label: 'Elena Rostova (Operations)',
+    identifier: 'manager@acme.corp',
+    altCode: 'manager',
+    password: 'Manager@EMP003',
+    icon: Users,
+    color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
+  },
+  {
+    role: 'EMPLOYEE',
+    label: 'Alex Mercer (Staff)',
+    identifier: 'alex@acme.corp',
+    altCode: 'alex',
+    password: 'Alex@EMP004',
     icon: Briefcase,
     color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
   }
@@ -65,6 +83,27 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       description: `Loaded ${roleObj.identifier}.`,
       type: 'info'
     });
+  };
+
+  const handleInstantLogin = async (role: string, email: string) => {
+    setLoading(true);
+    try {
+      const data = await api.demoLogin(role, email);
+      addToast({
+        title: 'Instant Sign In Successful',
+        description: `Logged in as ${data.user.first_name} ${data.user.last_name} (${data.user.role})`,
+        type: 'success'
+      });
+      onLoginSuccess(data.user);
+    } catch (err: any) {
+      addToast({
+        title: 'Instant Login Failed',
+        description: err.message || 'Could not log in with demo account. Ensure backend is running.',
+        type: 'danger'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -308,37 +347,55 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   onClick={() => setShowRoleHelper(!showRoleHelper)}
                   className="w-full flex items-center justify-between text-[11px] text-[var(--text-subtle)] hover:text-[var(--text-main)] py-1 focus:outline-none transition-colors"
                 >
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <KeyRound className="w-3.5 h-3.5 text-[var(--accent)]" />
-                    Quick Admin Logins (1-Click Fill)
+                  <span className="flex items-center gap-1.5 font-bold">
+                    <Zap className="w-3.5 h-3.5 text-[var(--accent)]" />
+                    ⚡ 1-Click Demo Logins (Super Admin, HR, Manager, Staff)
                   </span>
                   {showRoleHelper ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
 
                 {showRoleHelper && (
-                  <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {CLEAN_ROLES.map((r) => {
-                      const Icon = r.icon;
-                      return (
-                        <button
-                          key={r.identifier}
-                          type="button"
-                          onClick={() => fillRole(r)}
-                          className="flex flex-col text-left p-2.5 rounded-lg border border-[var(--border-glass)] hover:bg-[var(--surface-hover)] transition group"
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className={`p-1 rounded-md ${r.color}`}>
-                              <Icon className="w-3 h-3" />
-                            </span>
-                            <span className="font-semibold text-[11px] text-[var(--text-main)] group-hover:text-[var(--accent)] truncate">
-                              {r.label}
-                            </span>
+                  <div className="mt-2.5 space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {CLEAN_ROLES.map((r) => {
+                        const Icon = r.icon;
+                        return (
+                          <div
+                            key={r.identifier}
+                            className="flex flex-col p-2.5 rounded-lg border border-[var(--border-glass)] bg-[var(--surface-canvas)] shadow-2xs group"
+                          >
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className={`p-1 rounded-md ${r.color}`}>
+                                <Icon className="w-3 h-3" />
+                              </span>
+                              <span className="font-semibold text-[11px] text-[var(--text-main)] truncate">
+                                {r.label}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-[var(--text-subtle)] font-mono truncate mb-2">{r.identifier}</span>
+
+                            <div className="mt-auto flex items-center gap-1 pt-1.5 border-t border-[var(--border-glass)]">
+                              <button
+                                type="button"
+                                onClick={() => fillRole(r)}
+                                className="flex-1 py-1 px-1.5 rounded bg-[var(--surface-hover)] hover:bg-[var(--surface-sunken)] text-[10px] text-[var(--text-secondary)] font-medium text-center transition cursor-pointer"
+                              >
+                                Fill Form
+                              </button>
+                              <button
+                                type="button"
+                                disabled={loading}
+                                onClick={() => handleInstantLogin(r.role, r.identifier)}
+                                className="flex-1 py-1 px-1.5 rounded bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[10px] text-white font-bold text-center transition flex items-center justify-center gap-0.5 cursor-pointer disabled:opacity-50"
+                              >
+                                <Zap className="w-2.5 h-2.5 text-[#E8D2B5]" />
+                                <span>1-Click</span>
+                              </button>
+                            </div>
                           </div>
-                          <span className="text-[10px] text-[var(--text-subtle)] font-mono truncate">{r.identifier}</span>
-                          <span className="text-[10px] text-[var(--text-secondary)] font-mono">pass: {r.password}</span>
-                        </button>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

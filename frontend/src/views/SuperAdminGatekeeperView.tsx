@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Zap } from 'lucide-react';
 import { Logo } from '../components/brand/Logo';
 import { api, User } from '../services/api';
 import { supabase } from '../lib/supabase';
@@ -51,6 +51,19 @@ export const SuperAdminGatekeeperView: React.FC<SuperAdminGatekeeperViewProps> =
       onSuccess(res.user);
     } catch (err: any) {
       setError(err.message || 'Access Denied: Account is not authorized as a Root Platform Owner.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInstantAdminLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.demoLogin('SUPER_ADMIN', 'admin@acme.corp');
+      onSuccess(res.user);
+    } catch (err: any) {
+      setError(err.message || 'Demo Root Owner login failed. Ensure backend service is running.');
     } finally {
       setLoading(false);
     }
@@ -148,6 +161,19 @@ export const SuperAdminGatekeeperView: React.FC<SuperAdminGatekeeperViewProps> =
                 </>
               )}
             </button>
+
+            {/* Quick Demo Root Access for Development/Testing */}
+            <div className="pt-2">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleInstantAdminLogin}
+                className="w-full h-10 rounded-xl bg-[#FAF6F0] hover:bg-[#ECEEE7] border border-[#DFE1D8] text-[11px] font-bold text-[#590907] flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-600" />
+                <span>⚡ 1-Click Demo Root Owner Login</span>
+              </button>
+            </div>
           </form>
 
           <div className="mt-6 pt-4 border-t border-[#ECEEE7] text-center">

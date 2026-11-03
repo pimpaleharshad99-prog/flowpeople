@@ -15,7 +15,8 @@ import {
   Briefcase, 
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Zap
 } from 'lucide-react';
 import { Logo } from '../components/brand/Logo';
 import { api, User } from '../services/api';
@@ -102,10 +103,20 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
   const signupStrength = getPasswordStrength(signupPassword);
   const resetStrength = getPasswordStrength(newPassword);
 
-  // Quick Demo Accounts (Client-Side Roles Only)
+  // Quick Demo Accounts (1-Click & Form Fill)
   const demoAccounts = [
     {
+      role: 'Super Admin (Platform Owner)',
+      apiRole: 'SUPER_ADMIN',
+      name: 'Sarah Connor',
+      email: 'admin@acme.corp',
+      password: 'Admin@EMP001',
+      icon: ShieldCheck,
+      color: 'text-amber-800 bg-amber-100/60 border-amber-300'
+    },
+    {
       role: 'HR Administrator',
+      apiRole: 'HR_ADMIN',
       name: 'David Vance',
       email: 'hr@acme.corp',
       password: 'HR@EMP002',
@@ -114,6 +125,7 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
     },
     {
       role: 'Operations Manager',
+      apiRole: 'MANAGER',
       name: 'Elena Rostova',
       email: 'manager@acme.corp',
       password: 'Manager@EMP003',
@@ -121,7 +133,8 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
       color: 'text-[#590907] bg-[#ECEEE7] border-[#DFE1D8]'
     },
     {
-      role: 'Employee',
+      role: 'Staff Employee',
+      apiRole: 'EMPLOYEE',
       name: 'Alex Mercer',
       email: 'alex@acme.corp',
       password: 'Alex@EMP004',
@@ -135,8 +148,28 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
     setLoginPassword(acc.password);
     setAlert({
       type: 'success',
-      message: `Selected ${acc.name} (${acc.role}). Click Sign in below.`
+      message: `Selected ${acc.name} (${acc.role}). Click Sign in below or use 1-Click login.`
     });
+  };
+
+  const handleInstantDemoLogin = async (apiRole: string, email: string) => {
+    setLoading(true);
+    setAlert(null);
+    try {
+      const res = await api.demoLogin(apiRole, email);
+      setAlert({
+        type: 'success',
+        message: `Authenticated as ${res.user.first_name} ${res.user.last_name} (${res.user.role}). Redirecting...`
+      });
+      onSuccess(res.user);
+    } catch (err: any) {
+      setAlert({
+        type: 'error',
+        message: err.message || 'Demo login failed. Please ensure the backend server is running.'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 1. LOGIN SUBMIT
@@ -544,40 +577,61 @@ export const FlowPeopleAuthView: React.FC<FlowPeopleAuthViewProps> = ({
                   </p>
                 </div>
 
-                {/* Quick Role Fill Helper */}
+                {/* Quick Role Fill & 1-Click Instant Demo Login */}
                 <div className="mb-5">
                   <button
                     type="button"
                     onClick={() => setShowDemoRoles(!showDemoRoles)}
-                    className="w-full py-2 px-3 rounded-xl bg-[#FAF6F0] border border-slate-200 hover:border-slate-300 text-xs font-semibold text-slate-700 flex items-center justify-between transition cursor-pointer"
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-[#FAF6F0] border border-slate-200 hover:border-[#590907]/30 text-xs font-bold text-slate-700 flex items-center justify-between transition cursor-pointer shadow-2xs"
                   >
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-3.5 h-3.5 text-[#590907]" />
-                      <span>Quick Test Roles (HR, Manager, Employee)</span>
+                      <Sparkles className="w-4 h-4 text-[#590907]" />
+                      <span>⚡ 1-Click Demo Login (Super Admin, HR, Manager, Employee)</span>
                     </div>
-                    {showDemoRoles ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    {showDemoRoles ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
                   </button>
 
                   {showDemoRoles && (
-                    <div className="mt-2.5 p-2 rounded-xl bg-[#FAF6F0] border border-slate-200 space-y-1.5 animate-in fade-in duration-150">
+                    <div className="mt-2.5 p-2 rounded-xl bg-[#FAF6F0] border border-slate-200 space-y-2 animate-in fade-in duration-150">
+                      <div className="px-2 pt-1 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                        <span>Select role to sign in instantly:</span>
+                        <span className="text-[#590907] font-semibold text-[10px]">Zero rate-limits</span>
+                      </div>
                       {demoAccounts.map((acc, idx) => (
-                        <button
+                        <div
                           key={idx}
-                          type="button"
-                          onClick={() => handleFillDemo(acc)}
-                          className="w-full text-left p-2.5 rounded-lg hover:bg-white flex items-center justify-between transition cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+                          className="w-full p-2.5 rounded-lg bg-white border border-slate-200 hover:border-[#590907]/40 flex items-center justify-between gap-2 shadow-2xs transition"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <acc.icon className="w-4 h-4 text-[#590907] shrink-0" />
+                            <div className={`p-1.5 rounded-md ${acc.color}`}>
+                              <acc.icon className="w-4 h-4 shrink-0" />
+                            </div>
                             <div className="min-w-0">
                               <span className="text-xs font-bold text-slate-900 block truncate">{acc.name}</span>
-                              <span className="text-[10px] text-slate-500 block truncate">{acc.role}</span>
+                              <span className="text-[10px] text-slate-500 block truncate">{acc.role} &bull; {acc.email}</span>
                             </div>
                           </div>
-                          <span className="text-[10px] font-mono font-bold text-[#590907] bg-[#ECEEE7] px-2 py-0.5 rounded border border-[#DFE1D8] shrink-0">
-                            Fill
-                          </span>
-                        </button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleFillDemo(acc)}
+                              className="text-[10px] font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded transition cursor-pointer"
+                              title="Fill credentials into input form"
+                            >
+                              Fill
+                            </button>
+                            <button
+                              type="button"
+                              disabled={loading}
+                              onClick={() => handleInstantDemoLogin(acc.apiRole, acc.email)}
+                              className="text-[10px] font-bold text-[#FAF6F0] bg-[#590907] hover:bg-[#450605] px-2.5 py-1 rounded shadow-2xs transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              title="Sign in instantly without typing"
+                            >
+                              <Zap className="w-3 h-3 text-[#E8D2B5]" />
+                              <span>1-Click</span>
+                            </button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   )}

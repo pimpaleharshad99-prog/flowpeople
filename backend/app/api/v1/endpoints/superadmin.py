@@ -183,6 +183,8 @@ def provision_organization(
     plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == req.plan_id).first()
     if not plan:
         plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "trial").first()
+    if not plan:
+        plan = db.query(SubscriptionPlan).first()
 
     now = datetime.now(timezone.utc)
     company = Company(
@@ -193,10 +195,10 @@ def provision_organization(
         currency=req.currency or "INR",
         timezone=req.timezone or "Asia/Kolkata",
         is_active=True,
-        subscription_plan_id=plan.id,
+        subscription_plan_id=plan.id if plan else (req.plan_id or "trial"),
         subscription_status="ACTIVE",
-        max_employees=plan.max_employees,
-        max_admins=plan.max_hr_admins,
+        max_employees=plan.max_employees if plan else 50,
+        max_admins=plan.max_hr_admins if plan else 5,
         created_at=now
     )
     db.add(company)
@@ -244,7 +246,7 @@ def provision_organization(
     # Subscription
     sub = Subscription(
         company_id=company.id,
-        plan_id=plan.id,
+        plan_id=plan.id if plan else "trial",
         status="ACTIVE",
         billing_cycle="MONTHLY",
         current_period_start=now,
@@ -260,7 +262,7 @@ def provision_organization(
         entity_name="Company",
         entity_id=company.id,
         action="PROVISION",
-        details=f"Tenant '{company.name}' provisioned on {plan.name} by Platform Owner {admin.full_name}"
+        details=f"Tenant '{company.name}' provisioned on {plan.name if plan else 'Trial Plan'} by Platform Owner {admin.full_name}"
     )
     db.add(audit)
     db.commit()

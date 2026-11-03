@@ -38,8 +38,8 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
     # Supabase Server-Side Admin & Auth Configuration
-    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
-    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", os.getenv("SUPABASE_ANON_KEY", ""))
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "https://eqbrciupuhzwcmkarxqa.supabase.co")
+    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", os.getenv("SUPABASE_ANON_KEY", "sb_publishable_7qTDoq7eUjpiARmGvR6CIA_c4er5U3z"))
     SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
     SUPABASE_JWKS: str = os.getenv("SUPABASE_JWKS", "")
