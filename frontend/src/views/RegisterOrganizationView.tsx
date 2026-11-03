@@ -18,12 +18,12 @@ import {
 import { Logo } from '../components/brand/Logo';
 import { api, SubscriptionPlan } from '../services/api';
 import { supabase } from '../lib/supabase';
-import { 
-  registerCompanyWithSupabase, 
-  generateCompanySlug, 
-  generateRegistrationKey, 
+import {
+  registerCompanyWithSupabase,
+  generateCompanySlug,
+  generateRegistrationKey,
   formatSupabaseError,
-  validateCompanySlug 
+  validateCompanySlug
 } from '../services/organizationService';
 
 interface RegisterOrganizationViewProps {

@@ -1,7 +1,7 @@
 /**
  * FlowPeople Supabase Face Attendance Kiosk Service
  * Connects to the deployed Edge Function:
- * https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan
+ * https://<project-ref>.supabase.co/functions/v1/kiosk-face-scan
  *
  * Enforces strict security & backend compatibility:
  * - Provisioning via public.attendance_devices & private.kiosk_credentials
@@ -17,8 +17,11 @@
 
 import { supabase } from '../lib/supabase';
 
-export const EDGE_FUNCTION_URL = 'https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan';
-export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_bEuL6GdEhvU5XlukkZpwng_LUNq3Nrp';
+const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+export const EDGE_FUNCTION_URL = rawSupabaseUrl
+  ? `${rawSupabaseUrl.replace(/\/+$/, '')}/functions/v1/kiosk-face-scan`
+  : '';
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
 // Authoritative Company Biometric Model Architecture Specification
 export const APPROVED_BIOMETRIC_MODEL = {
@@ -395,7 +398,7 @@ export async function removeFaceBiometrics(employeeId: string): Promise<{ succes
 
 /**
  * 2. Submit face scan to Supabase Edge Function:
- * https://yzcrifmqwgfkfikkimeu.supabase.co/functions/v1/kiosk-face-scan
+ * https://<project-ref>.supabase.co/functions/v1/kiosk-face-scan
  *
  * Handles actual outcomes from the database RPC:
  * - CHECK_IN

@@ -468,6 +468,53 @@ def resend_verification(req: ResendVerificationRequest, db: Session = Depends(ge
         "message": f"Verification email has been re-sent to {req.email.strip()}."
     }
 
+class DemoLoginRequest(BaseModel):
+    role: str = "HR_ADMIN"
+    email: Optional[str] = None
+
+@router.post("/demo-login", response_model=Token)
+def demo_login(req: DemoLoginRequest, db: Session = Depends(get_db)):
+    """
+    1-Click Demo / Dummy Login System for fast development, evaluation, and QA.
+    Instantly issues authenticated access token for predefined seeded accounts without
+    relying on external network or third-party rate limits.
+    """
+    role_target = req.role.strip().upper()
+    user = None
+
+    if req.email and req.email.strip():
+        user = db.query(User).filter(User.email.ilike(req.email.strip())).first()
+
+    if not user:
+        if role_target in ["SUPER_ADMIN", "PLATFORM_OWNER"]:
+            user = db.query(User).filter(
+                (User.is_platform_owner == True) | (User.role.in_([UserRole.SUPER_ADMIN.value, UserRole.PLATFORM_OWNER.value]))
+            ).first()
+        elif role_target in ["HR_ADMIN", "ADMIN"]:
+            user = db.query(User).filter(User.role == UserRole.HR_ADMIN.value).first()
+        elif role_target == "MANAGER":
+            user = db.query(User).filter(User.role == UserRole.MANAGER.value).first()
+        elif role_target == "EMPLOYEE":
+            user = db.query(User).filter(User.role == UserRole.EMPLOYEE.value).first()
+        elif role_target == "ORGANIZATION_OWNER":
+            user = db.query(User).filter(User.role == UserRole.ORGANIZATION_OWNER.value).first()
+
+    if not user:
+        user = db.query(User).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No seeded demo accounts available in the database."
+        )
+
+    token = create_access_token(subject=user.id, role=user.role)
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": serialize_user_out(user)
+    }
+
 @router.post("/superadmin/login", response_model=Token)
 def superadmin_login(login_data: SuperAdminLoginRequest, db: Session = Depends(get_db)):
     """

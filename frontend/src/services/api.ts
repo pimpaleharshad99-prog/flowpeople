@@ -600,6 +600,15 @@ async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> 
 
 export const api = {
   // Auth
+  demoLogin: async (role: 'SUPER_ADMIN' | 'HR_ADMIN' | 'MANAGER' | 'EMPLOYEE' | 'ORGANIZATION_OWNER' | string, email?: string) => {
+    const data = await fetchJson<{ access_token: string; user: User }>(`${API_BASE}/auth/demo-login`, {
+      method: 'POST',
+      body: JSON.stringify({ role, email }),
+    });
+    localStorage.setItem('token', data.access_token);
+    localStorage.setItem('currentUser', JSON.stringify(data.user));
+    return data;
+  },
   login: async (email: string, password: string) => {
     const data = await fetchJson<{ access_token: string; user: User }>(`${API_BASE}/auth/login`, {
       method: 'POST',

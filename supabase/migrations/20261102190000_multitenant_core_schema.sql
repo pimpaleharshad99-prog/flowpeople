@@ -1,6 +1,6 @@
 -- ============================================================================
 -- FLOWPEOPLE SAAS HRMS: PRODUCTION MULTI-TENANT ARCHITECTURE & RLS MIGRATION
--- Project: yzcrifmqwgfkfikkimeu (FlowPeople by FlowCraft)
+-- Project: FlowPeople SaaS HRMS (FlowCraft)
 -- Date: 2026-11-02
 -- Description: Core multi-tenant isolated schema, foreign keys, unique constraints,
 --              organization-aware functions, automated triggers, and Row Level Security.

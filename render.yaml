@@ -1,0 +1,65 @@
+# ==============================================================================
+# FLOWPEOPLE HRMS — RENDER BLUEPRINT (INFRASTRUCTURE AS CODE)
+# ==============================================================================
+services:
+  # 1. FastAPI Backend Web Service
+  - type: web
+    name: flowpeople-backend
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PROJECT_NAME
+        value: "FlowPeople — Complete Workforce Management (FlowCraft)"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_JWKS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        value: https://flowpeople-backend.onrender.com/api/integrations/google-drive/callback
+      - key: GOOGLE_DRIVE_SCOPES
+        value: https://www.googleapis.com/auth/drive.file
+      - key: GOOGLE_OAUTH_ENABLED
+        value: "false"
+      - key: FRONTEND_URL
+        value: https://flowpeople-frontend.onrender.com
+      - key: PYTHONPATH
+        value: backend
+
+  # 2. Vite React Frontend (Static Site)
+  - type: static
+    name: flowpeople-frontend
+    buildCommand: npm install --prefix frontend && npm run build --prefix frontend
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_URL
+        value: https://flowpeople-backend.onrender.com
