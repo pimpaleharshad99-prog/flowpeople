@@ -645,6 +645,15 @@ export const api = {
     localStorage.setItem('currentUser', JSON.stringify(res.user));
     return res;
   },
+  loginWithGoogle: async (data: { credential?: string; code?: string; redirect_uri?: string }) => {
+    const res = await fetchJson<{ access_token: string; user: User }>(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    localStorage.setItem('token', res.access_token);
+    localStorage.setItem('currentUser', JSON.stringify(res.user));
+    return res;
+  },
   getCurrentUser: () => fetchJson<User>(`${API_BASE}/auth/me`),
   getDemoCredentials: () => fetchJson<{ accounts: any[]; universal_fallback_password: string }>(`${API_BASE}/auth/demo-credentials`),
   forgotPassword: (email: string) => fetchJson<{ ok: boolean; message: string }>(`${API_BASE}/auth/forgot-password`, {

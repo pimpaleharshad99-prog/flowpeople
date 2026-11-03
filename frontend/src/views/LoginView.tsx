@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Lock, Mail, KeyRound, ArrowRight, CheckCircle2, Shield,
   Briefcase, Users, UserCheck, ChevronDown, ChevronUp, UserPlus,
@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { Logo } from '../components/brand/Logo';
 import { GlassCard, useToast } from '../components/ui';
 import { FaceKioskModal } from '../components/FaceKioskModal';
+import { GoogleIcon } from './FlowPeopleAuthView';
 
 interface LoginViewProps {
   onLoginSuccess: (user: User) => void;
@@ -102,6 +103,70 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         type: 'danger'
       });
     } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && (hash.includes('access_token=') || hash.includes('id_token='))) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const token = params.get('access_token') || params.get('id_token');
+      if (token) {
+        setLoading(true);
+        window.history.replaceState(null, '', window.location.pathname);
+        api.loginWithGoogle({ credential: token })
+          .then((res) => {
+            addToast({
+              title: 'Google Sign In Successful',
+              description: `Welcome, ${res.user.first_name}! Logged in with Google.`,
+              type: 'success'
+            });
+            onLoginSuccess(res.user);
+          })
+          .catch((err) => {
+            addToast({
+              title: 'Google Sign In Failed',
+              description: err.message || 'Could not authenticate with Google.',
+              type: 'danger'
+            });
+          })
+          .finally(() => setLoading(false));
+      }
+    }
+  }, [onLoginSuccess, addToast]);
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin
+            }
+          });
+          if (!error && data?.url) {
+            window.location.href = data.url;
+            return;
+          }
+        } catch (sbErr) {
+          console.warn('Supabase Google OAuth fallback:', sbErr);
+        }
+      }
+
+      const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '576186695621-kmd7kbtvr5jdgpech8mibpnoe1k0g3qb.apps.googleusercontent.com';
+      const redirectUri = window.location.origin;
+      const scope = encodeURIComponent('openid email profile');
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=select_account`;
+      window.location.href = authUrl;
+    } catch (err: any) {
+      addToast({
+        title: 'Google Sign In Failed',
+        description: err.message || 'Could not start Google OAuth.',
+        type: 'danger'
+      });
       setLoading(false);
     }
   };
@@ -339,6 +404,24 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 <span>{loading ? 'Authenticating...' : 'Sign In to Workspace'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
+
+              {/* Google OAuth 2.0 Sign In */}
+              <div className="pt-1">
+                <div className="relative flex py-1.5 items-center">
+                  <div className="flex-grow border-t border-[var(--border-glass)]"></div>
+                  <span className="flex-shrink mx-2 text-[var(--text-subtle)] text-[10px] font-semibold uppercase tracking-wider">or</span>
+                  <div className="flex-grow border-t border-[var(--border-glass)]"></div>
+                </div>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={handleGoogleSignIn}
+                  className="w-full h-9 rounded-lg bg-[var(--surface-canvas)] hover:bg-[var(--surface-hover)] border border-[var(--border-glass)] text-[var(--text-main)] font-semibold text-[11px] shadow-2xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <GoogleIcon className="w-3.5 h-3.5" />
+                  <span>Sign in with Google</span>
+                </button>
+              </div>
 
               {/* Fast 1-Click Role Login Bar */}
               <div className="pt-3 border-t border-[var(--border-glass)]">

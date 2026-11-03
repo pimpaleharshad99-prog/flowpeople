@@ -4,8 +4,10 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import re
+import httpx
 from datetime import datetime, timezone
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.models.user import User, UserRole, EmploymentStatus, EmploymentType
@@ -14,7 +16,8 @@ import uuid
 from app.schemas.user import (
     UserOut, Token, LoginRequest, UserUpdate, ActivateInviteRequest,
     RegisterRequest, SupabaseSyncRequest, SuperAdminLoginRequest,
-    ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest
+    ForgotPasswordRequest, ResetPasswordRequest, ResendVerificationRequest,
+    GoogleLoginRequest
 )
 from app.api.deps import get_current_user
 from app.services.platform_admin import verify_and_login_superadmin, is_supabase_configured, verify_supabase_token
@@ -524,5 +527,160 @@ def superadmin_login(login_data: SuperAdminLoginRequest, db: Session = Depends(g
     via server-side service-role access, and issues Super Admin session JWT.
     """
     return verify_and_login_superadmin(login_data.supabase_token, db)
+
+
+@router.post("/google", response_model=Token)
+def google_auth_login(
+    req: GoogleLoginRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Authenticates a user via Google OAuth 2.0.
+    Accepts:
+    1. Google ID Token / credential (via Google Identity Services or One Tap)
+    2. Google Access Token (via popup/OAuth flow)
+    3. Google Authorization Code (exchanged for tokens)
+    Validates identity with Google, links or provisions local user account,
+    and returns a FlowPeople Bearer JWT.
+    """
+    if not req.credential and not req.code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing Google OAuth credential or authorization code."
+        )
+
+    google_data = None
+
+    # Option 1: Authorization Code Flow
+    if req.code:
+        from app.services.google_drive import exchange_code_for_tokens
+        try:
+            tokens = exchange_code_for_tokens(req.code)
+            access_token = tokens.get("access_token")
+            if not access_token:
+                raise ValueError("No access token returned from Google.")
+            with httpx.Client(timeout=15.0) as client:
+                res = client.get(
+                    "https://www.googleapis.com/oauth2/v3/userinfo",
+                    headers={"Authorization": f"Bearer {access_token}"}
+                )
+                if res.status_code == 200:
+                    google_data = res.json()
+                else:
+                    raise ValueError(f"Failed to fetch userinfo from Google: {res.text}")
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Google OAuth authorization code exchange failed: {str(e)}"
+            )
+
+    # Option 2: ID Token / Credential Flow
+    elif req.credential:
+        raw_cred = req.credential.strip()
+        try:
+            with httpx.Client(timeout=15.0) as client:
+                # 1. Try ID token verification
+                res = client.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={raw_cred}")
+                if res.status_code == 200:
+                    google_data = res.json()
+                    aud = google_data.get("aud")
+                    if settings.GOOGLE_CLIENT_ID and aud != settings.GOOGLE_CLIENT_ID:
+                        # Allow matching project prefix or configured client ID
+                        if not aud.startswith(settings.GOOGLE_CLIENT_ID.split('-')[0]):
+                            raise ValueError(f"Google ID token audience mismatch: {aud}")
+                else:
+                    # 2. Fallback: check if credential is an access token
+                    res_userinfo = client.get(
+                        "https://www.googleapis.com/oauth2/v3/userinfo",
+                        headers={"Authorization": f"Bearer {raw_cred}"}
+                    )
+                    if res_userinfo.status_code == 200:
+                        google_data = res_userinfo.json()
+                    else:
+                        raise ValueError("Invalid Google OAuth credential.")
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Google OAuth credential verification failed: {str(e)}"
+            )
+
+    if not google_data or not google_data.get("email"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to verify Google user email address."
+        )
+
+    clean_email = google_data["email"].strip().lower()
+    first_name = google_data.get("given_name") or google_data.get("name", "").split(" ")[0] or clean_email.split("@")[0].capitalize()
+    last_name = google_data.get("family_name") or "User"
+    picture = google_data.get("picture")
+    google_sub = google_data.get("sub") or str(uuid.uuid4())
+
+    # Look up user in local database
+    user = db.query(User).filter(User.email.ilike(clean_email)).first()
+    if user:
+        if user.status in ["TERMINATED", "SUSPENDED"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"User account is {user.status.lower()} and cannot access workspace."
+            )
+        # Activate invited accounts
+        if user.status in ["PENDING_INVITATION", "INVITED"]:
+            user.status = EmploymentStatus.ACTIVE.value
+        if picture and not user.avatar_url:
+            user.avatar_url = picture
+        if not user.auth_user_id:
+            user.auth_user_id = f"google:{google_sub}"
+        db.commit()
+        db.refresh(user)
+    else:
+        # Check if platform owner
+        owner_emails = ["pimpaleg80@gmail.com", "pimpaleharshad99@gmail.com", "admin@flowcraft.io"]
+        is_owner = clean_email in owner_emails
+
+        company = db.query(Company).first()
+        if not company:
+            company = Company(
+                name="FlowCraft Technologies Inc.",
+                code="FLOWCRAFT",
+                domain="flowcraft.io",
+                timezone="Asia/Kolkata",
+                currency="INR"
+            )
+            db.add(company)
+            db.flush()
+
+        current_year = datetime.now(timezone.utc).year
+        count = db.query(User).filter(User.company_id == company.id).count() + 1
+        role = UserRole.PLATFORM_OWNER.value if is_owner else (UserRole.ORGANIZATION_OWNER.value if count == 1 else UserRole.EMPLOYEE.value)
+
+        user = User(
+            company_id=company.id,
+            employee_code=f"FP-G-{current_year}-{count:04d}",
+            email=clean_email,
+            auth_user_id=f"google:{google_sub}",
+            hashed_password=get_password_hash("GoogleOAuth2Verified!"),
+            first_name=first_name,
+            last_name=last_name,
+            avatar_url=picture,
+            role=role,
+            is_platform_owner=is_owner,
+            status=EmploymentStatus.ACTIVE.value,
+            employment_type=EmploymentType.FULL_TIME.value,
+            date_of_joining=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            work_location="Headquarters"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    token = create_access_token(subject=user.id, role=user.role)
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": serialize_user_out(user)
+    }
 
 

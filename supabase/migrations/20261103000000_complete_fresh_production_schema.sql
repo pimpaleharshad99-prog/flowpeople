@@ -1111,3 +1111,4 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
 -- Allow anon to read subscription plans & organizations for sign-up resolution
 GRANT SELECT ON public.subscription_plans TO anon;
 GRANT SELECT ON public.organizations TO anon;
+

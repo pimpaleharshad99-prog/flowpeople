@@ -125,3 +125,8 @@ class ResendVerificationRequest(BaseModel):
 
 class SuperAdminLoginRequest(BaseModel):
     supabase_token: str
+
+class GoogleLoginRequest(BaseModel):
+    credential: Optional[str] = None
+    code: Optional[str] = None
+    redirect_uri: Optional[str] = None
